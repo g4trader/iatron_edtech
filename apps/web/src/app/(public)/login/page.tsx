@@ -1,4 +1,5 @@
 import { Button } from '@iatron/ui';
+import Link from 'next/link';
 
 export default function LoginPage() {
   return (
@@ -17,9 +18,11 @@ export default function LoginPage() {
             required
           />
         </label>
-        <Button className="w-full" type="submit" disabled>
-          Continuar
-        </Button>
+        <Link className="block" href="/app">
+          <Button className="w-full" type="button">
+            Entrar na demonstração
+          </Button>
+        </Link>
       </form>
     </main>
   );

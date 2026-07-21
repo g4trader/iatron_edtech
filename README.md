@@ -1,6 +1,6 @@
 # Iatron EdTech
 
-Plataforma AI First para preparação de provas de residência médica no Brasil. Este repositório contém o bootstrap arquitetural; regras pedagógicas, autenticação, persistência e chamadas de IA ainda não foram implementadas.
+Plataforma AI First para preparação de provas de residência médica no Brasil. O repositório contém a arquitetura base e uma interface responsiva de demonstração; regras pedagógicas, autenticação, persistência e chamadas de IA ainda não foram implementadas.
 
 ## Arquitetura
 
@@ -21,7 +21,7 @@ O navegador acessará somente APIs públicas e recursos permitidos por RLS. Cred
 
 ## Estrutura
 
-- `apps/web`: Next.js App Router, Tailwind e experiência web em português.
+- `apps/web`: Next.js App Router, Tailwind e experiência AI First responsiva em português.
 - `apps/api`: Fastify, REST `/v1`, health checks e OpenAPI.
 - `packages/ui`: componentes visuais acessíveis compartilhados.
 - `packages/contracts`: DTOs, tipos e esquemas Zod compartilhados.
@@ -61,6 +61,7 @@ pnpm lint
 pnpm typecheck
 pnpm test
 pnpm build
+pnpm test:e2e
 ```
 
 ## Variáveis de ambiente
@@ -104,3 +105,8 @@ docker run --rm -p 8080:8080 -e PORT=8080 iatron-api
 
 - [ADR 0001 — Fastify](docs/adr/0001-backend-framework.md)
 - [ADR 0002 — Vercel, Supabase e GCP](docs/adr/0002-platform-boundaries.md)
+- [ADR 0003 — Estado do frontend e transporte](docs/adr/0003-frontend-state-and-chat-transport.md)
+
+## Interface demonstrativa
+
+As rotas `/app`, `/app/chat/[conversationId]`, `/app/assessment/demo`, `/app/plan`, `/app/simulations` e `/app/performance` usam dados locais explicitamente demonstrativos. O catálogo `/design-system` está disponível somente em desenvolvimento. Consulte [a documentação do frontend](docs/frontend.md) para componentes, estado, acessibilidade, mocks e E2E.

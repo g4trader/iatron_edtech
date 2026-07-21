@@ -1,31 +1,194 @@
-import { Button } from '@iatron/ui';
+'use client';
 
-export function ChatShell() {
+import type { ChatMessage, ChatTransport } from '@iatron/contracts';
+import { useCallback, useMemo, useRef, useState } from 'react';
+import { EmptyChatState } from './empty-chat-state';
+import { ChatComposer } from './chat-composer';
+import { MessageList } from './message-list';
+import { ErrorState } from '@/components/feedback/states';
+import {
+  emptyConversation,
+  errorConversation,
+  gapConversation,
+  planConversation,
+  questionConversation,
+  streamingConversation,
+} from '../mocks/demo-data';
+import { MockChatTransport } from '../transport/mock-chat-transport';
+
+function initialConversation(id: string): ChatMessage[] {
   return (
-    <main className="mx-auto flex h-[calc(100vh-57px)] max-w-4xl flex-col px-4 py-6">
-      <section className="flex flex-1 items-center justify-center text-center">
-        <div>
-          <p className="text-sm font-semibold text-teal-700">Sua preparação</p>
-          <h1 className="mt-2 text-3xl font-bold">Como vamos estudar hoje?</h1>
-          <p className="mt-3 text-slate-600">
-            O fluxo conversacional será conectado à API em uma próxima fase.
-          </p>
-        </div>
-      </section>
-      <form className="flex gap-3 rounded-2xl border border-slate-200 bg-white p-3 shadow-sm">
-        <label className="sr-only" htmlFor="message">
-          Mensagem
-        </label>
-        <input
-          id="message"
-          className="min-w-0 flex-1 px-3 outline-none"
-          placeholder="Digite sua dúvida ou objetivo de estudo"
-          disabled
-        />
-        <Button type="submit" disabled>
-          Enviar
-        </Button>
-      </form>
+    {
+      question: questionConversation,
+      gap: gapConversation,
+      plan: planConversation,
+      error: errorConversation,
+      streaming: streamingConversation,
+    }[id] ?? emptyConversation
+  );
+}
+
+function createDevelopmentTransport(): ChatTransport | null {
+  return process.env.NODE_ENV === 'production' ? null : new MockChatTransport();
+}
+
+export function ChatShell({
+  conversationId = 'new',
+}: {
+  conversationId?: string;
+}) {
+  const [messages, setMessages] = useState<ChatMessage[]>(() =>
+    initialConversation(conversationId),
+  );
+  const [generating, setGenerating] = useState(false);
+  const [offline, setOffline] = useState(false);
+  const [transportUnavailable, setTransportUnavailable] = useState(false);
+  const activeRequestRef = useRef<string | null>(null);
+  const transport = useMemo(() => createDevelopmentTransport(), []);
+
+  const send = useCallback(
+    async (text: string) => {
+      if (!transport) {
+        setTransportUnavailable(true);
+        return;
+      }
+      const requestId = `request-${Date.now()}`;
+      const assistantId = `assistant-${requestId}`;
+      activeRequestRef.current = requestId;
+      setGenerating(true);
+      setMessages((current) => [
+        ...current,
+        {
+          id: `user-${requestId}`,
+          role: 'user',
+          createdAt: new Date().toISOString(),
+          status: 'complete',
+          parts: [{ type: 'text', text }],
+        },
+        {
+          id: assistantId,
+          role: 'assistant',
+          createdAt: new Date().toISOString(),
+          status: 'streaming',
+          parts: [{ type: 'text', text: '' }],
+        },
+      ]);
+      for await (const event of transport.sendMessage({
+        requestId,
+        conversationId,
+        text,
+      })) {
+        if (event.type === 'text-delta')
+          setMessages((current) =>
+            current.map((message) =>
+              message.id === assistantId
+                ? {
+                    ...message,
+                    parts: [
+                      {
+                        type: 'text',
+                        text: `${message.parts[0]?.type === 'text' ? message.parts[0].text : ''}${event.delta}`,
+                      },
+                    ],
+                  }
+                : message,
+            ),
+          );
+        if (event.type === 'part')
+          setMessages((current) =>
+            current.map((message) =>
+              message.id === assistantId
+                ? { ...message, parts: [...message.parts, event.part] }
+                : message,
+            ),
+          );
+        if (event.type === 'reconnecting')
+          setMessages((current) => [
+            ...current,
+            {
+              id: `system-${requestId}`,
+              role: 'system',
+              createdAt: new Date().toISOString(),
+              status: 'complete',
+              parts: [
+                {
+                  type: 'text',
+                  text: 'Reconectando a simulação… seu conteúdo foi preservado.',
+                },
+              ],
+            },
+          ]);
+        if (event.type === 'error') {
+          setMessages((current) =>
+            current.map((message) =>
+              message.id === assistantId
+                ? {
+                    ...message,
+                    status: 'error',
+                    parts: [{ type: 'text', text: event.message }],
+                  }
+                : message,
+            ),
+          );
+          setGenerating(false);
+        }
+        if (event.type === 'complete') {
+          setMessages((current) =>
+            current.map((message) =>
+              message.id === assistantId
+                ? { ...message, status: 'complete' }
+                : message,
+            ),
+          );
+          setGenerating(false);
+        }
+      }
+      setGenerating(false);
+    },
+    [conversationId, transport],
+  );
+
+  const cancel = async () => {
+    if (transport && activeRequestRef.current)
+      await transport.cancel(activeRequestRef.current);
+    setGenerating(false);
+    setMessages((current) =>
+      current.map((message) =>
+        message.status === 'streaming'
+          ? { ...message, status: 'complete' }
+          : message,
+      ),
+    );
+  };
+  return (
+    <main className="chat-shell">
+      <div className="chat-scroll">
+        {transportUnavailable && (
+          <ErrorState message="A simulação local de chat está disponível apenas em desenvolvimento e testes." />
+        )}
+        {messages.length === 0 ? (
+          <EmptyChatState onSelect={send} />
+        ) : (
+          <MessageList
+            messages={messages}
+            onRetry={() => send('Tentar novamente')}
+          />
+        )}
+      </div>
+      <ChatComposer
+        conversationId={conversationId}
+        generating={generating}
+        offline={offline}
+        onCancel={cancel}
+        onSend={send}
+      />
+      <button
+        className="offline-toggle"
+        onClick={() => setOffline((value) => !value)}
+        type="button"
+      >
+        {offline ? 'Simular reconexão' : 'Simular modo offline'}
+      </button>
     </main>
   );
 }
