@@ -1,29 +1,37 @@
-import { Button } from '@iatron/ui';
 import Link from 'next/link';
-
-export default function LoginPage() {
+import { AuthForm, Field, Submit } from '@/components/auth/auth-form';
+import { login } from '../auth/actions';
+export default async function LoginPage({
+  searchParams,
+}: {
+  searchParams: Promise<{
+    erro?: string;
+    mensagem?: string;
+    returnTo?: string;
+  }>;
+}) {
+  const query = await searchParams;
   return (
-    <main className="mx-auto flex max-w-md flex-col px-6 py-16">
-      <h1 className="text-3xl font-bold">Acesse sua conta</h1>
-      <p className="mt-2 text-slate-600">
-        A autenticação com Supabase será conectada na próxima fase.
-      </p>
-      <form className="mt-8 space-y-5">
-        <label className="block">
-          <span className="mb-2 block text-sm font-medium">E-mail</span>
-          <input
-            className="w-full rounded-xl border border-slate-300 bg-white px-4 py-3 focus:border-teal-700 focus:outline-none"
-            type="email"
-            autoComplete="email"
-            required
-          />
-        </label>
-        <Link className="block" href="/app">
-          <Button className="w-full" type="button">
-            Entrar na demonstração
-          </Button>
-        </Link>
-      </form>
-    </main>
+    <AuthForm
+      title="Entrar"
+      description="Continue sua preparação para a residência."
+      action={login}
+      error={query.erro}
+      message={query.mensagem}
+    >
+      <input type="hidden" name="returnTo" value={query.returnTo ?? '/app'} />
+      <Field label="E-mail" name="email" type="email" autoComplete="email" />
+      <Field
+        label="Senha"
+        name="password"
+        type="password"
+        autoComplete="current-password"
+      />
+      <Submit>Entrar</Submit>
+      <div className="flex justify-between text-sm">
+        <Link href="/cadastro">Criar conta</Link>
+        <Link href="/esqueci-minha-senha">Esqueci a senha</Link>
+      </div>
+    </AuthForm>
   );
 }

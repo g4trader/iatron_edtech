@@ -3,14 +3,23 @@
 import Link from 'next/link';
 import { recentConversations } from '@/features/conversations/mocks/demo-data';
 import { NavigationLinks } from './navigation';
+import { logout } from '@/app/(public)/auth/actions';
 
 export function DesktopSidebar({
   collapsed,
   onToggle,
+  identity,
 }: {
   collapsed: boolean;
   onToggle: () => void;
+  identity: { displayName: string; email: string };
 }) {
+  const initials = identity.displayName
+    .split(/\s+/)
+    .slice(0, 2)
+    .map((part) => part[0])
+    .join('')
+    .toUpperCase();
   return (
     <aside
       aria-label="Barra lateral"
@@ -56,21 +65,23 @@ export function DesktopSidebar({
           ))}
         </section>
       )}
-      <button
-        className="profile-menu"
-        title={collapsed ? 'Perfil de estudante' : undefined}
-        type="button"
-      >
-        <span className="avatar" aria-hidden="true">
-          LT
-        </span>
-        {!collapsed && (
-          <span>
-            <strong>Estudante</strong>
-            <small>Ambiente de demonstração</small>
+      <form action={logout}>
+        <button
+          className="profile-menu"
+          title={collapsed ? 'Perfil de estudante' : undefined}
+          type="button"
+        >
+          <span className="avatar" aria-hidden="true">
+            {initials}
           </span>
-        )}
-      </button>
+          {!collapsed && (
+            <span>
+              <strong>{identity.displayName}</strong>
+              <small>{identity.email}</small>
+            </span>
+          )}
+        </button>
+      </form>
     </aside>
   );
 }

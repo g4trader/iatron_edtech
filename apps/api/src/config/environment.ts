@@ -8,6 +8,11 @@ const apiEnvironmentSchema = z.object({
   LOG_LEVEL: z
     .enum(['fatal', 'error', 'warn', 'info', 'debug', 'trace', 'silent'])
     .default('info'),
+  SUPABASE_URL: z.url().default('http://127.0.0.1:54321'),
+  SUPABASE_PUBLISHABLE_KEY: z.string().min(1).default('local-development-key'),
+  SUPABASE_JWT_ISSUER: z.url().default('http://127.0.0.1:54321/auth/v1'),
+  SUPABASE_JWT_AUDIENCE: z.string().min(1).default('authenticated'),
+  CORS_ALLOWED_ORIGINS: z.string().default('http://localhost:3000'),
 });
 
 export type ApiEnvironment = z.output<typeof apiEnvironmentSchema>;

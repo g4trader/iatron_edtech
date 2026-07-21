@@ -3,10 +3,23 @@ import swaggerUi from '@fastify/swagger-ui';
 import Fastify, { type FastifyInstance } from 'fastify';
 import { ZodError } from 'zod';
 import type { ApiEnvironment } from './config/environment.js';
+import {
+  createAuthenticate,
+  createTokenVerifier,
+  type TokenVerifier,
+} from './auth.js';
+import { registerMeRoutes } from './me-routes.js';
+import {
+  createStudentRepository,
+  RepositoryError,
+  type StudentRepository,
+} from './student-repository.js';
 
 export interface BuildAppOptions {
   environment: ApiEnvironment;
   logger?: boolean;
+  tokenVerifier?: TokenVerifier;
+  repositoryFactory?: (userId: string, token: string) => StudentRepository;
 }
 
 function isFastifyValidationError(error: unknown): boolean {
@@ -22,6 +35,17 @@ export async function buildApp(
         ? false
         : { level: options.environment.LOG_LEVEL },
     requestIdHeader: 'x-request-id',
+  });
+
+  const allowedOrigins = new Set(
+    options.environment.CORS_ALLOWED_ORIGINS.split(',').map((origin) =>
+      origin.trim(),
+    ),
+  );
+  await app.register(cors, {
+    origin: (origin, callback) =>
+      callback(null, !origin || allowedOrigins.has(origin)),
+    credentials: true,
   });
 
   await app.register(swagger, {
@@ -72,6 +96,21 @@ export async function buildApp(
         name: 'iatron-api',
         version: 'v1',
       }));
+      await versionedApi.register(async (protectedApi) => {
+        protectedApi.addHook(
+          'preHandler',
+          createAuthenticate(
+            options.tokenVerifier ?? createTokenVerifier(options.environment),
+          ),
+        );
+        await registerMeRoutes(protectedApi, {
+          environment: options.environment,
+          repositoryFactory:
+            options.repositoryFactory ??
+            ((userId, token) =>
+              createStudentRepository(options.environment, userId, token)),
+        });
+      });
     },
     { prefix: '/v1' },
   );
@@ -88,6 +127,17 @@ export async function buildApp(
 
   app.setErrorHandler((error, request, reply) => {
     request.log.error({ err: error }, 'request_failed');
+    if (error instanceof RepositoryError) {
+      return reply
+        .status(502)
+        .send({
+          error: {
+            code: 'UPSTREAM_DATABASE_ERROR',
+            message: 'Não foi possível acessar os dados.',
+            requestId: request.id,
+          },
+        });
+    }
     const isValidationError =
       isFastifyValidationError(error) || error instanceof ZodError;
     return reply.status(isValidationError ? 400 : 500).send({
@@ -103,3 +153,4 @@ export async function buildApp(
 
   return app;
 }
+import cors from '@fastify/cors';

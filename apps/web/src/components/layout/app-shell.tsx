@@ -9,7 +9,13 @@ import { MobileSidebarDrawer } from './mobile-sidebar-drawer';
 
 const storageKey = 'iatron:sidebar-collapsed';
 
-export function AppShell({ children }: { children: ReactNode }) {
+export function AppShell({
+  children,
+  identity = { displayName: 'Estudante', email: '' },
+}: {
+  children: ReactNode;
+  identity?: { displayName: string; email: string };
+}) {
   const pathname = usePathname();
   const [collapsed, setCollapsed] = useState(
     () =>
@@ -28,7 +34,11 @@ export function AppShell({ children }: { children: ReactNode }) {
 
   return (
     <div className="app-frame">
-      <DesktopSidebar collapsed={collapsed} onToggle={toggleCollapsed} />
+      <DesktopSidebar
+        collapsed={collapsed}
+        onToggle={toggleCollapsed}
+        identity={identity}
+      />
       <MobileSidebarDrawer
         open={drawerOpen}
         onClose={() => setDrawerOpen(false)}

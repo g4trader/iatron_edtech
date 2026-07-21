@@ -6,7 +6,7 @@ export default defineConfig({
   reporter: 'list',
   use: { baseURL: 'http://localhost:3000', trace: 'retain-on-failure' },
   webServer: {
-    command: 'pnpm dev',
+    command: 'E2E_AUTH_BYPASS=1 pnpm dev',
     url: 'http://localhost:3000',
     reuseExistingServer: true,
     timeout: 120_000,
