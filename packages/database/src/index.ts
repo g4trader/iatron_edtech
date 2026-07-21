@@ -1,14 +1,23 @@
 import { createClient, type SupabaseClient } from '@supabase/supabase-js';
+import type { Database } from './database.types.js';
+
+export type { Database } from './database.types.js';
 
 export interface DatabaseClientOptions {
   url: string;
-  serviceRoleKey: string;
+  key: string;
+  accessToken?: () => Promise<string | null>;
 }
 
 export function createDatabaseClient(
   options: DatabaseClientOptions,
-): SupabaseClient {
-  return createClient(options.url, options.serviceRoleKey, {
-    auth: { persistSession: false, autoRefreshToken: false },
+): SupabaseClient<Database> {
+  return createClient<Database>(options.url, options.key, {
+    accessToken: options.accessToken,
+    auth: {
+      persistSession: false,
+      autoRefreshToken: false,
+      detectSessionInUrl: false,
+    },
   });
 }

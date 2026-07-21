@@ -13,6 +13,8 @@
     "test:e2e": "playwright test"
   },
   "dependencies": {
+    "@supabase/ssr": "0.8.0",
+    "@supabase/supabase-js": "2.110.8",
     "@iatron/contracts": "workspace:*",
     "@iatron/ui": "workspace:*",
     "next": "16.2.11",

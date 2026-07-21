@@ -18,6 +18,100 @@ export const apiErrorSchema = z.object({
 
 export type ApiError = z.infer<typeof apiErrorSchema>;
 
+export const uuidSchema = z.uuid();
+
+export const profileSchema = z.object({
+  id: uuidSchema,
+  displayName: z.string().min(2).max(100),
+  email: z.email(),
+  onboardingStatus: z.enum(['not_started', 'in_progress', 'completed']),
+  onboardingStep: z.int().min(0).max(4),
+});
+export type Profile = z.infer<typeof profileSchema>;
+
+export const profileUpdateSchema = z.object({
+  displayName: z.string().trim().min(2).max(100),
+});
+export type ProfileUpdate = z.infer<typeof profileUpdateSchema>;
+
+export const studentProfileSchema = z.object({
+  weeklyStudyHours: z.number().min(1).max(80).nullable(),
+  residencyYear: z.int().min(1).max(6).nullable(),
+  graduationYear: z.int().min(1950).max(2100).nullable(),
+});
+export type StudentProfile = z.infer<typeof studentProfileSchema>;
+
+export const availabilityItemSchema = z.object({
+  weekday: z.int().min(0).max(6),
+  minutesAvailable: z.int().min(0).max(1440),
+});
+export const availabilityInputSchema = z.object({
+  items: z
+    .array(availabilityItemSchema)
+    .max(7)
+    .refine(
+      (items) =>
+        new Set(items.map((item) => item.weekday)).size === items.length,
+      'Cada dia da semana deve aparecer apenas uma vez.',
+    ),
+});
+export type AvailabilityInput = z.infer<typeof availabilityInputSchema>;
+
+export const institutionSchema = z.object({
+  id: uuidSchema,
+  name: z.string(),
+  acronym: z.string(),
+  stateCode: z.string().length(2),
+});
+export const examBoardSchema = z.object({ id: uuidSchema, name: z.string() });
+export const examProgramSchema = z.object({
+  id: uuidSchema,
+  institutionId: uuidSchema,
+  examBoardId: uuidSchema.nullable(),
+  name: z.string(),
+  institution: institutionSchema.optional(),
+  examBoard: examBoardSchema.nullable().optional(),
+});
+export type ExamProgram = z.infer<typeof examProgramSchema>;
+
+export const examEditionSchema = z.object({
+  id: uuidSchema,
+  examProgramId: uuidSchema,
+  year: z.int().min(2000).max(2100),
+  applicationDate: z.iso.date().nullable(),
+  registrationDeadline: z.iso.date().nullable(),
+});
+export type ExamEdition = z.infer<typeof examEditionSchema>;
+
+export const targetExamsInputSchema = z.object({
+  examEditionIds: z.array(uuidSchema).max(20),
+});
+export type TargetExamsInput = z.infer<typeof targetExamsInputSchema>;
+
+export const onboardingInputSchema = z.object({
+  step: z.int().min(1).max(4),
+  displayName: z.string().trim().min(2).max(100).optional(),
+  residencyYear: z.int().min(1).max(6).nullable().optional(),
+  graduationYear: z.int().min(1950).max(2100).nullable().optional(),
+  availability: availabilityInputSchema.optional(),
+  examEditionIds: z.array(uuidSchema).max(20).optional(),
+  complete: z.boolean().default(false),
+});
+export type OnboardingInput = z.infer<typeof onboardingInputSchema>;
+
+export const onboardingSchema = z.object({
+  profile: profileSchema,
+  studentProfile: studentProfileSchema,
+  availability: z.array(availabilityItemSchema),
+  targetExamEditionIds: z.array(uuidSchema),
+});
+export type Onboarding = z.infer<typeof onboardingSchema>;
+
+export const paginationSchema = z.object({
+  limit: z.coerce.number().int().min(1).max(100).default(20),
+  offset: z.coerce.number().int().min(0).default(0),
+});
+
 export type ChatRole = 'user' | 'assistant' | 'system';
 export type ConfidenceLevel = 'low' | 'medium' | 'high';
 
