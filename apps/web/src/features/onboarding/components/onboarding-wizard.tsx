@@ -13,6 +13,13 @@ interface WizardProps {
   initialName: string;
   initialResidencyYear: number | null;
   initialGraduationYear: number | null;
+  initialExperienceLevel:
+    | 'medical_student'
+    | 'recent_graduate'
+    | 'practicing_physician'
+    | null;
+  initialSessionMinutes: number | null;
+  initialAssessmentPreference: 'guided' | 'independent' | 'mixed' | null;
   initialAvailability: { weekday: number; minutesAvailable: number }[];
   initialTargets: string[];
   editions: Edition[];
@@ -30,6 +37,15 @@ export function OnboardingWizard(props: WizardProps) {
   );
   const [graduationYear, setGraduationYear] = useState(
     props.initialGraduationYear ?? new Date().getFullYear(),
+  );
+  const [experienceLevel, setExperienceLevel] = useState(
+    props.initialExperienceLevel ?? 'medical_student',
+  );
+  const [preferredSessionMinutes, setPreferredSessionMinutes] = useState(
+    props.initialSessionMinutes ?? 45,
+  );
+  const [assessmentPreference, setAssessmentPreference] = useState(
+    props.initialAssessmentPreference ?? 'guided',
   );
   const [availability, setAvailability] = useState(() =>
     Object.fromEntries(
@@ -51,6 +67,9 @@ export function OnboardingWizard(props: WizardProps) {
         displayName: name,
         residencyYear,
         graduationYear,
+        experienceLevel,
+        preferredSessionMinutes,
+        assessmentPreference,
         availability: {
           items: weekdays.map((_, weekday) => ({
             weekday,
@@ -117,6 +136,24 @@ export function OnboardingWizard(props: WizardProps) {
                 />
               </label>
             </div>
+            <label>
+              Momento profissional
+              <select
+                className="mt-1 w-full rounded-xl border p-3"
+                value={experienceLevel}
+                onChange={(event) =>
+                  setExperienceLevel(
+                    event.target.value as typeof experienceLevel,
+                  )
+                }
+              >
+                <option value="medical_student">Estudante de medicina</option>
+                <option value="recent_graduate">Recém-formado</option>
+                <option value="practicing_physician">
+                  Médico em atividade
+                </option>
+              </select>
+            </label>
           </div>
         )}
         {step === 2 && (
@@ -145,6 +182,40 @@ export function OnboardingWizard(props: WizardProps) {
                   />
                 </label>
               ))}
+            </div>
+            <div className="grid gap-3 sm:grid-cols-2">
+              <label>
+                Duração preferida da sessão
+                <select
+                  className="mt-1 w-full rounded-xl border p-3"
+                  value={preferredSessionMinutes}
+                  onChange={(event) =>
+                    setPreferredSessionMinutes(Number(event.target.value))
+                  }
+                >
+                  {[30, 45, 60, 90].map((minutes) => (
+                    <option key={minutes} value={minutes}>
+                      {minutes} minutos
+                    </option>
+                  ))}
+                </select>
+              </label>
+              <label>
+                Preferência de avaliação
+                <select
+                  className="mt-1 w-full rounded-xl border p-3"
+                  value={assessmentPreference}
+                  onChange={(event) =>
+                    setAssessmentPreference(
+                      event.target.value as typeof assessmentPreference,
+                    )
+                  }
+                >
+                  <option value="guided">Com orientação</option>
+                  <option value="independent">Sem intervenções</option>
+                  <option value="mixed">Mista</option>
+                </select>
+              </label>
             </div>
           </div>
         )}

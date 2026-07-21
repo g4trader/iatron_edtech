@@ -84,15 +84,13 @@ export function createStudentRepository(
       );
       if (items.length)
         unwrap(
-          await database
-            .from('student_availability')
-            .insert(
-              items.map((item) => ({
-                user_id: userId,
-                weekday: item.weekday,
-                minutes_available: item.minutesAvailable,
-              })),
-            ),
+          await database.from('student_availability').insert(
+            items.map((item) => ({
+              user_id: userId,
+              weekday: item.weekday,
+              minutes_available: item.minutesAvailable,
+            })),
+          ),
         );
       return getAvailability();
     },
@@ -118,14 +116,12 @@ export function createStudentRepository(
       );
       if (ids.length)
         unwrap(
-          await database
-            .from('student_target_exams')
-            .insert(
-              ids.map((exam_edition_id) => ({
-                user_id: userId,
-                exam_edition_id,
-              })),
-            ),
+          await database.from('student_target_exams').insert(
+            ids.map((exam_edition_id) => ({
+              user_id: userId,
+              exam_edition_id,
+            })),
+          ),
         );
       return getTargets();
     },
@@ -142,43 +138,36 @@ export function createStudentRepository(
       displayName?: string;
       residencyYear?: number | null;
       graduationYear?: number | null;
+      experienceLevel?:
+        | 'medical_student'
+        | 'recent_graduate'
+        | 'practicing_physician';
+      preferredSessionMinutes?: number;
+      assessmentPreference?: 'guided' | 'independent' | 'mixed';
       availability?: { items: { weekday: number; minutesAvailable: number }[] };
       examEditionIds?: string[];
       complete: boolean;
     }) {
-      if (input.displayName)
-        unwrap(
-          await database
-            .from('profiles')
-            .update({ display_name: input.displayName })
-            .eq('id', userId),
-        );
-      if (
-        input.residencyYear !== undefined ||
-        input.graduationYear !== undefined
-      )
-        unwrap(
-          await database
-            .from('student_profiles')
-            .update({
-              residency_year: input.residencyYear,
-              graduation_year: input.graduationYear,
-            })
-            .eq('user_id', userId),
-        );
-      if (input.availability)
-        await this.replaceAvailability(input.availability.items);
-      if (input.examEditionIds) await this.replaceTargets(input.examEditionIds);
       unwrap(
-        await database
-          .from('profiles')
-          .update({
-            onboarding_step: input.step,
-            onboarding_status: input.complete ? 'completed' : 'in_progress',
-          })
-          .eq('id', userId),
+        await database.rpc('save_onboarding', {
+          p_step: input.step,
+          p_display_name: input.displayName ?? null,
+          p_residency_year: input.residencyYear ?? null,
+          p_graduation_year: input.graduationYear ?? null,
+          p_experience_level: input.experienceLevel ?? null,
+          p_preferred_session_minutes: input.preferredSessionMinutes ?? null,
+          p_assessment_preference: input.assessmentPreference ?? null,
+          p_availability: input.availability?.items ?? null,
+          p_exam_edition_ids: input.examEditionIds ?? null,
+          p_complete: input.complete,
+        }),
       );
-      return this.getOnboarding();
+      return {
+        profile: await getProfile(),
+        studentProfile: await getStudentProfile(),
+        availability: await getAvailability(),
+        targets: await getTargets(),
+      };
     },
   };
 }

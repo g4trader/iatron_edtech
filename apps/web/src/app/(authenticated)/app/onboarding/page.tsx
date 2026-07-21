@@ -22,7 +22,9 @@ export default async function OnboardingPage() {
       .single(),
     client
       .from('student_profiles')
-      .select('residency_year,graduation_year')
+      .select(
+        'residency_year,graduation_year,experience_level,preferred_session_minutes,assessment_preference',
+      )
       .eq('user_id', user.id)
       .single(),
     client
@@ -61,6 +63,23 @@ export default async function OnboardingPage() {
       initialName={profileResult.data?.display_name ?? ''}
       initialResidencyYear={studentResult.data?.residency_year ?? null}
       initialGraduationYear={studentResult.data?.graduation_year ?? null}
+      initialExperienceLevel={
+        (studentResult.data?.experience_level as
+          | 'medical_student'
+          | 'recent_graduate'
+          | 'practicing_physician'
+          | null) ?? null
+      }
+      initialSessionMinutes={
+        studentResult.data?.preferred_session_minutes ?? null
+      }
+      initialAssessmentPreference={
+        (studentResult.data?.assessment_preference as
+          | 'guided'
+          | 'independent'
+          | 'mixed'
+          | null) ?? null
+      }
       initialAvailability={(availabilityResult.data ?? []).map((item) => ({
         weekday: item.weekday,
         minutesAvailable: item.minutes_available,

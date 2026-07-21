@@ -29,32 +29,43 @@ export const profileSchema = z.object({
 });
 export type Profile = z.infer<typeof profileSchema>;
 
-export const profileUpdateSchema = z.object({
-  displayName: z.string().trim().min(2).max(100),
-});
+export const profileUpdateSchema = z
+  .object({
+    displayName: z.string().trim().min(2).max(100),
+  })
+  .strict();
 export type ProfileUpdate = z.infer<typeof profileUpdateSchema>;
 
 export const studentProfileSchema = z.object({
   weeklyStudyHours: z.number().min(1).max(80).nullable(),
   residencyYear: z.int().min(1).max(6).nullable(),
   graduationYear: z.int().min(1950).max(2100).nullable(),
+  experienceLevel: z
+    .enum(['medical_student', 'recent_graduate', 'practicing_physician'])
+    .nullable(),
+  preferredSessionMinutes: z.int().min(15).max(180).nullable(),
+  assessmentPreference: z.enum(['guided', 'independent', 'mixed']).nullable(),
 });
 export type StudentProfile = z.infer<typeof studentProfileSchema>;
 
-export const availabilityItemSchema = z.object({
-  weekday: z.int().min(0).max(6),
-  minutesAvailable: z.int().min(0).max(1440),
-});
-export const availabilityInputSchema = z.object({
-  items: z
-    .array(availabilityItemSchema)
-    .max(7)
-    .refine(
-      (items) =>
-        new Set(items.map((item) => item.weekday)).size === items.length,
-      'Cada dia da semana deve aparecer apenas uma vez.',
-    ),
-});
+export const availabilityItemSchema = z
+  .object({
+    weekday: z.int().min(0).max(6),
+    minutesAvailable: z.int().min(0).max(1440),
+  })
+  .strict();
+export const availabilityInputSchema = z
+  .object({
+    items: z
+      .array(availabilityItemSchema)
+      .max(7)
+      .refine(
+        (items) =>
+          new Set(items.map((item) => item.weekday)).size === items.length,
+        'Cada dia da semana deve aparecer apenas uma vez.',
+      ),
+  })
+  .strict();
 export type AvailabilityInput = z.infer<typeof availabilityInputSchema>;
 
 export const institutionSchema = z.object({
@@ -83,20 +94,29 @@ export const examEditionSchema = z.object({
 });
 export type ExamEdition = z.infer<typeof examEditionSchema>;
 
-export const targetExamsInputSchema = z.object({
-  examEditionIds: z.array(uuidSchema).max(20),
-});
+export const targetExamsInputSchema = z
+  .object({
+    examEditionIds: z.array(uuidSchema).max(20),
+  })
+  .strict();
 export type TargetExamsInput = z.infer<typeof targetExamsInputSchema>;
 
-export const onboardingInputSchema = z.object({
-  step: z.int().min(1).max(4),
-  displayName: z.string().trim().min(2).max(100).optional(),
-  residencyYear: z.int().min(1).max(6).nullable().optional(),
-  graduationYear: z.int().min(1950).max(2100).nullable().optional(),
-  availability: availabilityInputSchema.optional(),
-  examEditionIds: z.array(uuidSchema).max(20).optional(),
-  complete: z.boolean().default(false),
-});
+export const onboardingInputSchema = z
+  .object({
+    step: z.int().min(1).max(4),
+    displayName: z.string().trim().min(2).max(100).optional(),
+    residencyYear: z.int().min(1).max(6).nullable().optional(),
+    graduationYear: z.int().min(1950).max(2100).nullable().optional(),
+    experienceLevel: z
+      .enum(['medical_student', 'recent_graduate', 'practicing_physician'])
+      .optional(),
+    preferredSessionMinutes: z.int().min(15).max(180).optional(),
+    assessmentPreference: z.enum(['guided', 'independent', 'mixed']).optional(),
+    availability: availabilityInputSchema.optional(),
+    examEditionIds: z.array(uuidSchema).max(20).optional(),
+    complete: z.boolean().default(false),
+  })
+  .strict();
 export type OnboardingInput = z.infer<typeof onboardingInputSchema>;
 
 export const onboardingSchema = z.object({

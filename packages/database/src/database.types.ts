@@ -38,12 +38,18 @@ export interface Database {
           residency_year: number | null;
           graduation_year: number | null;
           weekly_study_hours: number | null;
+          experience_level: string | null;
+          preferred_session_minutes: number | null;
+          assessment_preference: string | null;
         };
         Insert: {
           user_id: string;
           residency_year?: number | null;
           graduation_year?: number | null;
           weekly_study_hours?: number | null;
+          experience_level?: string | null;
+          preferred_session_minutes?: number | null;
+          assessment_preference?: string | null;
           created_at?: string;
           updated_at?: string;
         };
@@ -133,7 +139,23 @@ export interface Database {
       };
     };
     Views: Record<string, never>;
-    Functions: Record<string, never>;
+    Functions: {
+      save_onboarding: {
+        Args: {
+          p_step: number;
+          p_display_name?: string | null;
+          p_residency_year?: number | null;
+          p_graduation_year?: number | null;
+          p_experience_level?: string | null;
+          p_preferred_session_minutes?: number | null;
+          p_assessment_preference?: string | null;
+          p_availability?: Json | null;
+          p_exam_edition_ids?: string[] | null;
+          p_complete?: boolean;
+        };
+        Returns: undefined;
+      };
+    };
     Enums: { onboarding_status: 'not_started' | 'in_progress' | 'completed' };
     CompositeTypes: Record<string, never>;
   };

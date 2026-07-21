@@ -19,6 +19,9 @@ create table public.student_profiles (
   residency_year smallint check (residency_year between 1 and 6),
   graduation_year smallint check (graduation_year between 1950 and 2100),
   weekly_study_hours numeric(4,1) check (weekly_study_hours between 1 and 80),
+  experience_level text check (experience_level in ('medical_student', 'recent_graduate', 'practicing_physician')),
+  preferred_session_minutes smallint check (preferred_session_minutes between 15 and 180),
+  assessment_preference text check (assessment_preference in ('guided', 'independent', 'mixed')),
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now()
 );
