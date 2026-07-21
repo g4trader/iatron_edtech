@@ -1,0 +1,4 @@
+services: {}
+# Nenhuma dependência local é obrigatória no bootstrap. O Supabase será
+# conectado em uma fase própria, sem manter um PostgreSQL divergente aqui.
+

@@ -1,0 +1,8 @@
+{
+  "name": "@iatron/typescript-config",
+  "version": "0.1.0",
+  "private": true,
+  "files": [
+    "*.json"
+  ]
+}

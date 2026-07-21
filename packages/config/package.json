@@ -1,0 +1,24 @@
+{
+  "name": "@iatron/config",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "exports": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "lint": "eslint .",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run --passWithNoTests"
+  },
+  "dependencies": {
+    "zod": "4.4.3"
+  },
+  "devDependencies": {
+    "@iatron/eslint-config": "workspace:*",
+    "@iatron/typescript-config": "workspace:*",
+    "eslint": "9.39.2",
+    "typescript": "5.9.3",
+    "vitest": "4.1.10"
+  }
+}

@@ -1,0 +1,25 @@
+{
+  "name": "iatron-edtech",
+  "version": "0.1.0",
+  "private": true,
+  "packageManager": "pnpm@10.13.1",
+  "engines": {
+    "node": ">=20.9.0"
+  },
+  "scripts": {
+    "dev": "turbo dev",
+    "dev:web": "pnpm --filter @iatron/web dev",
+    "dev:api": "pnpm --filter @iatron/api dev",
+    "lint": "turbo lint",
+    "typecheck": "turbo typecheck",
+    "test": "turbo test",
+    "build": "turbo build",
+    "format": "prettier --write .",
+    "format:check": "prettier --check ."
+  },
+  "devDependencies": {
+    "prettier": "3.6.2",
+    "turbo": "2.10.5",
+    "typescript": "5.9.3"
+  }
+}

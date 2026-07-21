@@ -1,0 +1,31 @@
+{
+  "name": "@iatron/api",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "tsx watch src/main.ts",
+    "build": "tsc -p tsconfig.build.json",
+    "start": "node dist/main.js",
+    "lint": "eslint .",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@fastify/swagger": "9.8.1",
+    "@fastify/swagger-ui": "6.1.0",
+    "@iatron/config": "workspace:*",
+    "@iatron/contracts": "workspace:*",
+    "fastify": "5.10.0",
+    "zod": "4.4.3"
+  },
+  "devDependencies": {
+    "@iatron/eslint-config": "workspace:*",
+    "@iatron/typescript-config": "workspace:*",
+    "@types/node": "26.1.1",
+    "eslint": "9.39.2",
+    "tsx": "4.23.1",
+    "typescript": "5.9.3",
+    "vitest": "4.1.10"
+  }
+}
