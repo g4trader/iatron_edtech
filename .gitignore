@@ -12,3 +12,7 @@ secrets.md
 *.tsbuildinfo
 playwright-report
 test-results
+.vercel
+supabase/.branches
+supabase/.temp
+gha-creds-*.json

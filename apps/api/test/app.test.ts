@@ -9,6 +9,7 @@ const environment = readEnvironment({
   HOST: '127.0.0.1',
   PORT: '8080',
   LOG_LEVEL: 'silent',
+  ENABLE_API_DOCS: '1',
 });
 let app: FastifyInstance | undefined;
 
@@ -36,6 +37,16 @@ describe('operational routes', () => {
     expect(
       (await app.inject({ method: 'GET', url: '/docs/json' })).statusCode,
     ).toBe(200);
+  });
+
+  it('does not expose OpenAPI when documentation is disabled', async () => {
+    app = await buildApp({
+      environment: { ...environment, ENABLE_API_DOCS: '0' },
+      logger: false,
+    });
+    expect(
+      (await app.inject({ method: 'GET', url: '/docs/json' })).statusCode,
+    ).toBe(404);
   });
 });
 

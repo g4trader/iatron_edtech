@@ -51,17 +51,19 @@ export async function buildApp(
     methods: ['GET', 'PATCH', 'PUT', 'OPTIONS'],
   });
 
-  await app.register(swagger, {
-    openapi: {
-      info: {
-        title: 'Iatron EdTech API',
-        description: 'API da plataforma educacional Iatron.',
-        version: '0.1.0',
+  if (options.environment.ENABLE_API_DOCS === '1') {
+    await app.register(swagger, {
+      openapi: {
+        info: {
+          title: 'Iatron EdTech API',
+          description: 'API da plataforma educacional Iatron.',
+          version: '0.1.0',
+        },
+        servers: [{ url: '/v1' }],
       },
-      servers: [{ url: '/v1' }],
-    },
-  });
-  await app.register(swaggerUi, { routePrefix: '/docs' });
+    });
+    await app.register(swaggerUi, { routePrefix: '/docs' });
+  }
 
   const statusSchema = {
     type: 'object',

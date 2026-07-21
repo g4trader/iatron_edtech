@@ -2,14 +2,75 @@ import { expect, test, type APIRequestContext } from '@playwright/test';
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
 const publishableKey = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY!;
-const mailpitUrl = process.env.MAILPIT_URL!;
-const password = 'Local-validation-2026!';
+const mailpitUrl = process.env.MAILPIT_URL;
+const apiBaseUrl = process.env.E2E_API_BASE_URL ?? 'http://127.0.0.1:8080';
+const serviceRoleKey = process.env.E2E_SUPABASE_SERVICE_ROLE_KEY;
+const password = 'Staging-validation-2026!';
+const createdUserIds = new Set<string>();
+
+type AdminUser = { id: string; email?: string };
+
+async function adminRequest(
+  request: APIRequestContext,
+  path: string,
+  options: Parameters<APIRequestContext['fetch']>[1] = {},
+) {
+  if (!serviceRoleKey)
+    throw new Error('Fixture administrativa não configurada.');
+  return request.fetch(`${supabaseUrl}/auth/v1/admin${path}`, {
+    ...options,
+    headers: {
+      apikey: serviceRoleKey,
+      authorization: `Bearer ${serviceRoleKey}`,
+      'content-type': 'application/json',
+    },
+  });
+}
+
+async function findAdminUser(request: APIRequestContext, email: string) {
+  const response = await adminRequest(request, '/users', { method: 'GET' });
+  expect(response.ok()).toBeTruthy();
+  const body = (await response.json()) as { users?: AdminUser[] };
+  const user = body.users?.find((candidate) => candidate.email === email);
+  if (!user) throw new Error('Usuário E2E recém-criado não foi encontrado.');
+  createdUserIds.add(user.id);
+  return user;
+}
+
+async function confirmStagingUser(request: APIRequestContext, email: string) {
+  const user = await findAdminUser(request, email);
+  const response = await adminRequest(request, `/users/${user.id}`, {
+    method: 'PUT',
+    data: { email_confirm: true },
+  });
+  expect(response.ok()).toBeTruthy();
+}
+
+async function recoveryLink(request: APIRequestContext, email: string) {
+  const response = await adminRequest(request, '/generate_link', {
+    method: 'POST',
+    data: {
+      type: 'recovery',
+      email,
+      options: { redirect_to: `${process.env.E2E_WEB_BASE_URL}/auth/callback` },
+    },
+  });
+  expect(response.ok()).toBeTruthy();
+  const body = (await response.json()) as {
+    action_link?: string;
+    properties?: { action_link?: string };
+  };
+  const link = body.action_link ?? body.properties?.action_link;
+  if (!link) throw new Error('Supabase não retornou link de recuperação.');
+  return link;
+}
 
 async function waitForEmail(
   request: APIRequestContext,
   email: string,
   subject: RegExp,
 ) {
+  if (!mailpitUrl) throw new Error('Mailpit local não configurado.');
   for (let attempt = 0; attempt < 30; attempt += 1) {
     const search = await request.get(`${mailpitUrl}/api/v1/search`, {
       params: { query: `to:${email}` },
@@ -42,7 +103,11 @@ async function signUpApi(request: APIRequestContext, email: string) {
     data: { email, password, data: { display_name: 'Estudante B' } },
   });
   expect(response.ok()).toBeTruthy();
-  await request.get(await waitForEmail(request, email, /confirm/i));
+  if (serviceRoleKey) {
+    await confirmStagingUser(request, email);
+  } else {
+    await request.get(await waitForEmail(request, email, /confirm/i));
+  }
 }
 
 async function tokenFor(request: APIRequestContext, email: string) {
@@ -71,7 +136,24 @@ test('cadastro, confirmação, SSR, retomada, RLS, logout e recuperação reais'
   await page.getByLabel(/Senha/).fill(password);
   await page.getByRole('button', { name: 'Criar conta' }).click();
   await expect(page).toHaveURL(/\/login/);
-  await page.goto(await waitForEmail(request, studentA, /confirm/i));
+  if (serviceRoleKey) {
+    await expect(async () => {
+      const response = await request.post(
+        `${supabaseUrl}/auth/v1/token?grant_type=password`,
+        {
+          headers: {
+            apikey: publishableKey,
+            'content-type': 'application/json',
+          },
+          data: { email: studentA, password },
+        },
+      );
+      expect(response.ok()).toBeFalsy();
+    }).toPass();
+    await confirmStagingUser(request, studentA);
+  } else {
+    await page.goto(await waitForEmail(request, studentA, /confirm/i));
+  }
   await page.goto('/login');
   await page.getByLabel('E-mail').fill(studentA);
   await page.getByLabel('Senha').fill(password);
@@ -94,16 +176,15 @@ test('cadastro, confirmação, SSR, retomada, RLS, logout e recuperação reais'
   const tokenA = await tokenFor(request, studentA);
   await signUpApi(request, studentB);
   const tokenB = await tokenFor(request, studentB);
-  const meA = await request.get('http://127.0.0.1:8080/v1/me', {
+  const meA = await request.get(`${apiBaseUrl}/v1/me`, {
     headers: { authorization: `Bearer ${tokenA}` },
   });
   expect(meA.status()).toBe(200);
   const userAId = ((await meA.json()) as { profile: { id: string } }).profile
     .id;
-  const spoof = await request.get(
-    `http://127.0.0.1:8080/v1/me?user_id=${userAId}`,
-    { headers: { authorization: `Bearer ${tokenB}`, 'x-user-id': userAId } },
-  );
+  const spoof = await request.get(`${apiBaseUrl}/v1/me?user_id=${userAId}`, {
+    headers: { authorization: `Bearer ${tokenB}`, 'x-user-id': userAId },
+  });
   expect(spoof.status()).toBe(200);
   expect(
     ((await spoof.json()) as { profile: { id: string } }).profile.id,
@@ -122,9 +203,22 @@ test('cadastro, confirmação, SSR, retomada, RLS, logout e recuperação reais'
   await page.getByLabel('E-mail').fill(studentA);
   await page.getByRole('button', { name: 'Enviar instruções' }).click();
   await page.goto(
-    await waitForEmail(request, studentA, /reset|senha|password/i),
+    serviceRoleKey
+      ? await recoveryLink(request, studentA)
+      : await waitForEmail(request, studentA, /reset|senha|password/i),
   );
-  await page.getByLabel('Nova senha').fill('Local-validation-2026-updated!');
+  await page.getByLabel('Nova senha').fill('Staging-validation-2026-updated!');
   await page.getByRole('button', { name: 'Salvar senha' }).click();
   await expect(page).toHaveURL(/\/app/);
+});
+
+test.afterEach(async ({ request }) => {
+  if (!serviceRoleKey) return;
+  for (const userId of createdUserIds) {
+    const response = await adminRequest(request, `/users/${userId}`, {
+      method: 'DELETE',
+    });
+    expect(response.ok()).toBeTruthy();
+  }
+  createdUserIds.clear();
 });

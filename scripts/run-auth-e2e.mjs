@@ -1,4 +1,26 @@
 import { spawnSync } from 'node:child_process';
+import {
+  assertStagingTarget,
+  assertSupabaseUrlMatches,
+  requiredEnvironment,
+} from './cloud-environment.mjs';
+
+const remoteWebUrl = process.env.E2E_WEB_BASE_URL?.trim();
+
+if (remoteWebUrl) {
+  const projectRef = assertStagingTarget({ destructive: true });
+  const supabaseUrl = requiredEnvironment('E2E_SUPABASE_URL');
+  assertSupabaseUrlMatches(supabaseUrl, projectRef);
+  requiredEnvironment('E2E_API_BASE_URL');
+  requiredEnvironment('E2E_SUPABASE_PUBLISHABLE_KEY');
+  requiredEnvironment('E2E_SUPABASE_SERVICE_ROLE_KEY');
+  const result = spawnSync(
+    'pnpm',
+    ['--filter', '@iatron/web', 'test:e2e:auth:direct'],
+    { stdio: 'inherit', env: process.env },
+  );
+  process.exit(result.status ?? 1);
+}
 
 const status = spawnSync('pnpm', ['exec', 'supabase', 'status', '-o', 'json'], {
   encoding: 'utf8',

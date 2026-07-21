@@ -1,0 +1,50 @@
+name: Deploy Supabase Staging
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [staging]
+
+concurrency:
+  group: supabase-staging
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  migrate-and-validate:
+    environment: staging
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    env:
+      SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+      SUPABASE_DB_PASSWORD: ${{ secrets.SUPABASE_STAGING_DB_PASSWORD }}
+      SUPABASE_STAGING_DATABASE_URL: ${{ secrets.SUPABASE_STAGING_DATABASE_URL }}
+      SUPABASE_STAGING_PROJECT_ID: ${{ vars.SUPABASE_STAGING_PROJECT_ID }}
+      SUPABASE_APPROVED_STAGING_PROJECT_ID: ${{ vars.SUPABASE_STAGING_PROJECT_ID }}
+      SUPABASE_PRODUCTION_PROJECT_ID: ${{ vars.SUPABASE_PRODUCTION_PROJECT_ID }}
+      SUPABASE_STAGING_URL: ${{ vars.SUPABASE_STAGING_URL }}
+      E2E_ALLOW_DESTRUCTIVE_TESTS: '1'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10.13.1
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: Apply migrations
+        run: pnpm db:push:staging
+      - name: Install PostgreSQL client
+        run: sudo apt-get update && sudo apt-get install --yes postgresql-client
+      - name: Seed fictitious staging catalog
+        run: pnpm db:seed:staging
+      - name: Run pgTAP
+        run: pnpm db:test:staging
+      - name: Check generated types
+        run: pnpm db:types:check:staging
+      - name: Smoke Supabase Auth
+        run: pnpm db:smoke:staging

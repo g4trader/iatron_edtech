@@ -1,0 +1,47 @@
+name: E2E Staging
+
+on:
+  workflow_dispatch:
+  workflow_run:
+    workflows: [Deploy API Staging]
+    types: [completed]
+
+concurrency:
+  group: e2e-staging
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  real-auth:
+    if: github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success'
+    environment: staging
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    env:
+      E2E_ALLOW_DESTRUCTIVE_TESTS: '1'
+      E2E_WEB_BASE_URL: ${{ vars.E2E_WEB_BASE_URL }}
+      E2E_API_BASE_URL: ${{ vars.E2E_API_BASE_URL }}
+      E2E_SUPABASE_URL: ${{ vars.SUPABASE_STAGING_URL }}
+      E2E_SUPABASE_PUBLISHABLE_KEY: ${{ secrets.SUPABASE_STAGING_PUBLISHABLE_KEY }}
+      E2E_SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_STAGING_SERVICE_ROLE_KEY }}
+      SUPABASE_STAGING_PROJECT_ID: ${{ vars.SUPABASE_STAGING_PROJECT_ID }}
+      SUPABASE_APPROVED_STAGING_PROJECT_ID: ${{ vars.SUPABASE_STAGING_PROJECT_ID }}
+      SUPABASE_PRODUCTION_PROJECT_ID: ${{ vars.SUPABASE_PRODUCTION_PROJECT_ID }}
+      NEXT_PUBLIC_SUPABASE_URL: ${{ vars.SUPABASE_STAGING_URL }}
+      NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: ${{ secrets.SUPABASE_STAGING_PUBLISHABLE_KEY }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.workflow_run.head_sha || github.sha }}
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10.13.1
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm exec playwright install --with-deps chromium
+      - run: pnpm test:e2e:auth
