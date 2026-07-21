@@ -1,6 +1,6 @@
 # Iatron EdTech
 
-Plataforma AI First para preparação de provas de residência médica no Brasil. O repositório contém a arquitetura base e uma interface responsiva de demonstração; regras pedagógicas, autenticação, persistência e chamadas de IA ainda não foram implementadas.
+Plataforma AI First para preparação de provas de residência médica no Brasil. O repositório contém a arquitetura base, autenticação Supabase, onboarding persistente e uma interface responsiva. Regras pedagógicas avançadas e chamadas de IA ainda não foram implementadas.
 
 ## Arquitetura
 
@@ -47,7 +47,7 @@ cp apps/web/.env.example apps/web/.env.local
 pnpm dev
 ```
 
-Para executar o primeiro fluxo vertical real, inicie também o Supabase local conforme [docs/local-supabase.md](docs/local-supabase.md). A documentação de [autenticação](docs/authentication.md), [banco](docs/database.md), [RLS](docs/row-level-security.md), [onboarding](docs/onboarding.md) e [variáveis](docs/environment-variables.md) descreve as fronteiras e configurações desta fase.
+O fluxo padrão é cloud-first, descrito em [docs/cloud-architecture.md](docs/cloud-architecture.md). Supabase local é opcional para depuração e está documentado em [docs/local-supabase.md](docs/local-supabase.md); não é requisito de CI ou aceite.
 
 - Web: `http://localhost:3000`
 - API: `http://localhost:8080`
@@ -87,7 +87,7 @@ As futuras credenciais de Supabase, OpenAI e GCP serão adicionadas somente quan
 
 ## Estratégia de ambientes
 
-- **Local:** aplicações executadas via pnpm; serviços externos apontam para projetos de desenvolvimento quando forem adicionados.
+- **Local:** aplicações via pnpm; Supabase local é opcional.
 - **Preview:** frontend por pull request na Vercel e uma API isolada de homologação no Cloud Run, sem dados de produção.
 - **Staging:** ambiente estável para testes integrados, com projeto Supabase e segredos próprios.
 - **Produção:** Vercel, Cloud Run e Supabase dedicados; acesso mínimo, logs auditáveis e deploy promovido após validações.
@@ -108,6 +108,8 @@ docker run --rm -p 8080:8080 -e PORT=8080 iatron-api
 - [ADR 0001 — Fastify](docs/adr/0001-backend-framework.md)
 - [ADR 0002 — Vercel, Supabase e GCP](docs/adr/0002-platform-boundaries.md)
 - [ADR 0003 — Estado do frontend e transporte](docs/adr/0003-frontend-state-and-chat-transport.md)
+- [ADR 0008 — Cloud-first](docs/adr/0008-cloud-first-development.md)
+- [ADR 0014 — Estratégia Supabase](docs/adr/0014-supabase-environment-strategy.md)
 
 ## Interface demonstrativa
 

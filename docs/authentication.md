@@ -8,4 +8,8 @@ O frontend envia o access token como `Authorization: Bearer` ao consumir a API. 
 
 `E2E_AUTH_BYPASS=1` existe apenas para testes visuais locais e é ignorado quando `NODE_ENV=production`.
 
-A suíte rápida usa `pnpm test:e2e:mock`. A validação sem bypass usa `pnpm test:e2e:auth`, Supabase local e e-mails capturados no Mailpit. O bypass exige valor literal `1`, falha fechado sem a variável, não consulta query/cookie/header e emite aviso quando ativo.
+A suíte rápida usa `pnpm test:e2e:mock`. A validação sem bypass usa
+`pnpm test:e2e:auth`: por padrão aceita staging remoto e usa fixture Admin API
+server-side; Mailpit/Supabase local permanecem opcionais. O bypass exige valor
+literal `1`, falha fechado sem a variável, não consulta query/cookie/header e
+emite aviso quando ativo.

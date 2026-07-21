@@ -14,4 +14,9 @@ pnpm db:types
 pnpm db:stop
 ```
 
+O fluxo obrigatório usa `db:push:staging`, `db:seed:staging`,
+`db:test:staging` e `db:types:check:staging`; consulte
+[cloud-database-migrations.md](cloud-database-migrations.md). Os comandos locais
+acima são opcionais.
+
 `database.types.ts` é um snapshot compatível com o schema. Após iniciar/resetar o Supabase, `pnpm db:types` deve regenerá-lo a partir do banco aplicado.
