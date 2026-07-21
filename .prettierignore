@@ -4,3 +4,4 @@ dist
 coverage
 pnpm-lock.yaml
 AGENTS.md
+apps/web/next-env.d.ts

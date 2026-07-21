@@ -1,13 +1,10 @@
 import { createServerClient } from '@supabase/ssr';
 import { NextResponse, type NextRequest } from 'next/server';
 import { getSupabaseConfig } from '@/lib/supabase/config';
+import { isAuthBypassEnabled } from '@/lib/auth-bypass';
 
 export async function proxy(request: NextRequest) {
-  if (
-    process.env.NODE_ENV !== 'production' &&
-    process.env.E2E_AUTH_BYPASS === '1'
-  )
-    return NextResponse.next();
+  if (isAuthBypassEnabled(process.env)) return NextResponse.next();
   let response = NextResponse.next({ request });
   const config = getSupabaseConfig();
   const client = createServerClient(config.url, config.key, {

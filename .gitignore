@@ -4,7 +4,10 @@ dist
 coverage
 .turbo
 .env
-.env.local
+.env.*
+!.env.example
+!**/.env.example
+secrets.md
 .DS_Store
 *.tsbuildinfo
 playwright-report

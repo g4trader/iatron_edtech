@@ -14,4 +14,10 @@ describe('readEnvironment', () => {
       readEnvironment({ NODE_ENV: 'test', PORT: 'invalid' }),
     ).toThrow();
   });
+
+  it('rejects a wildcard CORS origin', () => {
+    expect(() =>
+      readEnvironment({ NODE_ENV: 'test', CORS_ALLOWED_ORIGINS: '*' }),
+    ).toThrow();
+  });
 });

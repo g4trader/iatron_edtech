@@ -1,3 +1,4 @@
+import cors from '@fastify/cors';
 import swagger from '@fastify/swagger';
 import swaggerUi from '@fastify/swagger-ui';
 import Fastify, { type FastifyInstance } from 'fastify';
@@ -46,6 +47,8 @@ export async function buildApp(
     origin: (origin, callback) =>
       callback(null, !origin || allowedOrigins.has(origin)),
     credentials: true,
+    allowedHeaders: ['authorization', 'content-type', 'x-request-id'],
+    methods: ['GET', 'PATCH', 'PUT', 'OPTIONS'],
   });
 
   await app.register(swagger, {
@@ -128,15 +131,13 @@ export async function buildApp(
   app.setErrorHandler((error, request, reply) => {
     request.log.error({ err: error }, 'request_failed');
     if (error instanceof RepositoryError) {
-      return reply
-        .status(502)
-        .send({
-          error: {
-            code: 'UPSTREAM_DATABASE_ERROR',
-            message: 'Não foi possível acessar os dados.',
-            requestId: request.id,
-          },
-        });
+      return reply.status(502).send({
+        error: {
+          code: 'UPSTREAM_DATABASE_ERROR',
+          message: 'Não foi possível acessar os dados.',
+          requestId: request.id,
+        },
+      });
     }
     const isValidationError =
       isFastifyValidationError(error) || error instanceof ZodError;
@@ -153,4 +154,3 @@ export async function buildApp(
 
   return app;
 }
-import cors from '@fastify/cors';

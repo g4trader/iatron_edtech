@@ -1,4 +1,5 @@
 import { createClient } from './supabase/server';
+import { isAuthBypassEnabled } from './auth-bypass';
 
 export function safeReturnTo(
   value: string | null | undefined,
@@ -8,10 +9,7 @@ export function safeReturnTo(
 }
 
 export async function getAuthState() {
-  if (
-    process.env.NODE_ENV !== 'production' &&
-    process.env.E2E_AUTH_BYPASS === '1'
-  ) {
+  if (isAuthBypassEnabled(process.env)) {
     return {
       user: {
         id: '00000000-0000-4000-8000-000000000001',

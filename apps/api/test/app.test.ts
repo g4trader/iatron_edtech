@@ -95,3 +95,43 @@ describe('authenticated routes', () => {
     ).toBe(401);
   });
 });
+
+describe('CORS allowlist', () => {
+  it('allows configured origins and authorization preflight', async () => {
+    app = await buildApp({ environment, logger: false });
+    const response = await app.inject({
+      method: 'OPTIONS',
+      url: '/v1/me',
+      headers: {
+        origin: 'http://localhost:3000',
+        'access-control-request-method': 'GET',
+        'access-control-request-headers': 'authorization',
+      },
+    });
+    expect(response.statusCode).toBe(204);
+    expect(response.headers['access-control-allow-origin']).toBe(
+      'http://localhost:3000',
+    );
+    expect(response.headers['access-control-allow-headers']).toContain(
+      'authorization',
+    );
+  });
+
+  it('does not grant browser access to an unknown origin', async () => {
+    app = await buildApp({ environment, logger: false });
+    const response = await app.inject({
+      method: 'GET',
+      url: '/health',
+      headers: { origin: 'https://unknown.invalid' },
+    });
+    expect(response.statusCode).toBe(200);
+    expect(response.headers['access-control-allow-origin']).toBeUndefined();
+  });
+
+  it('allows server-to-server requests without Origin', async () => {
+    app = await buildApp({ environment, logger: false });
+    expect(
+      (await app.inject({ method: 'GET', url: '/health' })).statusCode,
+    ).toBe(200);
+  });
+});
