@@ -13,4 +13,4 @@ pnpm db:types
 pnpm dev
 ```
 
-O Studio fica em `http://127.0.0.1:54323` e o Inbucket em `http://127.0.0.1:54324`. Substitua as chaves de exemplo pelas chaves publicáveis exibidas por `supabase status`. Não versionar arquivos `.env`.
+O Studio fica em `http://127.0.0.1:54323` e o capturador Mailpit em `http://127.0.0.1:54324`. Substitua as chaves de exemplo pelas chaves publicáveis exibidas por `supabase status`. Não versionar arquivos `.env`. Consulte o [checklist de aceite](phase-4-acceptance.md) para reset, pgTAP, geração de tipos, reinício e E2E real.

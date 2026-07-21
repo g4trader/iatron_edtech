@@ -10,7 +10,9 @@
 
 - `PORT`, `HOST`, `NODE_ENV`, `LOG_LEVEL`: execução Cloud Run.
 - `SUPABASE_URL`, `SUPABASE_PUBLISHABLE_KEY`: acesso sujeito a RLS.
-- `SUPABASE_JWT_ISSUER`, `SUPABASE_JWT_AUDIENCE`: validação do token.
+- `SUPABASE_JWT_ISSUER`, `SUPABASE_JWT_AUDIENCE`, `SUPABASE_JWT_ALGORITHMS`: validação do token; somente `ES256,RS256` por padrão.
 - `CORS_ALLOWED_ORIGINS`: origens separadas por vírgula; wildcard não é aceito.
 
 Vercel e Cloud Run devem receber valores por configuração de ambiente/Secret Manager. Nenhuma service role ou segredo OpenAI é necessário nesta fase.
+
+Por ambiente, `CORS_ALLOWED_ORIGINS` deve listar URLs exatas separadas por vírgula. Produção, preview e staging usam listas próprias; `*` é rejeitado na inicialização. Requisições server-to-server sem `Origin` são aceitas.
