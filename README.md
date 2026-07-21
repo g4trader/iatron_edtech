@@ -47,6 +47,8 @@ cp apps/web/.env.example apps/web/.env.local
 pnpm dev
 ```
 
+Para executar o primeiro fluxo vertical real, inicie também o Supabase local conforme [docs/local-supabase.md](docs/local-supabase.md). A documentação de [autenticação](docs/authentication.md), [banco](docs/database.md), [RLS](docs/row-level-security.md), [onboarding](docs/onboarding.md) e [variáveis](docs/environment-variables.md) descreve as fronteiras e configurações desta fase.
+
 - Web: `http://localhost:3000`
 - API: `http://localhost:8080`
 - OpenAPI UI: `http://localhost:8080/docs`
