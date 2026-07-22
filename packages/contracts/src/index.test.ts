@@ -3,6 +3,8 @@ import {
   availabilityInputSchema,
   competencyCatalogSchema,
   guidelineCatalogSchema,
+  learningEvidenceSchema,
+  masteryStateSchema,
   onboardingInputSchema,
   profileUpdateSchema,
   serviceStatusSchema,
@@ -55,6 +57,70 @@ describe('academic read contracts', () => {
         id: crypto.randomUUID(),
         stableKey: 'guideline',
         title: 'Guideline sem versão',
+      }),
+    ).toThrow();
+  });
+});
+
+describe('learning engine contracts', () => {
+  it('serializes explainable evidence and normalized mastery', () => {
+    const evidence = learningEvidenceSchema.parse({
+      id: crypto.randomUUID(),
+      eventId: crypto.randomUUID(),
+      competencyId: crypto.randomUUID(),
+      competencyCode: 'CARD.SCA.001',
+      competencyName: 'Reconhecer infarto',
+      sourceEventId: crypto.randomUUID(),
+      weight: 1,
+      difficulty: 3,
+      responseTimeMs: 42000,
+      isCorrect: true,
+      observedAt: new Date().toISOString(),
+      algorithmVersion: 'evidence-v1',
+    });
+    const mastery = masteryStateSchema.parse({
+      competencyId: evidence.competencyId,
+      competencyCode: 'CARD.SCA.001',
+      competencyName: 'Reconhecer infarto',
+      mastery: 0.8,
+      confidence: 0.6,
+      evidenceCount: 3,
+      trend: 'improving',
+      lastEvidenceAt: evidence.observedAt,
+      algorithmVersion: 'mastery-v1',
+    });
+
+    expect(mastery.mastery).toBe(0.8);
+    expect(evidence.eventId).toBeTruthy();
+  });
+
+  it('rejects invalid mastery and evidence measurements', () => {
+    expect(() =>
+      masteryStateSchema.parse({
+        competencyId: crypto.randomUUID(),
+        competencyCode: 'CARD.SCA.001',
+        competencyName: 'Reconhecer infarto',
+        mastery: 1.1,
+        confidence: 0.6,
+        evidenceCount: 3,
+        trend: 'stable',
+        lastEvidenceAt: new Date().toISOString(),
+        algorithmVersion: 'mastery-v1',
+      }),
+    ).toThrow();
+    expect(() =>
+      learningEvidenceSchema.parse({
+        id: crypto.randomUUID(),
+        eventId: crypto.randomUUID(),
+        competencyId: crypto.randomUUID(),
+        competencyCode: 'CARD.SCA.001',
+        competencyName: 'Reconhecer infarto',
+        weight: 0,
+        difficulty: 3,
+        responseTimeMs: null,
+        isCorrect: false,
+        observedAt: new Date().toISOString(),
+        algorithmVersion: 'evidence-v1',
       }),
     ).toThrow();
   });

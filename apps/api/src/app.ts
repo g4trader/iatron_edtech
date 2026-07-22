@@ -20,6 +20,11 @@ import {
   type AcademicRepository,
 } from './academic-repository.js';
 import { registerAcademicRoutes } from './academic-routes.js';
+import {
+  createLearningRepository,
+  type LearningRepository,
+} from './learning-repository.js';
+import { registerLearningRoutes } from './learning-routes.js';
 
 export interface BuildAppOptions {
   environment: ApiEnvironment;
@@ -27,6 +32,8 @@ export interface BuildAppOptions {
   tokenVerifier?: TokenVerifier;
   repositoryFactory?: (userId: string, token: string) => StudentRepository;
   academicRepositoryFactory?: (token: string) => AcademicRepository;
+  learningRepositoryFactory?: (token: string) => LearningRepository;
+  learningClock?: () => Date;
 }
 
 function isFastifyValidationError(error: unknown): boolean {
@@ -131,6 +138,12 @@ export async function buildApp(
           protectedApi,
           options.academicRepositoryFactory ??
             ((token) => createAcademicRepository(options.environment, token)),
+        );
+        await registerLearningRoutes(
+          protectedApi,
+          options.learningRepositoryFactory ??
+            ((token) => createLearningRepository(options.environment, token)),
+          options.learningClock,
         );
       });
     },

@@ -223,6 +223,56 @@ export const guidelineCatalogSchema = z.object({
 });
 export type GuidelineCatalog = z.infer<typeof guidelineCatalogSchema>;
 
+export const learningEvidenceSchema = z.object({
+  id: uuidSchema,
+  eventId: uuidSchema,
+  competencyId: uuidSchema,
+  competencyCode: z.string(),
+  competencyName: z.string(),
+  weight: z.number().positive(),
+  difficulty: z.int().min(1).max(5),
+  responseTimeMs: z.int().nonnegative().nullable(),
+  isCorrect: z.boolean(),
+  observedAt: z.iso.datetime(),
+  algorithmVersion: z.string(),
+});
+export type LearningEvidence = z.infer<typeof learningEvidenceSchema>;
+
+export const masteryStateSchema = z.object({
+  competencyId: uuidSchema,
+  competencyCode: z.string(),
+  competencyName: z.string(),
+  mastery: z.number().min(0).max(1),
+  confidence: z.number().min(0).max(1),
+  evidenceCount: z.int().nonnegative(),
+  trend: z.enum(['improving', 'stable', 'declining']),
+  lastEvidenceAt: z.iso.datetime().nullable(),
+  algorithmVersion: z.string(),
+});
+export type MasteryState = z.infer<typeof masteryStateSchema>;
+
+export const learningGapSchema = masteryStateSchema.extend({
+  reasons: z.array(z.string()),
+  priority: z.number().min(0).max(1),
+});
+export type LearningGap = z.infer<typeof learningGapSchema>;
+
+export const scheduleItemSchema = learningGapSchema.extend({
+  rank: z.int().positive(),
+  recommendedMinutes: z.int().positive(),
+});
+export type ScheduleItem = z.infer<typeof scheduleItemSchema>;
+
+export const learningTimelineItemSchema = z.object({
+  id: uuidSchema,
+  occurredAt: z.iso.datetime(),
+  type: z.string(),
+  title: z.string(),
+  detail: z.string(),
+  competencyId: uuidSchema.nullable(),
+});
+export type LearningTimelineItem = z.infer<typeof learningTimelineItemSchema>;
+
 export type ChatRole = 'user' | 'assistant' | 'system';
 export type ConfidenceLevel = 'low' | 'medium' | 'high';
 
