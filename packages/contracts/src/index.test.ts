@@ -75,7 +75,7 @@ describe('learning engine contracts', () => {
       difficulty: 3,
       responseTimeMs: 42000,
       isCorrect: true,
-      observedAt: new Date().toISOString(),
+      observedAt: '2026-07-22T21:38:03.034+00:00',
       algorithmVersion: 'evidence-v1',
     });
     const mastery = masteryStateSchema.parse({

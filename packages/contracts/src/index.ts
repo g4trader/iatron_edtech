@@ -233,7 +233,7 @@ export const learningEvidenceSchema = z.object({
   difficulty: z.int().min(1).max(5),
   responseTimeMs: z.int().nonnegative().nullable(),
   isCorrect: z.boolean(),
-  observedAt: z.iso.datetime(),
+  observedAt: z.iso.datetime({ offset: true }),
   algorithmVersion: z.string(),
 });
 export type LearningEvidence = z.infer<typeof learningEvidenceSchema>;
@@ -246,7 +246,7 @@ export const masteryStateSchema = z.object({
   confidence: z.number().min(0).max(1),
   evidenceCount: z.int().nonnegative(),
   trend: z.enum(['improving', 'stable', 'declining']),
-  lastEvidenceAt: z.iso.datetime().nullable(),
+  lastEvidenceAt: z.iso.datetime({ offset: true }).nullable(),
   algorithmVersion: z.string(),
 });
 export type MasteryState = z.infer<typeof masteryStateSchema>;
@@ -265,7 +265,7 @@ export type ScheduleItem = z.infer<typeof scheduleItemSchema>;
 
 export const learningTimelineItemSchema = z.object({
   id: uuidSchema,
-  occurredAt: z.iso.datetime(),
+  occurredAt: z.iso.datetime({ offset: true }),
   type: z.string(),
   title: z.string(),
   detail: z.string(),
