@@ -1,6 +1,5 @@
 'use client';
 import { useState, useTransition } from 'react';
-import { useRouter } from 'next/navigation';
 import { saveOnboarding } from '../actions';
 
 interface Edition {
@@ -27,7 +26,6 @@ interface WizardProps {
 const weekdays = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
 
 export function OnboardingWizard(props: WizardProps) {
-  const router = useRouter();
   const [step, setStep] = useState(
     Math.max(1, Math.min(props.initialStep || 1, 4)),
   );
@@ -81,8 +79,7 @@ export function OnboardingWizard(props: WizardProps) {
       });
       if (!result.ok) return setError(result.message);
       if (complete) {
-        router.push('/app');
-        router.refresh();
+        window.location.assign('/app');
       } else setStep((current) => Math.min(4, current + 1));
     });
   return (
