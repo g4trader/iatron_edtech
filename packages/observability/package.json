@@ -14,6 +14,7 @@
   "devDependencies": {
     "@iatron/eslint-config": "workspace:*",
     "@iatron/typescript-config": "workspace:*",
+    "@types/node": "26.1.1",
     "eslint": "9.39.2",
     "typescript": "5.9.3",
     "vitest": "4.1.10"

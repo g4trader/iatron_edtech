@@ -256,6 +256,9 @@ importers:
       '@iatron/typescript-config':
         specifier: workspace:*
         version: link:../typescript-config
+      '@types/node':
+        specifier: 26.1.1
+        version: 26.1.1
       eslint:
         specifier: 9.39.2
         version: 9.39.2(jiti@2.7.0)

@@ -12,9 +12,9 @@ ao Iatron staging, anote a região e não reutilize um projeto com dados reais.
 2. GitHub Environment `staging`: crie as variables e secrets descritas em
    [secrets-management.md](secrets-management.md). Configure reviewers se o seed
    remoto exigir aprovação humana.
-3. GCP `staging-503122`: autentique `easywayconsultoria@gmail.com`, confirme
-   billing e escolha `GCP_REGION` preferencialmente próxima ao Supabase. Execute
-   `infra/gcp/bootstrap.sh` após revisar custos e IAM.
+3. GCP `staging-503122`: use `us-west1`, próximo ao Supabase `us-west-2`.
+   O bootstrap cria IAM, Artifact Registry, Secret Manager e WIF; confirme sempre
+   o projeto explicitamente porque o projeto padrão local pode ser outro.
 4. Vercel: autentique `iatron.edtech@gmail.com`, selecione a equipe correta,
    importe este repositório como projeto `iatron-web-staging`, root directory
    `apps/web`, production branch `staging` e configure somente as variáveis
@@ -25,3 +25,13 @@ ao Iatron staging, anote a região e não reutilize um projeto com dados reais.
 
 Localhost pode continuar autorizado para depuração, mas não é necessário ao
 pipeline cloud.
+
+## Recursos implantados
+
+- Web: `https://iatron-web-staging.vercel.app`.
+- API: serviço Cloud Run `iatron-api-staging`, região `us-west1`.
+- Banco/Auth: projeto Supabase `dajdcecjaobdsgatubsb`, região `us-west-2`.
+
+O primeiro deploy da web pode ser feito pelo CLI. A automação por push só fica
+ativa depois que o GitHub App da Vercel recebe acesso explícito ao repositório
+privado.

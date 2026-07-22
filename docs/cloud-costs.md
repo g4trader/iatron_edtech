@@ -10,5 +10,6 @@
 - E-mail transacional: fixture Admin API não mede entrega; um provedor futuro
   terá custo e retenção próprios.
 
-A região GCP permanece pendente até confirmar a região do Supabase staging. Não
+O Supabase staging está em `us-west-2` (Oregon) e o Cloud Run staging em
+`us-west1` (Oregon), reduzindo distância sem misturar provedores. Não
 superdimensionar produção a partir dos limites econômicos de staging.
