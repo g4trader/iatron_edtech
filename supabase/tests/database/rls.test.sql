@@ -24,7 +24,7 @@ select lives_ok($$update public.profiles set display_name = 'Nome Atualizado' wh
 select is((select display_name from public.profiles), 'Nome Atualizado', 'own update persists');
 select throws_ok($$update public.profiles set onboarding_status = 'completed' where id = 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa'$$, '42501', null, 'student cannot bypass onboarding state transition');
 select throws_ok($$update public.profiles set email = 'spoof@example.test' where id = 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa'$$, '42501', null, 'student cannot alter managed email');
-select lives_ok($$update public.profiles set updated_at = '2000-01-01', display_name = 'Nome Final' where id = 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa'$$, 'updated_at trigger executes');
+select lives_ok($$update public.profiles set display_name = 'Nome Final' where id = 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa'$$, 'updated_at trigger executes without a direct timestamp grant');
 select ok((select updated_at > '2000-01-02'::timestamptz from public.profiles), 'updated_at is refreshed automatically');
 select lives_ok($$update public.student_profiles set residency_year = 2, graduation_year = 2026 where user_id = 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa'$$, 'student updates own academic profile');
 select results_eq($$select residency_year, graduation_year from public.student_profiles$$, $$values (2::smallint, 2026::smallint)$$, 'own academic values persist');

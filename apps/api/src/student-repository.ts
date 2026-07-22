@@ -151,14 +151,14 @@ export function createStudentRepository(
       unwrap(
         await database.rpc('save_onboarding', {
           p_step: input.step,
-          p_display_name: input.displayName ?? null,
-          p_residency_year: input.residencyYear ?? null,
-          p_graduation_year: input.graduationYear ?? null,
-          p_experience_level: input.experienceLevel ?? null,
-          p_preferred_session_minutes: input.preferredSessionMinutes ?? null,
-          p_assessment_preference: input.assessmentPreference ?? null,
-          p_availability: input.availability?.items ?? null,
-          p_exam_edition_ids: input.examEditionIds ?? null,
+          p_display_name: input.displayName,
+          p_residency_year: input.residencyYear ?? undefined,
+          p_graduation_year: input.graduationYear ?? undefined,
+          p_experience_level: input.experienceLevel,
+          p_preferred_session_minutes: input.preferredSessionMinutes,
+          p_assessment_preference: input.assessmentPreference,
+          p_availability: input.availability?.items,
+          p_exam_edition_ids: input.examEditionIds,
           p_complete: input.complete,
         }),
       );

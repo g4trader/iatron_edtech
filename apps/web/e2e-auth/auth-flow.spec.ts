@@ -127,8 +127,8 @@ test('cadastro, confirmação, SSR, retomada, RLS, logout e recuperação reais'
   request,
 }) => {
   const run = `${Date.now()}-${crypto.randomUUID().slice(0, 8)}`;
-  const studentA = `student-a-${run}@example.test`;
-  const studentB = `student-b-${run}@example.test`;
+  const studentA = `student-a-${run}@example.com`;
+  const studentB = `student-b-${run}@example.com`;
 
   await page.goto('/cadastro');
   await page.getByLabel('Como devemos chamar você?').fill('Estudante A');

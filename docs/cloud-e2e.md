@@ -9,6 +9,11 @@ de staging e gera links reais de recuperação pela Admin API. A service role n�
 é enviada à aplicação nem ao browser. Cada execução cria e-mails únicos e remove
 somente IDs que ela própria registrou.
 
+O Auth hospedado rejeita domínios reservados como `.test`; o E2E remoto usa
+endereços únicos em `example.com`. O provedor de e-mail embutido do Supabase é
+limitado a duas mensagens por hora. Execuções frequentes de staging exigem SMTP
+próprio; não aumente tentativas para contornar o limite.
+
 Cobertura: cadastro com confirmação exigida, login, sessão SSR, onboarding
 retomável, JWT na API, spoofing, RLS com dois usuários, logout e recuperação de
 senha. Produção é recusada. Para auditoria de entrega real de e-mail, adicione
