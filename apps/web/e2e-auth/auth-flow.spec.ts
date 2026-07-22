@@ -88,17 +88,21 @@ async function recoveryLink(request: APIRequestContext, email: string) {
     data: {
       type: 'recovery',
       email,
-      options: { redirect_to: `${process.env.E2E_WEB_BASE_URL}/auth/callback` },
+      redirect_to: `${process.env.E2E_WEB_BASE_URL}/auth/callback?next=/redefinir-senha`,
     },
   });
   expect(response.ok()).toBeTruthy();
   const body = (await response.json()) as {
-    action_link?: string;
-    properties?: { action_link?: string };
+    hashed_token?: string;
+    properties?: { hashed_token?: string };
   };
-  const link = body.action_link ?? body.properties?.action_link;
-  if (!link) throw new Error('Supabase não retornou link de recuperação.');
-  return link;
+  const tokenHash = body.hashed_token ?? body.properties?.hashed_token;
+  if (!tokenHash) throw new Error('Supabase não retornou token de recuperação.');
+  const link = new URL('/auth/callback', process.env.E2E_WEB_BASE_URL);
+  link.searchParams.set('token_hash', tokenHash);
+  link.searchParams.set('type', 'recovery');
+  link.searchParams.set('next', '/redefinir-senha');
+  return link.toString();
 }
 
 async function waitForEmail(
