@@ -140,3 +140,56 @@ insert into public.exam_questions (exam_edition_id, question_id, question_versio
   ('40000000-0000-4000-8000-000000000002', '58000000-0000-4000-8000-000000000001', '59000000-0000-4000-8000-000000000001', 1),
   ('40000000-0000-4000-8000-000000000003', '58000000-0000-4000-8000-000000000002', '59000000-0000-4000-8000-000000000002', 1)
 on conflict do nothing;
+
+insert into public.learning_event_types (code, name, description, produces_evidence) values
+  ('QuestionAnswered', 'Questão respondida', 'Registra a resposta a uma questão e seus resultados por competência.', true),
+  ('AssessmentFinished', 'Avaliação concluída', 'Registra a conclusão de uma avaliação.', false),
+  ('StudySessionCompleted', 'Sessão de estudo concluída', 'Registra uma sessão de estudo concluída.', false),
+  ('ReviewCompleted', 'Revisão concluída', 'Registra a conclusão de uma revisão.', false),
+  ('FlashcardReviewed', 'Flashcard revisado', 'Registra uma revisão de flashcard.', false),
+  ('SimulationFinished', 'Simulado concluído', 'Registra a conclusão de um simulado.', false)
+on conflict (code) do update set name = excluded.name, description = excluded.description, produces_evidence = excluded.produces_evidence;
+
+do $$
+declare
+  v_student_id uuid;
+begin
+  select id into v_student_id from public.profiles where email = 'iatron.edtech+staging@gmail.com';
+  if v_student_id is null then return; end if;
+
+  perform public.record_learning_event(
+    v_student_id,
+    'QuestionAnswered',
+    '2026-06-01T12:00:00Z',
+    '{"questionId":"58000000-0000-4000-8000-000000000001","competencyOutcomes":[{"competencyId":"54000000-0000-4000-8000-000000000001","isCorrect":false,"weight":1,"difficulty":3,"responseTimeMs":92000}]}'::jsonb,
+    'phase6-seed-question-001'
+  );
+  perform public.record_learning_event(
+    v_student_id,
+    'QuestionAnswered',
+    '2026-07-18T12:00:00Z',
+    '{"questionId":"58000000-0000-4000-8000-000000000001","competencyOutcomes":[{"competencyId":"54000000-0000-4000-8000-000000000001","isCorrect":true,"weight":1,"difficulty":4,"responseTimeMs":71000},{"competencyId":"54000000-0000-4000-8000-000000000002","isCorrect":false,"weight":0.8,"difficulty":4,"responseTimeMs":71000}]}'::jsonb,
+    'phase6-seed-question-002'
+  );
+  perform public.record_learning_event(
+    v_student_id,
+    'QuestionAnswered',
+    '2026-07-20T12:00:00Z',
+    '{"questionId":"58000000-0000-4000-8000-000000000002","competencyOutcomes":[{"competencyId":"54000000-0000-4000-8000-000000000004","isCorrect":false,"weight":1.2,"difficulty":3,"responseTimeMs":103000},{"competencyId":"54000000-0000-4000-8000-000000000005","isCorrect":true,"weight":0.7,"difficulty":3,"responseTimeMs":103000}]}'::jsonb,
+    'phase6-seed-question-003'
+  );
+  perform public.record_learning_event(
+    v_student_id,
+    'StudySessionCompleted',
+    '2026-07-21T18:00:00Z',
+    '{"durationMinutes":45,"competencyIds":["54000000-0000-4000-8000-000000000004"]}'::jsonb,
+    'phase6-seed-study-001'
+  );
+  perform public.record_learning_event(
+    v_student_id,
+    'AssessmentFinished',
+    '2026-07-22T12:00:00Z',
+    '{"answered":3,"correct":1}'::jsonb,
+    'phase6-seed-assessment-001'
+  );
+end $$;

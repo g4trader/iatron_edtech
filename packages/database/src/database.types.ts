@@ -507,6 +507,206 @@ export type Database = {
         };
         Relationships: [];
       };
+      learning_event_types: {
+        Row: {
+          code: string;
+          created_at: string;
+          description: string;
+          name: string;
+          produces_evidence: boolean;
+        };
+        Insert: {
+          code: string;
+          created_at?: string;
+          description: string;
+          name: string;
+          produces_evidence?: boolean;
+        };
+        Update: {
+          code?: string;
+          created_at?: string;
+          description?: string;
+          name?: string;
+          produces_evidence?: boolean;
+        };
+        Relationships: [];
+      };
+      learning_events: {
+        Row: {
+          created_at: string;
+          event_type: string;
+          id: string;
+          idempotency_key: string;
+          occurred_at: string;
+          payload: Json;
+          schema_version: number;
+          student_id: string;
+        };
+        Insert: {
+          created_at?: string;
+          event_type: string;
+          id?: string;
+          idempotency_key: string;
+          occurred_at: string;
+          payload?: Json;
+          schema_version?: number;
+          student_id: string;
+        };
+        Update: {
+          created_at?: string;
+          event_type?: string;
+          id?: string;
+          idempotency_key?: string;
+          occurred_at?: string;
+          payload?: Json;
+          schema_version?: number;
+          student_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'learning_events_event_type_fkey';
+            columns: ['event_type'];
+            isOneToOne: false;
+            referencedRelation: 'learning_event_types';
+            referencedColumns: ['code'];
+          },
+          {
+            foreignKeyName: 'learning_events_student_id_fkey';
+            columns: ['student_id'];
+            isOneToOne: false;
+            referencedRelation: 'profiles';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
+      learning_evidence: {
+        Row: {
+          algorithm_version: string;
+          competency_id: string;
+          created_at: string;
+          difficulty: number;
+          id: string;
+          is_correct: boolean;
+          observed_at: string;
+          response_time_ms: number | null;
+          source_event_id: string;
+          student_id: string;
+          weight: number;
+        };
+        Insert: {
+          algorithm_version: string;
+          competency_id: string;
+          created_at?: string;
+          difficulty: number;
+          id?: string;
+          is_correct: boolean;
+          observed_at: string;
+          response_time_ms?: number | null;
+          source_event_id: string;
+          student_id: string;
+          weight: number;
+        };
+        Update: {
+          algorithm_version?: string;
+          competency_id?: string;
+          created_at?: string;
+          difficulty?: number;
+          id?: string;
+          is_correct?: boolean;
+          observed_at?: string;
+          response_time_ms?: number | null;
+          source_event_id?: string;
+          student_id?: string;
+          weight?: number;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'learning_evidence_competency_id_fkey';
+            columns: ['competency_id'];
+            isOneToOne: false;
+            referencedRelation: 'competencies';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'learning_evidence_source_event_id_fkey';
+            columns: ['source_event_id'];
+            isOneToOne: false;
+            referencedRelation: 'learning_events';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'learning_evidence_student_id_fkey';
+            columns: ['student_id'];
+            isOneToOne: false;
+            referencedRelation: 'profiles';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
+      mastery_snapshots: {
+        Row: {
+          algorithm_version: string;
+          calculated_at: string;
+          competency_id: string;
+          confidence: number;
+          evidence_count: number;
+          id: string;
+          last_evidence_at: string;
+          mastery: number;
+          source_event_id: string;
+          student_id: string;
+          trend: string;
+        };
+        Insert: {
+          algorithm_version: string;
+          calculated_at?: string;
+          competency_id: string;
+          confidence: number;
+          evidence_count: number;
+          id?: string;
+          last_evidence_at: string;
+          mastery: number;
+          source_event_id: string;
+          student_id: string;
+          trend: string;
+        };
+        Update: {
+          algorithm_version?: string;
+          calculated_at?: string;
+          competency_id?: string;
+          confidence?: number;
+          evidence_count?: number;
+          id?: string;
+          last_evidence_at?: string;
+          mastery?: number;
+          source_event_id?: string;
+          student_id?: string;
+          trend?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'mastery_snapshots_competency_id_fkey';
+            columns: ['competency_id'];
+            isOneToOne: false;
+            referencedRelation: 'competencies';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'mastery_snapshots_source_event_id_fkey';
+            columns: ['source_event_id'];
+            isOneToOne: false;
+            referencedRelation: 'learning_events';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'mastery_snapshots_student_id_fkey';
+            columns: ['student_id'];
+            isOneToOne: false;
+            referencedRelation: 'profiles';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
       medical_areas: {
         Row: {
           code: string;
@@ -1280,9 +1480,57 @@ export type Database = {
       };
     };
     Views: {
-      [_ in never]: never;
+      current_mastery: {
+        Row: {
+          algorithm_version: string | null;
+          calculated_at: string | null;
+          competency_id: string | null;
+          confidence: number | null;
+          evidence_count: number | null;
+          id: string | null;
+          last_evidence_at: string | null;
+          mastery: number | null;
+          source_event_id: string | null;
+          student_id: string | null;
+          trend: string | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'mastery_snapshots_competency_id_fkey';
+            columns: ['competency_id'];
+            isOneToOne: false;
+            referencedRelation: 'competencies';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'mastery_snapshots_source_event_id_fkey';
+            columns: ['source_event_id'];
+            isOneToOne: false;
+            referencedRelation: 'learning_events';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'mastery_snapshots_student_id_fkey';
+            columns: ['student_id'];
+            isOneToOne: false;
+            referencedRelation: 'profiles';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
     };
     Functions: {
+      record_learning_event: {
+        Args: {
+          p_event_type: string;
+          p_idempotency_key: string;
+          p_occurred_at: string;
+          p_payload: Json;
+          p_schema_version?: number;
+          p_student_id: string;
+        };
+        Returns: string;
+      };
       save_onboarding: {
         Args: {
           p_assessment_preference?: string;
