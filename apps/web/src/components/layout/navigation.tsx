@@ -7,6 +7,7 @@ export const navigationItems = [
   { href: '/app/plan', label: 'Meu plano', icon: 'P' },
   { href: '/app/simulations', label: 'Simulados', icon: 'S' },
   { href: '/app/performance', label: 'Desempenho', icon: 'D' },
+  { href: '/app/academic', label: 'Acadêmico', icon: 'M' },
 ] as const;
 
 export function NavigationLinks({
