@@ -273,6 +273,72 @@ export const learningTimelineItemSchema = z.object({
 });
 export type LearningTimelineItem = z.infer<typeof learningTimelineItemSchema>;
 
+export const startAssessmentInputSchema = z.object({
+  objective: z.string().min(3).max(300),
+  examProgramId: uuidSchema.nullable().default(null),
+  specialtyId: uuidSchema.nullable().default(null),
+  durationMinutes: z.int().min(5).max(360).default(30),
+  questionCount: z.int().min(1).max(100).default(10),
+});
+export type StartAssessmentInput = z.infer<typeof startAssessmentInputSchema>;
+
+export const answerAssessmentInputSchema = z.object({
+  questionVersionId: uuidSchema,
+  selectedOptionId: uuidSchema,
+  responseTimeMs: z.int().min(0).max(7_200_000),
+  statedConfidence: z.enum(['low', 'medium', 'high']),
+});
+export type AnswerAssessmentInput = z.infer<typeof answerAssessmentInputSchema>;
+
+export const assessmentQuestionSchema = z.object({
+  assessmentId: uuidSchema,
+  questionVersionId: uuidSchema,
+  number: z.int().positive(),
+  total: z.int().positive(),
+  stem: z.string(),
+  difficulty: z.int().min(1).max(5),
+  options: z.array(z.object({ id: uuidSchema, label: z.string(), content: z.string() })).min(2),
+  competencies: z.array(z.object({ id: uuidSchema, code: z.string(), name: z.string() })).min(1),
+  selectionReason: z.string(),
+});
+export type AssessmentQuestion = z.infer<typeof assessmentQuestionSchema>;
+
+export const assessmentSummarySchema = z.object({
+  id: uuidSchema,
+  objective: z.string(),
+  status: z.string(),
+  algorithmVersion: z.string(),
+  durationMinutes: z.int(),
+  questionCount: z.int(),
+  answeredCount: z.int(),
+  startedAt: z.iso.datetime({ offset: true }),
+  completedAt: z.iso.datetime({ offset: true }).nullable(),
+});
+export type AssessmentSummary = z.infer<typeof assessmentSummarySchema>;
+
+export const assessmentCompetencyResultSchema = masteryStateSchema.pick({
+  competencyId: true,
+  competencyCode: true,
+  competencyName: true,
+  mastery: true,
+  confidence: true,
+  evidenceCount: true,
+}).extend({ confidenceLevel: z.enum(['low', 'medium', 'high']), classification: z.enum(['strong', 'weak', 'unmeasured', 'developing']) });
+export type AssessmentCompetencyResult = z.infer<typeof assessmentCompetencyResultSchema>;
+
+export const assessmentResultSchema = z.object({
+  id: uuidSchema,
+  assessmentId: uuidSchema,
+  correctCount: z.int().nonnegative(),
+  answeredCount: z.int().nonnegative(),
+  overallConfidence: z.number().min(0).max(1),
+  diagnosticCoverage: z.number().min(0).max(1),
+  algorithmVersion: z.string(),
+  createdAt: z.iso.datetime({ offset: true }),
+  competencies: z.array(assessmentCompetencyResultSchema),
+});
+export type AssessmentResult = z.infer<typeof assessmentResultSchema>;
+
 export type ChatRole = 'user' | 'assistant' | 'system';
 export type ConfidenceLevel = 'low' | 'medium' | 'high';
 

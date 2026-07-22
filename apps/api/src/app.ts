@@ -25,6 +25,8 @@ import {
   type LearningRepository,
 } from './learning-repository.js';
 import { registerLearningRoutes } from './learning-routes.js';
+import { createAssessmentRepository, type AssessmentRepository } from './assessment-repository.js';
+import { registerAssessmentRoutes } from './assessment-routes.js';
 
 export interface BuildAppOptions {
   environment: ApiEnvironment;
@@ -33,6 +35,7 @@ export interface BuildAppOptions {
   repositoryFactory?: (userId: string, token: string) => StudentRepository;
   academicRepositoryFactory?: (token: string) => AcademicRepository;
   learningRepositoryFactory?: (token: string) => LearningRepository;
+  assessmentRepositoryFactory?: (token: string) => AssessmentRepository;
   learningClock?: () => Date;
 }
 
@@ -67,7 +70,7 @@ export async function buildApp(
       callback(null, !origin || allowedOrigins.has(origin)),
     credentials: true,
     allowedHeaders: ['authorization', 'content-type', 'x-request-id'],
-    methods: ['GET', 'PATCH', 'PUT', 'OPTIONS'],
+    methods: ['GET', 'POST', 'PATCH', 'PUT', 'OPTIONS'],
   });
 
   if (options.environment.ENABLE_API_DOCS === '1') {
@@ -144,6 +147,11 @@ export async function buildApp(
           options.learningRepositoryFactory ??
             ((token) => createLearningRepository(options.environment, token)),
           options.learningClock,
+        );
+        await registerAssessmentRoutes(
+          protectedApi,
+          options.assessmentRepositoryFactory ?? ((token) => createAssessmentRepository(options.environment, token)),
+          options.learningRepositoryFactory ?? ((token) => createLearningRepository(options.environment, token)),
         );
       });
     },

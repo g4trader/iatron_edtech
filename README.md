@@ -122,3 +122,7 @@ O domínio acadêmico implementa programas, especialidades, áreas, temas, subte
 ## Motor pedagógico
 
 Eventos imutáveis originam evidências, mastery por competência, gaps, agenda e timeline sem participação de IA. Regras, versionamento dos algoritmos, segurança e endpoints estão em [docs/learning-engine.md](docs/learning-engine.md). As páginas de inspeção começam em `/app/learning`.
+
+## Diagnóstico adaptativo
+
+Seleção reproduzível, tentativas append-only, confiança multidimensional, cobertura por competência e resultados persistidos formam o diagnóstico da Fase 7. Regras e integração estão em [docs/adaptive-assessment-engine.md](docs/adaptive-assessment-engine.md). O fluxo começa em `/app/assessment/start`.
