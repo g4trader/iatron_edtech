@@ -1,7 +1,7 @@
 begin;
 set local role postgres;
 set local search_path = public, extensions;
-select extensions.plan(26);
+select extensions.plan(28);
 
 insert into auth.users (id, instance_id, aud, role, email, encrypted_password, email_confirmed_at, created_at, updated_at, raw_app_meta_data, raw_user_meta_data)
 values
@@ -65,6 +65,12 @@ select extensions.is((select count(*) from public.learning_evidence), 0::bigint,
 set local role anon;
 set local request.jwt.claims = '{}';
 select extensions.throws_ok($$select * from public.learning_events$$, '42501', null, 'anonymous users cannot read learning history');
+
+set local role postgres;
+select public.record_learning_event('eeeeeeee-eeee-4eee-8eee-eeeeeeeeeeee', 'ReviewCompleted', now(), '{}'::jsonb, 'learning-test-account-delete');
+delete from public.profiles where id = 'eeeeeeee-eeee-4eee-8eee-eeeeeeeeeeee';
+select extensions.is((select count(*) from public.profiles where id = 'eeeeeeee-eeee-4eee-8eee-eeeeeeeeeeee'), 0::bigint, 'account profile can be deleted');
+select extensions.is((select count(*) from public.learning_events where student_id = 'eeeeeeee-eeee-4eee-8eee-eeeeeeeeeeee'), 0::bigint, 'account deletion cascades through append-only history');
 
 select * from extensions.finish();
 rollback;
