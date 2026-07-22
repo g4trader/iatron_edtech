@@ -1,6 +1,6 @@
 # Iatron EdTech
 
-Plataforma AI First para preparação de provas de residência médica no Brasil. O repositório contém a arquitetura base, autenticação Supabase, onboarding persistente e uma interface responsiva. Regras pedagógicas avançadas e chamadas de IA ainda não foram implementadas.
+Plataforma AI First para preparação de provas de residência médica no Brasil. O repositório contém a arquitetura base, autenticação Supabase, onboarding persistente, interface responsiva e o modelo acadêmico normalizado. Chamadas de IA ainda não foram implementadas.
 
 ## Arquitetura
 
@@ -114,3 +114,7 @@ docker run --rm -p 8080:8080 -e PORT=8080 iatron-api
 ## Interface demonstrativa
 
 As rotas `/app`, `/app/chat/[conversationId]`, `/app/assessment/demo`, `/app/plan`, `/app/simulations` e `/app/performance` usam dados locais explicitamente demonstrativos. O catálogo `/design-system` está disponível somente em desenvolvimento. Consulte [a documentação do frontend](docs/frontend.md) para componentes, estado, acessibilidade, mocks e E2E.
+
+## Núcleo acadêmico
+
+O domínio acadêmico implementa programas, especialidades, áreas, temas, subtemas, competências, bancas, provas, guidelines e questões versionadas. A modelagem, regras de versionamento e endpoints de consulta estão em [docs/academic-model.md](docs/academic-model.md). As páginas autenticadas de inspeção começam em `/app/academic`.

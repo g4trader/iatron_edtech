@@ -68,7 +68,7 @@ select extensions.throws_ok($$select * from public.profiles$$, '42501', null, 'a
 select extensions.throws_ok($$select * from public.institutions$$, '42501', null, 'anonymous cannot read catalogue');
 
 set local role service_role;
-select extensions.is((select count(*) from public.profiles), 2::bigint, 'service role can perform intended administration');
+select extensions.is((select count(*) from public.profiles where id in ('aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa', 'bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb')), 2::bigint, 'service role can perform intended administration');
 
 select * from extensions.finish();
 rollback;

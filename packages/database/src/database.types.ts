@@ -4,452 +4,1434 @@ export type Json =
   | boolean
   | null
   | { [key: string]: Json | undefined }
-  | Json[]
+  | Json[];
 
 export type Database = {
   // Allows to automatically instantiate createClient with right options
   // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
   __InternalSupabase: {
-    PostgrestVersion: "14.5"
-  }
+    PostgrestVersion: '14.5';
+  };
   public: {
     Tables: {
+      academic_references: {
+        Row: {
+          authors: string | null;
+          citation: string | null;
+          created_at: string;
+          external_identifier: string | null;
+          id: string;
+          publication_year: number | null;
+          title: string;
+          updated_at: string;
+          url: string | null;
+        };
+        Insert: {
+          authors?: string | null;
+          citation?: string | null;
+          created_at?: string;
+          external_identifier?: string | null;
+          id?: string;
+          publication_year?: number | null;
+          title: string;
+          updated_at?: string;
+          url?: string | null;
+        };
+        Update: {
+          authors?: string | null;
+          citation?: string | null;
+          created_at?: string;
+          external_identifier?: string | null;
+          id?: string;
+          publication_year?: number | null;
+          title?: string;
+          updated_at?: string;
+          url?: string | null;
+        };
+        Relationships: [];
+      };
+      competencies: {
+        Row: {
+          code: string;
+          created_at: string;
+          description: string;
+          id: string;
+          is_active: boolean;
+          name: string;
+          subtheme_id: string;
+          updated_at: string;
+        };
+        Insert: {
+          code: string;
+          created_at?: string;
+          description: string;
+          id?: string;
+          is_active?: boolean;
+          name: string;
+          subtheme_id: string;
+          updated_at?: string;
+        };
+        Update: {
+          code?: string;
+          created_at?: string;
+          description?: string;
+          id?: string;
+          is_active?: boolean;
+          name?: string;
+          subtheme_id?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'competencies_subtheme_id_fkey';
+            columns: ['subtheme_id'];
+            isOneToOne: false;
+            referencedRelation: 'subthemes';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
+      competency_objectives: {
+        Row: {
+          competency_id: string;
+          description: string;
+          id: string;
+          position: number;
+        };
+        Insert: {
+          competency_id: string;
+          description: string;
+          id?: string;
+          position: number;
+        };
+        Update: {
+          competency_id?: string;
+          description?: string;
+          id?: string;
+          position?: number;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'competency_objectives_competency_id_fkey';
+            columns: ['competency_id'];
+            isOneToOne: false;
+            referencedRelation: 'competencies';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
+      competency_references: {
+        Row: {
+          competency_id: string;
+          reference_id: string;
+        };
+        Insert: {
+          competency_id: string;
+          reference_id: string;
+        };
+        Update: {
+          competency_id?: string;
+          reference_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'competency_references_competency_id_fkey';
+            columns: ['competency_id'];
+            isOneToOne: false;
+            referencedRelation: 'competencies';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'competency_references_reference_id_fkey';
+            columns: ['reference_id'];
+            isOneToOne: false;
+            referencedRelation: 'academic_references';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
       exam_boards: {
         Row: {
-          created_at: string
-          id: string
-          is_active: boolean
-          name: string
-          updated_at: string
-        }
+          acronym: string | null;
+          created_at: string;
+          id: string;
+          is_active: boolean;
+          name: string;
+          updated_at: string;
+        };
         Insert: {
-          created_at?: string
-          id?: string
-          is_active?: boolean
-          name: string
-          updated_at?: string
-        }
+          acronym?: string | null;
+          created_at?: string;
+          id?: string;
+          is_active?: boolean;
+          name: string;
+          updated_at?: string;
+        };
         Update: {
-          created_at?: string
-          id?: string
-          is_active?: boolean
-          name?: string
-          updated_at?: string
-        }
-        Relationships: []
-      }
+          acronym?: string | null;
+          created_at?: string;
+          id?: string;
+          is_active?: boolean;
+          name?: string;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
       exam_editions: {
         Row: {
-          application_date: string | null
-          created_at: string
-          exam_program_id: string
-          id: string
-          is_active: boolean
-          registration_deadline: string | null
-          updated_at: string
-          year: number
-        }
+          application_date: string | null;
+          city: string | null;
+          created_at: string;
+          duration_minutes: number | null;
+          edition: string | null;
+          exam_board_id: string | null;
+          exam_program_id: string;
+          id: string;
+          is_active: boolean;
+          modality: string | null;
+          question_count: number | null;
+          registration_deadline: string | null;
+          updated_at: string;
+          year: number;
+        };
         Insert: {
-          application_date?: string | null
-          created_at?: string
-          exam_program_id: string
-          id?: string
-          is_active?: boolean
-          registration_deadline?: string | null
-          updated_at?: string
-          year: number
-        }
+          application_date?: string | null;
+          city?: string | null;
+          created_at?: string;
+          duration_minutes?: number | null;
+          edition?: string | null;
+          exam_board_id?: string | null;
+          exam_program_id: string;
+          id?: string;
+          is_active?: boolean;
+          modality?: string | null;
+          question_count?: number | null;
+          registration_deadline?: string | null;
+          updated_at?: string;
+          year: number;
+        };
         Update: {
-          application_date?: string | null
-          created_at?: string
-          exam_program_id?: string
-          id?: string
-          is_active?: boolean
-          registration_deadline?: string | null
-          updated_at?: string
-          year?: number
-        }
+          application_date?: string | null;
+          city?: string | null;
+          created_at?: string;
+          duration_minutes?: number | null;
+          edition?: string | null;
+          exam_board_id?: string | null;
+          exam_program_id?: string;
+          id?: string;
+          is_active?: boolean;
+          modality?: string | null;
+          question_count?: number | null;
+          registration_deadline?: string | null;
+          updated_at?: string;
+          year?: number;
+        };
         Relationships: [
           {
-            foreignKeyName: "exam_editions_exam_program_id_fkey"
-            columns: ["exam_program_id"]
-            isOneToOne: false
-            referencedRelation: "exam_programs"
-            referencedColumns: ["id"]
+            foreignKeyName: 'exam_editions_exam_board_id_fkey';
+            columns: ['exam_board_id'];
+            isOneToOne: false;
+            referencedRelation: 'exam_boards';
+            referencedColumns: ['id'];
           },
-        ]
-      }
+          {
+            foreignKeyName: 'exam_editions_exam_program_id_fkey';
+            columns: ['exam_program_id'];
+            isOneToOne: false;
+            referencedRelation: 'exam_programs';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
       exam_programs: {
         Row: {
-          created_at: string
-          exam_board_id: string | null
-          id: string
-          institution_id: string
-          is_active: boolean
-          name: string
-          updated_at: string
-        }
+          created_at: string;
+          exam_board_id: string | null;
+          id: string;
+          institution_id: string;
+          is_active: boolean;
+          name: string;
+          updated_at: string;
+        };
         Insert: {
-          created_at?: string
-          exam_board_id?: string | null
-          id?: string
-          institution_id: string
-          is_active?: boolean
-          name: string
-          updated_at?: string
-        }
+          created_at?: string;
+          exam_board_id?: string | null;
+          id?: string;
+          institution_id: string;
+          is_active?: boolean;
+          name: string;
+          updated_at?: string;
+        };
         Update: {
-          created_at?: string
-          exam_board_id?: string | null
-          id?: string
-          institution_id?: string
-          is_active?: boolean
-          name?: string
-          updated_at?: string
-        }
+          created_at?: string;
+          exam_board_id?: string | null;
+          id?: string;
+          institution_id?: string;
+          is_active?: boolean;
+          name?: string;
+          updated_at?: string;
+        };
         Relationships: [
           {
-            foreignKeyName: "exam_programs_exam_board_id_fkey"
-            columns: ["exam_board_id"]
-            isOneToOne: false
-            referencedRelation: "exam_boards"
-            referencedColumns: ["id"]
+            foreignKeyName: 'exam_programs_exam_board_id_fkey';
+            columns: ['exam_board_id'];
+            isOneToOne: false;
+            referencedRelation: 'exam_boards';
+            referencedColumns: ['id'];
           },
           {
-            foreignKeyName: "exam_programs_institution_id_fkey"
-            columns: ["institution_id"]
-            isOneToOne: false
-            referencedRelation: "institutions"
-            referencedColumns: ["id"]
+            foreignKeyName: 'exam_programs_institution_id_fkey';
+            columns: ['institution_id'];
+            isOneToOne: false;
+            referencedRelation: 'institutions';
+            referencedColumns: ['id'];
           },
-        ]
-      }
+        ];
+      };
+      exam_questions: {
+        Row: {
+          created_at: string;
+          exam_edition_id: string;
+          position: number;
+          question_id: string;
+          question_version_id: string;
+        };
+        Insert: {
+          created_at?: string;
+          exam_edition_id: string;
+          position: number;
+          question_id: string;
+          question_version_id: string;
+        };
+        Update: {
+          created_at?: string;
+          exam_edition_id?: string;
+          position?: number;
+          question_id?: string;
+          question_version_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'exam_questions_exam_edition_id_fkey';
+            columns: ['exam_edition_id'];
+            isOneToOne: false;
+            referencedRelation: 'exam_editions';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'exam_questions_question_id_fkey';
+            columns: ['question_id'];
+            isOneToOne: false;
+            referencedRelation: 'questions';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'exam_questions_question_version_id_question_id_fkey';
+            columns: ['question_version_id', 'question_id'];
+            isOneToOne: false;
+            referencedRelation: 'question_versions';
+            referencedColumns: ['id', 'question_id'];
+          },
+        ];
+      };
+      guideline_competencies: {
+        Row: {
+          competency_id: string;
+          guideline_id: string;
+        };
+        Insert: {
+          competency_id: string;
+          guideline_id: string;
+        };
+        Update: {
+          competency_id?: string;
+          guideline_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'guideline_competencies_competency_id_fkey';
+            columns: ['competency_id'];
+            isOneToOne: false;
+            referencedRelation: 'competencies';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'guideline_competencies_guideline_id_fkey';
+            columns: ['guideline_id'];
+            isOneToOne: false;
+            referencedRelation: 'guidelines';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
+      guideline_issuers: {
+        Row: {
+          acronym: string | null;
+          created_at: string;
+          id: string;
+          name: string;
+          updated_at: string;
+          url: string | null;
+        };
+        Insert: {
+          acronym?: string | null;
+          created_at?: string;
+          id?: string;
+          name: string;
+          updated_at?: string;
+          url?: string | null;
+        };
+        Update: {
+          acronym?: string | null;
+          created_at?: string;
+          id?: string;
+          name?: string;
+          updated_at?: string;
+          url?: string | null;
+        };
+        Relationships: [];
+      };
+      guideline_specialties: {
+        Row: {
+          guideline_id: string;
+          specialty_id: string;
+        };
+        Insert: {
+          guideline_id: string;
+          specialty_id: string;
+        };
+        Update: {
+          guideline_id?: string;
+          specialty_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'guideline_specialties_guideline_id_fkey';
+            columns: ['guideline_id'];
+            isOneToOne: false;
+            referencedRelation: 'guidelines';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'guideline_specialties_specialty_id_fkey';
+            columns: ['specialty_id'];
+            isOneToOne: false;
+            referencedRelation: 'specialties';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
+      guidelines: {
+        Row: {
+          created_at: string;
+          effective_from: string | null;
+          effective_until: string | null;
+          id: string;
+          issued_on: string | null;
+          issuer_id: string;
+          notes: string | null;
+          stable_key: string;
+          status: string;
+          title: string;
+          updated_at: string;
+          url: string | null;
+          version: string;
+        };
+        Insert: {
+          created_at?: string;
+          effective_from?: string | null;
+          effective_until?: string | null;
+          id?: string;
+          issued_on?: string | null;
+          issuer_id: string;
+          notes?: string | null;
+          stable_key: string;
+          status?: string;
+          title: string;
+          updated_at?: string;
+          url?: string | null;
+          version: string;
+        };
+        Update: {
+          created_at?: string;
+          effective_from?: string | null;
+          effective_until?: string | null;
+          id?: string;
+          issued_on?: string | null;
+          issuer_id?: string;
+          notes?: string | null;
+          stable_key?: string;
+          status?: string;
+          title?: string;
+          updated_at?: string;
+          url?: string | null;
+          version?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'guidelines_issuer_id_fkey';
+            columns: ['issuer_id'];
+            isOneToOne: false;
+            referencedRelation: 'guideline_issuers';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
       institutions: {
         Row: {
-          acronym: string
-          created_at: string
-          id: string
-          is_active: boolean
-          name: string
-          state_code: string
-          updated_at: string
-        }
+          acronym: string;
+          created_at: string;
+          id: string;
+          is_active: boolean;
+          name: string;
+          state_code: string;
+          updated_at: string;
+        };
         Insert: {
-          acronym: string
-          created_at?: string
-          id?: string
-          is_active?: boolean
-          name: string
-          state_code: string
-          updated_at?: string
-        }
+          acronym: string;
+          created_at?: string;
+          id?: string;
+          is_active?: boolean;
+          name: string;
+          state_code: string;
+          updated_at?: string;
+        };
         Update: {
-          acronym?: string
-          created_at?: string
-          id?: string
-          is_active?: boolean
-          name?: string
-          state_code?: string
-          updated_at?: string
-        }
-        Relationships: []
-      }
+          acronym?: string;
+          created_at?: string;
+          id?: string;
+          is_active?: boolean;
+          name?: string;
+          state_code?: string;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
+      medical_areas: {
+        Row: {
+          code: string;
+          created_at: string;
+          description: string | null;
+          id: string;
+          is_active: boolean;
+          name: string;
+          updated_at: string;
+        };
+        Insert: {
+          code: string;
+          created_at?: string;
+          description?: string | null;
+          id?: string;
+          is_active?: boolean;
+          name: string;
+          updated_at?: string;
+        };
+        Update: {
+          code?: string;
+          created_at?: string;
+          description?: string | null;
+          id?: string;
+          is_active?: boolean;
+          name?: string;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
       profiles: {
         Row: {
-          created_at: string
-          display_name: string
-          email: string
-          id: string
-          onboarding_status: Database["public"]["Enums"]["onboarding_status"]
-          onboarding_step: number
-          updated_at: string
-        }
+          created_at: string;
+          display_name: string;
+          email: string;
+          id: string;
+          onboarding_status: Database['public']['Enums']['onboarding_status'];
+          onboarding_step: number;
+          updated_at: string;
+        };
         Insert: {
-          created_at?: string
-          display_name: string
-          email: string
-          id: string
-          onboarding_status?: Database["public"]["Enums"]["onboarding_status"]
-          onboarding_step?: number
-          updated_at?: string
-        }
+          created_at?: string;
+          display_name: string;
+          email: string;
+          id: string;
+          onboarding_status?: Database['public']['Enums']['onboarding_status'];
+          onboarding_step?: number;
+          updated_at?: string;
+        };
         Update: {
-          created_at?: string
-          display_name?: string
-          email?: string
-          id?: string
-          onboarding_status?: Database["public"]["Enums"]["onboarding_status"]
-          onboarding_step?: number
-          updated_at?: string
-        }
-        Relationships: []
-      }
+          created_at?: string;
+          display_name?: string;
+          email?: string;
+          id?: string;
+          onboarding_status?: Database['public']['Enums']['onboarding_status'];
+          onboarding_step?: number;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
+      program_specialties: {
+        Row: {
+          created_at: string;
+          exam_program_id: string;
+          specialty_id: string;
+        };
+        Insert: {
+          created_at?: string;
+          exam_program_id: string;
+          specialty_id: string;
+        };
+        Update: {
+          created_at?: string;
+          exam_program_id?: string;
+          specialty_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'program_specialties_exam_program_id_fkey';
+            columns: ['exam_program_id'];
+            isOneToOne: false;
+            referencedRelation: 'exam_programs';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'program_specialties_specialty_id_fkey';
+            columns: ['specialty_id'];
+            isOneToOne: false;
+            referencedRelation: 'specialties';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
+      question_assets: {
+        Row: {
+          alt_text: string | null;
+          asset_type: string;
+          id: string;
+          position: number;
+          question_version_id: string;
+          storage_path: string;
+        };
+        Insert: {
+          alt_text?: string | null;
+          asset_type: string;
+          id?: string;
+          position?: number;
+          question_version_id: string;
+          storage_path: string;
+        };
+        Update: {
+          alt_text?: string | null;
+          asset_type?: string;
+          id?: string;
+          position?: number;
+          question_version_id?: string;
+          storage_path?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'question_assets_question_version_id_fkey';
+            columns: ['question_version_id'];
+            isOneToOne: false;
+            referencedRelation: 'question_versions';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
+      question_options: {
+        Row: {
+          content: string;
+          id: string;
+          is_correct: boolean;
+          label: string;
+          position: number;
+          question_version_id: string;
+        };
+        Insert: {
+          content: string;
+          id?: string;
+          is_correct?: boolean;
+          label: string;
+          position: number;
+          question_version_id: string;
+        };
+        Update: {
+          content?: string;
+          id?: string;
+          is_correct?: boolean;
+          label?: string;
+          position?: number;
+          question_version_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'question_options_question_version_id_fkey';
+            columns: ['question_version_id'];
+            isOneToOne: false;
+            referencedRelation: 'question_versions';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
+      question_version_competencies: {
+        Row: {
+          competency_id: string;
+          question_version_id: string;
+          relevance: number;
+        };
+        Insert: {
+          competency_id: string;
+          question_version_id: string;
+          relevance?: number;
+        };
+        Update: {
+          competency_id?: string;
+          question_version_id?: string;
+          relevance?: number;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'question_version_competencies_competency_id_fkey';
+            columns: ['competency_id'];
+            isOneToOne: false;
+            referencedRelation: 'competencies';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'question_version_competencies_question_version_id_fkey';
+            columns: ['question_version_id'];
+            isOneToOne: false;
+            referencedRelation: 'question_versions';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
+      question_version_guidelines: {
+        Row: {
+          guideline_id: string;
+          question_version_id: string;
+        };
+        Insert: {
+          guideline_id: string;
+          question_version_id: string;
+        };
+        Update: {
+          guideline_id?: string;
+          question_version_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'question_version_guidelines_guideline_id_fkey';
+            columns: ['guideline_id'];
+            isOneToOne: false;
+            referencedRelation: 'guidelines';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'question_version_guidelines_question_version_id_fkey';
+            columns: ['question_version_id'];
+            isOneToOne: false;
+            referencedRelation: 'question_versions';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
+      question_version_programs: {
+        Row: {
+          exam_program_id: string;
+          question_version_id: string;
+        };
+        Insert: {
+          exam_program_id: string;
+          question_version_id: string;
+        };
+        Update: {
+          exam_program_id?: string;
+          question_version_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'question_version_programs_exam_program_id_fkey';
+            columns: ['exam_program_id'];
+            isOneToOne: false;
+            referencedRelation: 'exam_programs';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'question_version_programs_question_version_id_fkey';
+            columns: ['question_version_id'];
+            isOneToOne: false;
+            referencedRelation: 'question_versions';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
+      question_version_references: {
+        Row: {
+          question_version_id: string;
+          reference_id: string;
+        };
+        Insert: {
+          question_version_id: string;
+          reference_id: string;
+        };
+        Update: {
+          question_version_id?: string;
+          reference_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'question_version_references_question_version_id_fkey';
+            columns: ['question_version_id'];
+            isOneToOne: false;
+            referencedRelation: 'question_versions';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'question_version_references_reference_id_fkey';
+            columns: ['reference_id'];
+            isOneToOne: false;
+            referencedRelation: 'academic_references';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
+      question_version_specialties: {
+        Row: {
+          question_version_id: string;
+          specialty_id: string;
+        };
+        Insert: {
+          question_version_id: string;
+          specialty_id: string;
+        };
+        Update: {
+          question_version_id?: string;
+          specialty_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'question_version_specialties_question_version_id_fkey';
+            columns: ['question_version_id'];
+            isOneToOne: false;
+            referencedRelation: 'question_versions';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'question_version_specialties_specialty_id_fkey';
+            columns: ['specialty_id'];
+            isOneToOne: false;
+            referencedRelation: 'specialties';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
+      question_version_subthemes: {
+        Row: {
+          question_version_id: string;
+          subtheme_id: string;
+        };
+        Insert: {
+          question_version_id: string;
+          subtheme_id: string;
+        };
+        Update: {
+          question_version_id?: string;
+          subtheme_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'question_version_subthemes_question_version_id_fkey';
+            columns: ['question_version_id'];
+            isOneToOne: false;
+            referencedRelation: 'question_versions';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'question_version_subthemes_subtheme_id_fkey';
+            columns: ['subtheme_id'];
+            isOneToOne: false;
+            referencedRelation: 'subthemes';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
+      question_version_tags: {
+        Row: {
+          question_version_id: string;
+          tag_id: string;
+        };
+        Insert: {
+          question_version_id: string;
+          tag_id: string;
+        };
+        Update: {
+          question_version_id?: string;
+          tag_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'question_version_tags_question_version_id_fkey';
+            columns: ['question_version_id'];
+            isOneToOne: false;
+            referencedRelation: 'question_versions';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'question_version_tags_tag_id_fkey';
+            columns: ['tag_id'];
+            isOneToOne: false;
+            referencedRelation: 'tags';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
+      question_version_themes: {
+        Row: {
+          question_version_id: string;
+          theme_id: string;
+        };
+        Insert: {
+          question_version_id: string;
+          theme_id: string;
+        };
+        Update: {
+          question_version_id?: string;
+          theme_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'question_version_themes_question_version_id_fkey';
+            columns: ['question_version_id'];
+            isOneToOne: false;
+            referencedRelation: 'question_versions';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'question_version_themes_theme_id_fkey';
+            columns: ['theme_id'];
+            isOneToOne: false;
+            referencedRelation: 'themes';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
+      question_versions: {
+        Row: {
+          change_note: string | null;
+          cognitive_level: string | null;
+          commentary: string | null;
+          created_at: string;
+          difficulty: number | null;
+          id: string;
+          institution_id: string | null;
+          question_id: string;
+          status: string;
+          stem: string;
+          version: number;
+        };
+        Insert: {
+          change_note?: string | null;
+          cognitive_level?: string | null;
+          commentary?: string | null;
+          created_at?: string;
+          difficulty?: number | null;
+          id?: string;
+          institution_id?: string | null;
+          question_id: string;
+          status?: string;
+          stem: string;
+          version: number;
+        };
+        Update: {
+          change_note?: string | null;
+          cognitive_level?: string | null;
+          commentary?: string | null;
+          created_at?: string;
+          difficulty?: number | null;
+          id?: string;
+          institution_id?: string | null;
+          question_id?: string;
+          status?: string;
+          stem?: string;
+          version?: number;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'question_versions_institution_id_fkey';
+            columns: ['institution_id'];
+            isOneToOne: false;
+            referencedRelation: 'institutions';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'question_versions_question_id_fkey';
+            columns: ['question_id'];
+            isOneToOne: false;
+            referencedRelation: 'questions';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
+      questions: {
+        Row: {
+          canonical_hash: string;
+          created_at: string;
+          current_version: number;
+          id: string;
+          source_key: string | null;
+          status: string;
+          updated_at: string;
+        };
+        Insert: {
+          canonical_hash: string;
+          created_at?: string;
+          current_version?: number;
+          id?: string;
+          source_key?: string | null;
+          status?: string;
+          updated_at?: string;
+        };
+        Update: {
+          canonical_hash?: string;
+          created_at?: string;
+          current_version?: number;
+          id?: string;
+          source_key?: string | null;
+          status?: string;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
+      specialties: {
+        Row: {
+          code: string;
+          created_at: string;
+          description: string | null;
+          id: string;
+          is_active: boolean;
+          name: string;
+          updated_at: string;
+        };
+        Insert: {
+          code: string;
+          created_at?: string;
+          description?: string | null;
+          id?: string;
+          is_active?: boolean;
+          name: string;
+          updated_at?: string;
+        };
+        Update: {
+          code?: string;
+          created_at?: string;
+          description?: string | null;
+          id?: string;
+          is_active?: boolean;
+          name?: string;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
+      specialty_areas: {
+        Row: {
+          area_id: string;
+          created_at: string;
+          specialty_id: string;
+        };
+        Insert: {
+          area_id: string;
+          created_at?: string;
+          specialty_id: string;
+        };
+        Update: {
+          area_id?: string;
+          created_at?: string;
+          specialty_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'specialty_areas_area_id_fkey';
+            columns: ['area_id'];
+            isOneToOne: false;
+            referencedRelation: 'medical_areas';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'specialty_areas_specialty_id_fkey';
+            columns: ['specialty_id'];
+            isOneToOne: false;
+            referencedRelation: 'specialties';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
       student_availability: {
         Row: {
-          created_at: string
-          id: string
-          minutes_available: number
-          updated_at: string
-          user_id: string
-          weekday: number
-        }
+          created_at: string;
+          id: string;
+          minutes_available: number;
+          updated_at: string;
+          user_id: string;
+          weekday: number;
+        };
         Insert: {
-          created_at?: string
-          id?: string
-          minutes_available: number
-          updated_at?: string
-          user_id: string
-          weekday: number
-        }
+          created_at?: string;
+          id?: string;
+          minutes_available: number;
+          updated_at?: string;
+          user_id: string;
+          weekday: number;
+        };
         Update: {
-          created_at?: string
-          id?: string
-          minutes_available?: number
-          updated_at?: string
-          user_id?: string
-          weekday?: number
-        }
+          created_at?: string;
+          id?: string;
+          minutes_available?: number;
+          updated_at?: string;
+          user_id?: string;
+          weekday?: number;
+        };
         Relationships: [
           {
-            foreignKeyName: "student_availability_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
+            foreignKeyName: 'student_availability_user_id_fkey';
+            columns: ['user_id'];
+            isOneToOne: false;
+            referencedRelation: 'profiles';
+            referencedColumns: ['id'];
           },
-        ]
-      }
+        ];
+      };
       student_profiles: {
         Row: {
-          assessment_preference: string | null
-          created_at: string
-          experience_level: string | null
-          graduation_year: number | null
-          preferred_session_minutes: number | null
-          residency_year: number | null
-          updated_at: string
-          user_id: string
-          weekly_study_hours: number | null
-        }
+          assessment_preference: string | null;
+          created_at: string;
+          experience_level: string | null;
+          graduation_year: number | null;
+          preferred_session_minutes: number | null;
+          residency_year: number | null;
+          updated_at: string;
+          user_id: string;
+          weekly_study_hours: number | null;
+        };
         Insert: {
-          assessment_preference?: string | null
-          created_at?: string
-          experience_level?: string | null
-          graduation_year?: number | null
-          preferred_session_minutes?: number | null
-          residency_year?: number | null
-          updated_at?: string
-          user_id: string
-          weekly_study_hours?: number | null
-        }
+          assessment_preference?: string | null;
+          created_at?: string;
+          experience_level?: string | null;
+          graduation_year?: number | null;
+          preferred_session_minutes?: number | null;
+          residency_year?: number | null;
+          updated_at?: string;
+          user_id: string;
+          weekly_study_hours?: number | null;
+        };
         Update: {
-          assessment_preference?: string | null
-          created_at?: string
-          experience_level?: string | null
-          graduation_year?: number | null
-          preferred_session_minutes?: number | null
-          residency_year?: number | null
-          updated_at?: string
-          user_id?: string
-          weekly_study_hours?: number | null
-        }
+          assessment_preference?: string | null;
+          created_at?: string;
+          experience_level?: string | null;
+          graduation_year?: number | null;
+          preferred_session_minutes?: number | null;
+          residency_year?: number | null;
+          updated_at?: string;
+          user_id?: string;
+          weekly_study_hours?: number | null;
+        };
         Relationships: [
           {
-            foreignKeyName: "student_profiles_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: true
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
+            foreignKeyName: 'student_profiles_user_id_fkey';
+            columns: ['user_id'];
+            isOneToOne: true;
+            referencedRelation: 'profiles';
+            referencedColumns: ['id'];
           },
-        ]
-      }
+        ];
+      };
       student_target_exams: {
         Row: {
-          created_at: string
-          exam_edition_id: string
-          id: string
-          user_id: string
-        }
+          created_at: string;
+          exam_edition_id: string;
+          id: string;
+          user_id: string;
+        };
         Insert: {
-          created_at?: string
-          exam_edition_id: string
-          id?: string
-          user_id: string
-        }
+          created_at?: string;
+          exam_edition_id: string;
+          id?: string;
+          user_id: string;
+        };
         Update: {
-          created_at?: string
-          exam_edition_id?: string
-          id?: string
-          user_id?: string
-        }
+          created_at?: string;
+          exam_edition_id?: string;
+          id?: string;
+          user_id?: string;
+        };
         Relationships: [
           {
-            foreignKeyName: "student_target_exams_exam_edition_id_fkey"
-            columns: ["exam_edition_id"]
-            isOneToOne: false
-            referencedRelation: "exam_editions"
-            referencedColumns: ["id"]
+            foreignKeyName: 'student_target_exams_exam_edition_id_fkey';
+            columns: ['exam_edition_id'];
+            isOneToOne: false;
+            referencedRelation: 'exam_editions';
+            referencedColumns: ['id'];
           },
           {
-            foreignKeyName: "student_target_exams_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
+            foreignKeyName: 'student_target_exams_user_id_fkey';
+            columns: ['user_id'];
+            isOneToOne: false;
+            referencedRelation: 'profiles';
+            referencedColumns: ['id'];
           },
-        ]
-      }
-    }
+        ];
+      };
+      subthemes: {
+        Row: {
+          code: string;
+          created_at: string;
+          description: string | null;
+          id: string;
+          is_active: boolean;
+          name: string;
+          theme_id: string;
+          updated_at: string;
+        };
+        Insert: {
+          code: string;
+          created_at?: string;
+          description?: string | null;
+          id?: string;
+          is_active?: boolean;
+          name: string;
+          theme_id: string;
+          updated_at?: string;
+        };
+        Update: {
+          code?: string;
+          created_at?: string;
+          description?: string | null;
+          id?: string;
+          is_active?: boolean;
+          name?: string;
+          theme_id?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'subthemes_theme_id_fkey';
+            columns: ['theme_id'];
+            isOneToOne: false;
+            referencedRelation: 'themes';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
+      tags: {
+        Row: {
+          id: string;
+          name: string;
+          slug: string;
+        };
+        Insert: {
+          id?: string;
+          name: string;
+          slug: string;
+        };
+        Update: {
+          id?: string;
+          name?: string;
+          slug?: string;
+        };
+        Relationships: [];
+      };
+      themes: {
+        Row: {
+          area_id: string;
+          code: string;
+          created_at: string;
+          description: string | null;
+          id: string;
+          is_active: boolean;
+          name: string;
+          updated_at: string;
+        };
+        Insert: {
+          area_id: string;
+          code: string;
+          created_at?: string;
+          description?: string | null;
+          id?: string;
+          is_active?: boolean;
+          name: string;
+          updated_at?: string;
+        };
+        Update: {
+          area_id?: string;
+          code?: string;
+          created_at?: string;
+          description?: string | null;
+          id?: string;
+          is_active?: boolean;
+          name?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'themes_area_id_fkey';
+            columns: ['area_id'];
+            isOneToOne: false;
+            referencedRelation: 'medical_areas';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
+    };
     Views: {
-      [_ in never]: never
-    }
+      [_ in never]: never;
+    };
     Functions: {
       save_onboarding: {
         Args: {
-          p_assessment_preference?: string
-          p_availability?: Json
-          p_complete?: boolean
-          p_display_name?: string
-          p_exam_edition_ids?: string[]
-          p_experience_level?: string
-          p_graduation_year?: number
-          p_preferred_session_minutes?: number
-          p_residency_year?: number
-          p_step: number
-        }
-        Returns: undefined
-      }
-    }
+          p_assessment_preference?: string;
+          p_availability?: Json;
+          p_complete?: boolean;
+          p_display_name?: string;
+          p_exam_edition_ids?: string[];
+          p_experience_level?: string;
+          p_graduation_year?: number;
+          p_preferred_session_minutes?: number;
+          p_residency_year?: number;
+          p_step: number;
+        };
+        Returns: undefined;
+      };
+    };
     Enums: {
-      onboarding_status: "not_started" | "in_progress" | "completed"
-    }
+      onboarding_status: 'not_started' | 'in_progress' | 'completed';
+    };
     CompositeTypes: {
-      [_ in never]: never
-    }
-  }
-}
+      [_ in never]: never;
+    };
+  };
+};
 
-type DatabaseWithoutInternals = Omit<Database, "__InternalSupabase">
+type DatabaseWithoutInternals = Omit<Database, '__InternalSupabase'>;
 
-type DefaultSchema = DatabaseWithoutInternals[Extract<keyof Database, "public">]
+type DefaultSchema = DatabaseWithoutInternals[Extract<
+  keyof Database,
+  'public'
+>];
 
 export type Tables<
   DefaultSchemaTableNameOrOptions extends
-    | keyof (DefaultSchema["Tables"] & DefaultSchema["Views"])
+    | keyof (DefaultSchema['Tables'] & DefaultSchema['Views'])
     | { schema: keyof DatabaseWithoutInternals },
   TableName extends DefaultSchemaTableNameOrOptions extends {
-    schema: keyof DatabaseWithoutInternals
+    schema: keyof DatabaseWithoutInternals;
   }
-    ? keyof (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
-        DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Views"])
+    ? keyof (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions['schema']]['Tables'] &
+        DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions['schema']]['Views'])
     : never = never,
 > = DefaultSchemaTableNameOrOptions extends {
-  schema: keyof DatabaseWithoutInternals
+  schema: keyof DatabaseWithoutInternals;
 }
-  ? (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
-      DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Views"])[TableName] extends {
-      Row: infer R
+  ? (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions['schema']]['Tables'] &
+      DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions['schema']]['Views'])[TableName] extends {
+      Row: infer R;
     }
     ? R
     : never
-  : DefaultSchemaTableNameOrOptions extends keyof (DefaultSchema["Tables"] &
-        DefaultSchema["Views"])
-    ? (DefaultSchema["Tables"] &
-        DefaultSchema["Views"])[DefaultSchemaTableNameOrOptions] extends {
-        Row: infer R
+  : DefaultSchemaTableNameOrOptions extends keyof (DefaultSchema['Tables'] &
+        DefaultSchema['Views'])
+    ? (DefaultSchema['Tables'] &
+        DefaultSchema['Views'])[DefaultSchemaTableNameOrOptions] extends {
+        Row: infer R;
       }
       ? R
       : never
-    : never
+    : never;
 
 export type TablesInsert<
   DefaultSchemaTableNameOrOptions extends
-    | keyof DefaultSchema["Tables"]
+    | keyof DefaultSchema['Tables']
     | { schema: keyof DatabaseWithoutInternals },
   TableName extends DefaultSchemaTableNameOrOptions extends {
-    schema: keyof DatabaseWithoutInternals
+    schema: keyof DatabaseWithoutInternals;
   }
-    ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
+    ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions['schema']]['Tables']
     : never = never,
 > = DefaultSchemaTableNameOrOptions extends {
-  schema: keyof DatabaseWithoutInternals
+  schema: keyof DatabaseWithoutInternals;
 }
-  ? DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"][TableName] extends {
-      Insert: infer I
+  ? DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions['schema']]['Tables'][TableName] extends {
+      Insert: infer I;
     }
     ? I
     : never
-  : DefaultSchemaTableNameOrOptions extends keyof DefaultSchema["Tables"]
-    ? DefaultSchema["Tables"][DefaultSchemaTableNameOrOptions] extends {
-        Insert: infer I
+  : DefaultSchemaTableNameOrOptions extends keyof DefaultSchema['Tables']
+    ? DefaultSchema['Tables'][DefaultSchemaTableNameOrOptions] extends {
+        Insert: infer I;
       }
       ? I
       : never
-    : never
+    : never;
 
 export type TablesUpdate<
   DefaultSchemaTableNameOrOptions extends
-    | keyof DefaultSchema["Tables"]
+    | keyof DefaultSchema['Tables']
     | { schema: keyof DatabaseWithoutInternals },
   TableName extends DefaultSchemaTableNameOrOptions extends {
-    schema: keyof DatabaseWithoutInternals
+    schema: keyof DatabaseWithoutInternals;
   }
-    ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
+    ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions['schema']]['Tables']
     : never = never,
 > = DefaultSchemaTableNameOrOptions extends {
-  schema: keyof DatabaseWithoutInternals
+  schema: keyof DatabaseWithoutInternals;
 }
-  ? DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"][TableName] extends {
-      Update: infer U
+  ? DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions['schema']]['Tables'][TableName] extends {
+      Update: infer U;
     }
     ? U
     : never
-  : DefaultSchemaTableNameOrOptions extends keyof DefaultSchema["Tables"]
-    ? DefaultSchema["Tables"][DefaultSchemaTableNameOrOptions] extends {
-        Update: infer U
+  : DefaultSchemaTableNameOrOptions extends keyof DefaultSchema['Tables']
+    ? DefaultSchema['Tables'][DefaultSchemaTableNameOrOptions] extends {
+        Update: infer U;
       }
       ? U
       : never
-    : never
+    : never;
 
 export type Enums<
   DefaultSchemaEnumNameOrOptions extends
-    | keyof DefaultSchema["Enums"]
+    | keyof DefaultSchema['Enums']
     | { schema: keyof DatabaseWithoutInternals },
   EnumName extends DefaultSchemaEnumNameOrOptions extends {
-    schema: keyof DatabaseWithoutInternals
+    schema: keyof DatabaseWithoutInternals;
   }
-    ? keyof DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"]
+    ? keyof DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions['schema']]['Enums']
     : never = never,
 > = DefaultSchemaEnumNameOrOptions extends {
-  schema: keyof DatabaseWithoutInternals
+  schema: keyof DatabaseWithoutInternals;
 }
-  ? DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"][EnumName]
-  : DefaultSchemaEnumNameOrOptions extends keyof DefaultSchema["Enums"]
-    ? DefaultSchema["Enums"][DefaultSchemaEnumNameOrOptions]
-    : never
+  ? DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions['schema']]['Enums'][EnumName]
+  : DefaultSchemaEnumNameOrOptions extends keyof DefaultSchema['Enums']
+    ? DefaultSchema['Enums'][DefaultSchemaEnumNameOrOptions]
+    : never;
 
 export type CompositeTypes<
   PublicCompositeTypeNameOrOptions extends
-    | keyof DefaultSchema["CompositeTypes"]
+    | keyof DefaultSchema['CompositeTypes']
     | { schema: keyof DatabaseWithoutInternals },
   CompositeTypeName extends PublicCompositeTypeNameOrOptions extends {
-    schema: keyof DatabaseWithoutInternals
+    schema: keyof DatabaseWithoutInternals;
   }
-    ? keyof DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"]
+    ? keyof DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions['schema']]['CompositeTypes']
     : never = never,
 > = PublicCompositeTypeNameOrOptions extends {
-  schema: keyof DatabaseWithoutInternals
+  schema: keyof DatabaseWithoutInternals;
 }
-  ? DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"][CompositeTypeName]
-  : PublicCompositeTypeNameOrOptions extends keyof DefaultSchema["CompositeTypes"]
-    ? DefaultSchema["CompositeTypes"][PublicCompositeTypeNameOrOptions]
-    : never
+  ? DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions['schema']]['CompositeTypes'][CompositeTypeName]
+  : PublicCompositeTypeNameOrOptions extends keyof DefaultSchema['CompositeTypes']
+    ? DefaultSchema['CompositeTypes'][PublicCompositeTypeNameOrOptions]
+    : never;
 
 export const Constants = {
   public: {
     Enums: {
-      onboarding_status: ["not_started", "in_progress", "completed"],
+      onboarding_status: ['not_started', 'in_progress', 'completed'],
     },
   },
-} as const
+} as const;
