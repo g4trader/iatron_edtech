@@ -63,7 +63,7 @@ export function OnboardingWizard(props: WizardProps) {
     startTransition(async () => {
       setError('');
       const result = await saveOnboarding({
-        step,
+        step: complete ? step : Math.min(4, step + 1),
         displayName: name,
         residencyYear,
         graduationYear,

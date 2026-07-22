@@ -187,6 +187,19 @@ test('cadastro, confirmação, SSR, retomada, RLS, logout e recuperação reais'
       expect(response.ok()).toBeFalsy();
     }).toPass();
     await confirmStagingUser(request, studentA);
+    await expect(async () => {
+      const response = await request.post(
+        `${supabaseUrl}/auth/v1/token?grant_type=password`,
+        {
+          headers: {
+            apikey: publishableKey,
+            'content-type': 'application/json',
+          },
+          data: { email: studentA, password },
+        },
+      );
+      expect(response.ok()).toBeTruthy();
+    }).toPass({ timeout: 15_000 });
   } else {
     await page.goto(await waitForEmail(request, studentA, /confirm/i));
   }
@@ -198,6 +211,7 @@ test('cadastro, confirmação, SSR, retomada, RLS, logout e recuperação reais'
 
   await page.getByLabel('Nome').fill('Estudante A Atualizada');
   await page.getByRole('button', { name: 'Salvar e continuar' }).click();
+  await expect(page.getByText('etapa 2 de 4')).toBeVisible();
   await page.reload();
   await expect(page.getByText('etapa 2 de 4')).toBeVisible();
   await page.getByLabel('Seg em minutos').fill('90');

@@ -7,6 +7,7 @@ export default defineConfig({
   fullyParallel: false,
   workers: 1,
   reporter: 'list',
+  expect: { timeout: 15_000 },
   use: {
     baseURL: remoteBaseUrl || 'http://127.0.0.1:3000',
     trace: 'retain-on-failure',
