@@ -50,6 +50,189 @@ export type Database = {
         };
         Relationships: [];
       };
+      assessment_competencies: {
+        Row: {
+          assessment_id: string;
+          competency_id: string;
+        };
+        Insert: {
+          assessment_id: string;
+          competency_id: string;
+        };
+        Update: {
+          assessment_id?: string;
+          competency_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'assessment_competencies_assessment_id_fkey';
+            columns: ['assessment_id'];
+            isOneToOne: false;
+            referencedRelation: 'diagnostic_assessments';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'assessment_competencies_competency_id_fkey';
+            columns: ['competency_id'];
+            isOneToOne: false;
+            referencedRelation: 'competencies';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
+      assessment_question_selections: {
+        Row: {
+          assessment_id: string;
+          id: string;
+          question_version_id: string;
+          rationale: Json;
+          selected_at: string;
+          selection_order: number;
+        };
+        Insert: {
+          assessment_id: string;
+          id?: string;
+          question_version_id: string;
+          rationale: Json;
+          selected_at?: string;
+          selection_order: number;
+        };
+        Update: {
+          assessment_id?: string;
+          id?: string;
+          question_version_id?: string;
+          rationale?: Json;
+          selected_at?: string;
+          selection_order?: number;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'assessment_question_selections_assessment_id_fkey';
+            columns: ['assessment_id'];
+            isOneToOne: false;
+            referencedRelation: 'diagnostic_assessments';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'assessment_question_selections_question_version_id_fkey';
+            columns: ['question_version_id'];
+            isOneToOne: false;
+            referencedRelation: 'question_versions';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
+      assessment_result_competencies: {
+        Row: {
+          assessment_result_id: string;
+          classification: string;
+          competency_id: string;
+          confidence: number;
+          confidence_level: string;
+          evidence_count: number;
+          mastery: number;
+        };
+        Insert: {
+          assessment_result_id: string;
+          classification: string;
+          competency_id: string;
+          confidence: number;
+          confidence_level: string;
+          evidence_count: number;
+          mastery: number;
+        };
+        Update: {
+          assessment_result_id?: string;
+          classification?: string;
+          competency_id?: string;
+          confidence?: number;
+          confidence_level?: string;
+          evidence_count?: number;
+          mastery?: number;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'assessment_result_competencies_assessment_result_id_fkey';
+            columns: ['assessment_result_id'];
+            isOneToOne: false;
+            referencedRelation: 'assessment_results';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'assessment_result_competencies_competency_id_fkey';
+            columns: ['competency_id'];
+            isOneToOne: false;
+            referencedRelation: 'competencies';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
+      assessment_results: {
+        Row: {
+          algorithm_version: string;
+          answered_count: number;
+          assessment_id: string;
+          correct_count: number;
+          created_at: string;
+          diagnostic_coverage: number;
+          id: string;
+          overall_confidence: number;
+          student_id: string;
+        };
+        Insert: {
+          algorithm_version: string;
+          answered_count: number;
+          assessment_id: string;
+          correct_count: number;
+          created_at?: string;
+          diagnostic_coverage: number;
+          id?: string;
+          overall_confidence: number;
+          student_id: string;
+        };
+        Update: {
+          algorithm_version?: string;
+          answered_count?: number;
+          assessment_id?: string;
+          correct_count?: number;
+          created_at?: string;
+          diagnostic_coverage?: number;
+          id?: string;
+          overall_confidence?: number;
+          student_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'assessment_results_assessment_id_fkey';
+            columns: ['assessment_id'];
+            isOneToOne: true;
+            referencedRelation: 'diagnostic_assessments';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'assessment_results_student_id_fkey';
+            columns: ['student_id'];
+            isOneToOne: false;
+            referencedRelation: 'profiles';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
+      assessment_statuses: {
+        Row: {
+          code: string;
+          name: string;
+        };
+        Insert: {
+          code: string;
+          name: string;
+        };
+        Update: {
+          code?: string;
+          name?: string;
+        };
+        Relationships: [];
+      };
       competencies: {
         Row: {
           code: string;
@@ -146,6 +329,89 @@ export type Database = {
             columns: ['reference_id'];
             isOneToOne: false;
             referencedRelation: 'academic_references';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
+      diagnostic_assessments: {
+        Row: {
+          algorithm: string;
+          algorithm_version: string;
+          completed_at: string | null;
+          created_at: string;
+          diagnostic_coverage: number | null;
+          duration_minutes: number;
+          exam_program_id: string | null;
+          id: string;
+          objective: string;
+          overall_confidence: number | null;
+          question_count: number;
+          specialty_id: string | null;
+          started_at: string;
+          status: string;
+          student_id: string;
+        };
+        Insert: {
+          algorithm?: string;
+          algorithm_version?: string;
+          completed_at?: string | null;
+          created_at?: string;
+          diagnostic_coverage?: number | null;
+          duration_minutes: number;
+          exam_program_id?: string | null;
+          id?: string;
+          objective: string;
+          overall_confidence?: number | null;
+          question_count: number;
+          specialty_id?: string | null;
+          started_at?: string;
+          status?: string;
+          student_id: string;
+        };
+        Update: {
+          algorithm?: string;
+          algorithm_version?: string;
+          completed_at?: string | null;
+          created_at?: string;
+          diagnostic_coverage?: number | null;
+          duration_minutes?: number;
+          exam_program_id?: string | null;
+          id?: string;
+          objective?: string;
+          overall_confidence?: number | null;
+          question_count?: number;
+          specialty_id?: string | null;
+          started_at?: string;
+          status?: string;
+          student_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'diagnostic_assessments_exam_program_id_fkey';
+            columns: ['exam_program_id'];
+            isOneToOne: false;
+            referencedRelation: 'exam_programs';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'diagnostic_assessments_specialty_id_fkey';
+            columns: ['specialty_id'];
+            isOneToOne: false;
+            referencedRelation: 'specialties';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'diagnostic_assessments_status_fkey';
+            columns: ['status'];
+            isOneToOne: false;
+            referencedRelation: 'assessment_statuses';
+            referencedColumns: ['code'];
+          },
+          {
+            foreignKeyName: 'diagnostic_assessments_student_id_fkey';
+            columns: ['student_id'];
+            isOneToOne: false;
+            referencedRelation: 'profiles';
             referencedColumns: ['id'];
           },
         ];
@@ -835,6 +1101,84 @@ export type Database = {
           },
         ];
       };
+      question_attempts: {
+        Row: {
+          answered_at: string;
+          assessment_id: string;
+          id: string;
+          is_correct: boolean;
+          learning_event_id: string;
+          origin: string;
+          question_version_id: string;
+          response_time_ms: number;
+          selected_option_id: string;
+          stated_confidence: string;
+          student_id: string;
+        };
+        Insert: {
+          answered_at?: string;
+          assessment_id: string;
+          id?: string;
+          is_correct: boolean;
+          learning_event_id: string;
+          origin?: string;
+          question_version_id: string;
+          response_time_ms: number;
+          selected_option_id: string;
+          stated_confidence: string;
+          student_id: string;
+        };
+        Update: {
+          answered_at?: string;
+          assessment_id?: string;
+          id?: string;
+          is_correct?: boolean;
+          learning_event_id?: string;
+          origin?: string;
+          question_version_id?: string;
+          response_time_ms?: number;
+          selected_option_id?: string;
+          stated_confidence?: string;
+          student_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'question_attempts_assessment_id_fkey';
+            columns: ['assessment_id'];
+            isOneToOne: false;
+            referencedRelation: 'diagnostic_assessments';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'question_attempts_learning_event_id_fkey';
+            columns: ['learning_event_id'];
+            isOneToOne: false;
+            referencedRelation: 'learning_events';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'question_attempts_question_version_id_fkey';
+            columns: ['question_version_id'];
+            isOneToOne: false;
+            referencedRelation: 'question_versions';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'question_attempts_selected_option_id_fkey';
+            columns: ['selected_option_id'];
+            isOneToOne: false;
+            referencedRelation: 'question_options';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'question_attempts_student_id_fkey';
+            columns: ['student_id'];
+            isOneToOne: false;
+            referencedRelation: 'profiles';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
       question_options: {
         Row: {
           content: string;
@@ -1520,17 +1864,51 @@ export type Database = {
       };
     };
     Functions: {
-      record_learning_event: {
+      answer_diagnostic_question: {
         Args: {
-          p_event_type: string;
-          p_idempotency_key: string;
-          p_occurred_at: string;
-          p_payload: Json;
-          p_schema_version?: number;
-          p_student_id: string;
+          p_assessment_id: string;
+          p_question_version_id: string;
+          p_response_time_ms: number;
+          p_selected_option_id: string;
+          p_stated_confidence: string;
         };
         Returns: string;
       };
+      calculate_diagnostic_confidence: {
+        Args: {
+          p_as_of: string;
+          p_competency_id: string;
+          p_student_id: string;
+        };
+        Returns: number;
+      };
+      finish_diagnostic_assessment: {
+        Args: { p_assessment_id: string };
+        Returns: string;
+      };
+      record_learning_event:
+        | {
+            Args: {
+              p_event_type: string;
+              p_idempotency_key: string;
+              p_occurred_at: string;
+              p_payload: Json;
+              p_schema_version: number;
+              p_student_id: string;
+            };
+            Returns: string;
+          }
+        | {
+            Args: {
+              p_event_type: string;
+              p_idempotency_key: string;
+              p_occurred_at: string;
+              p_payload: Json;
+              p_schema_version?: number;
+              p_student_id: string;
+            };
+            Returns: string;
+          };
       save_onboarding: {
         Args: {
           p_assessment_preference?: string;
@@ -1545,6 +1923,26 @@ export type Database = {
           p_step: number;
         };
         Returns: undefined;
+      };
+      select_assessment_question: {
+        Args: {
+          p_assessment_id: string;
+          p_question_version_id: string;
+          p_rationale: Json;
+          p_selection_order: number;
+        };
+        Returns: string;
+      };
+      start_diagnostic_assessment: {
+        Args: {
+          p_competency_ids: string[];
+          p_duration_minutes: number;
+          p_exam_program_id: string;
+          p_objective: string;
+          p_question_count: number;
+          p_specialty_id: string;
+        };
+        Returns: string;
       };
     };
     Enums: {
