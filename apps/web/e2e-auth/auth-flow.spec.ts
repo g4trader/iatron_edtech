@@ -1,7 +1,10 @@
 import { expect, test, type APIRequestContext } from '@playwright/test';
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
-const publishableKey = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY!;
+const supabaseUrl =
+  process.env.E2E_SUPABASE_URL ?? process.env.NEXT_PUBLIC_SUPABASE_URL!;
+const publishableKey =
+  process.env.E2E_SUPABASE_PUBLISHABLE_KEY ??
+  process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY!;
 const mailpitUrl = process.env.MAILPIT_URL;
 const apiBaseUrl = process.env.E2E_API_BASE_URL ?? 'http://127.0.0.1:8080';
 const serviceRoleKey = process.env.E2E_SUPABASE_SERVICE_ROLE_KEY;
@@ -11,25 +14,33 @@ const createdUserIds = new Set<string>();
 type AdminUser = { id: string; email?: string };
 
 async function adminRequest(
-  request: APIRequestContext,
+  _request: APIRequestContext,
   path: string,
-  options: Parameters<APIRequestContext['fetch']>[1] = {},
+  options: { method?: string; data?: unknown } = {},
 ) {
   if (!serviceRoleKey)
     throw new Error('Fixture administrativa não configurada.');
-  return request.fetch(`${supabaseUrl}/auth/v1/admin${path}`, {
-    ...options,
+  const response = await fetch(`${supabaseUrl}/auth/v1/admin${path}`, {
+    method: options.method,
     headers: {
       apikey: serviceRoleKey,
       authorization: `Bearer ${serviceRoleKey}`,
       'content-type': 'application/json',
     },
+    body: options.data === undefined ? undefined : JSON.stringify(options.data),
   });
+  return {
+    ok: () => response.ok,
+    status: () => response.status,
+    json: () => response.json(),
+  };
 }
 
 async function findAdminUser(request: APIRequestContext, email: string) {
   for (let attempt = 0; attempt < 10; attempt += 1) {
-    const response = await adminRequest(request, '/users', { method: 'GET' });
+    const response = await adminRequest(request, '/users?per_page=1000', {
+      method: 'GET',
+    });
     if (response.ok()) {
       const body = (await response.json()) as { users?: AdminUser[] };
       const user = body.users?.find((candidate) => candidate.email === email);

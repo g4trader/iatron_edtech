@@ -15,11 +15,19 @@ function errorRedirect(path: string, message: string): never {
 export async function login(formData: FormData) {
   const client = await createClient();
   const returnTo = safeReturnTo(value(formData, 'returnTo'));
-  const { error } = await client.auth.signInWithPassword({
+  const { data, error } = await client.auth.signInWithPassword({
     email: value(formData, 'email'),
     password: value(formData, 'password'),
   });
   if (error) errorRedirect('/login', 'E-mail ou senha inválidos.');
+  const { data: profile } = await client
+    .from('profiles')
+    .select('onboarding_status')
+    .eq('id', data.user.id)
+    .single();
+  if (profile?.onboarding_status !== 'completed') {
+    redirect('/app/onboarding');
+  }
   redirect(returnTo as Route);
 }
 
