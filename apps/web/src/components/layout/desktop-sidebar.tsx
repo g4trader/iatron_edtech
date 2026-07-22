@@ -40,7 +40,7 @@ export function DesktopSidebar({
           className="icon-button compact"
           onClick={onToggle}
           title={collapsed ? 'Expandir' : 'Recolher'}
-          type="submit"
+          type="button"
         >
           {collapsed ? '›' : '‹'}
         </button>
@@ -69,7 +69,7 @@ export function DesktopSidebar({
         <button
           className="profile-menu"
           title={collapsed ? 'Perfil de estudante' : undefined}
-          type="button"
+          type="submit"
         >
           <span className="avatar" aria-hidden="true">
             {initials}
