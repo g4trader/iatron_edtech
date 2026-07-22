@@ -15,16 +15,28 @@ import {
   RepositoryError,
   type StudentRepository,
 } from './student-repository.js';
+import {
+  createAcademicRepository,
+  type AcademicRepository,
+} from './academic-repository.js';
+import { registerAcademicRoutes } from './academic-routes.js';
 
 export interface BuildAppOptions {
   environment: ApiEnvironment;
   logger?: boolean;
   tokenVerifier?: TokenVerifier;
   repositoryFactory?: (userId: string, token: string) => StudentRepository;
+  academicRepositoryFactory?: (token: string) => AcademicRepository;
 }
 
 function isFastifyValidationError(error: unknown): boolean {
-  return typeof error === 'object' && error !== null && 'validation' in error;
+  return (
+    typeof error === 'object' &&
+    error !== null &&
+    ('validation' in error ||
+      ('issues' in error &&
+        Array.isArray((error as { issues?: unknown }).issues)))
+  );
 }
 
 export async function buildApp(
@@ -115,6 +127,11 @@ export async function buildApp(
             ((userId, token) =>
               createStudentRepository(options.environment, userId, token)),
         });
+        await registerAcademicRoutes(
+          protectedApi,
+          options.academicRepositoryFactory ??
+            ((token) => createAcademicRepository(options.environment, token)),
+        );
       });
     },
     { prefix: '/v1' },

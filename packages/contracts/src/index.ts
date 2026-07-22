@@ -132,6 +132,97 @@ export const paginationSchema = z.object({
   offset: z.coerce.number().int().min(0).default(0),
 });
 
+export const catalogQuerySchema = paginationSchema.extend({
+  search: z.string().trim().max(100).optional(),
+});
+export type CatalogQuery = z.infer<typeof catalogQuerySchema>;
+
+export const academicEntitySchema = z.object({
+  id: uuidSchema,
+  code: z.string(),
+  name: z.string(),
+  description: z.string().nullable(),
+});
+export type AcademicEntity = z.infer<typeof academicEntitySchema>;
+
+export const specialtyCatalogSchema = academicEntitySchema.extend({
+  areas: z.array(
+    academicEntitySchema.pick({ id: true, code: true, name: true }),
+  ),
+  programs: z.array(z.object({ id: uuidSchema, name: z.string() })),
+});
+export type SpecialtyCatalog = z.infer<typeof specialtyCatalogSchema>;
+
+export const areaCatalogSchema = academicEntitySchema.extend({
+  specialties: z.array(
+    academicEntitySchema.pick({ id: true, code: true, name: true }),
+  ),
+});
+export type AreaCatalog = z.infer<typeof areaCatalogSchema>;
+
+export const themeCatalogSchema = academicEntitySchema.extend({
+  area: academicEntitySchema.pick({ id: true, code: true, name: true }),
+  subthemeCount: z.int().min(0),
+});
+export type ThemeCatalog = z.infer<typeof themeCatalogSchema>;
+
+export const competencyCatalogSchema = academicEntitySchema.extend({
+  subtheme: z.object({
+    id: uuidSchema,
+    code: z.string(),
+    name: z.string(),
+    theme: z.object({
+      id: uuidSchema,
+      code: z.string(),
+      name: z.string(),
+      area: academicEntitySchema.pick({ id: true, code: true, name: true }),
+    }),
+  }),
+  objectives: z.array(
+    z.object({ position: z.int().positive(), description: z.string() }),
+  ),
+});
+export type CompetencyCatalog = z.infer<typeof competencyCatalogSchema>;
+
+export const boardCatalogSchema = z.object({
+  id: uuidSchema,
+  name: z.string(),
+  acronym: z.string().nullable(),
+});
+export type BoardCatalog = z.infer<typeof boardCatalogSchema>;
+
+export const examCatalogSchema = z.object({
+  id: uuidSchema,
+  year: z.int(),
+  edition: z.string().nullable(),
+  city: z.string().nullable(),
+  modality: z.string().nullable(),
+  durationMinutes: z.int().nullable(),
+  questionCount: z.int().nullable(),
+  program: z.object({ id: uuidSchema, name: z.string() }),
+  board: boardCatalogSchema.nullable(),
+});
+export type ExamCatalog = z.infer<typeof examCatalogSchema>;
+
+export const guidelineCatalogSchema = z.object({
+  id: uuidSchema,
+  stableKey: z.string(),
+  title: z.string(),
+  version: z.string(),
+  issuedOn: z.iso.date().nullable(),
+  effectiveFrom: z.iso.date().nullable(),
+  effectiveUntil: z.iso.date().nullable(),
+  url: z.url().nullable(),
+  notes: z.string().nullable(),
+  status: z.string(),
+  issuer: z.object({
+    id: uuidSchema,
+    name: z.string(),
+    acronym: z.string().nullable(),
+  }),
+});
+export type GuidelineCatalog = z.infer<typeof guidelineCatalogSchema>;
+
 export type ChatRole = 'user' | 'assistant' | 'system';
 export type ConfidenceLevel = 'low' | 'medium' | 'high';
 

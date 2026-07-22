@@ -1,6 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import {
   availabilityInputSchema,
+  competencyCatalogSchema,
+  guidelineCatalogSchema,
   onboardingInputSchema,
   profileUpdateSchema,
   serviceStatusSchema,
@@ -16,6 +18,45 @@ describe('serviceStatusSchema', () => {
         timestamp: new Date().toISOString(),
       }).status,
     ).toBe('ok');
+  });
+});
+
+describe('academic read contracts', () => {
+  it('serializes a competency only at the measurable leaf level', () => {
+    expect(
+      competencyCatalogSchema.parse({
+        id: '54000000-0000-4000-8000-000000000001',
+        code: 'CARD.SCA.001',
+        name: 'Reconhecer infarto',
+        description: 'Reconhecer critérios diagnósticos.',
+        subtheme: {
+          id: '53000000-0000-4000-8000-000000000001',
+          code: 'IAM_COM_SUPRA',
+          name: 'Infarto com supra',
+          theme: {
+            id: '52000000-0000-4000-8000-000000000001',
+            code: 'SINDROMES_CORONARIANAS',
+            name: 'Síndromes coronarianas',
+            area: {
+              id: '51000000-0000-4000-8000-000000000001',
+              code: 'CARDIOLOGIA',
+              name: 'Cardiologia',
+            },
+          },
+        },
+        objectives: [{ position: 1, description: 'Interpretar o ECG.' }],
+      }).code,
+    ).toBe('CARD.SCA.001');
+  });
+
+  it('requires guideline version and issuer', () => {
+    expect(() =>
+      guidelineCatalogSchema.parse({
+        id: crypto.randomUUID(),
+        stableKey: 'guideline',
+        title: 'Guideline sem versão',
+      }),
+    ).toThrow();
   });
 });
 
