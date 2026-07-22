@@ -40,7 +40,7 @@ export function DesktopSidebar({
           className="icon-button compact"
           onClick={onToggle}
           title={collapsed ? 'Expandir' : 'Recolher'}
-          type="button"
+          type="submit"
         >
           {collapsed ? '›' : '‹'}
         </button>

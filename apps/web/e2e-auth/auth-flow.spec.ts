@@ -66,6 +66,7 @@ async function confirmStagingUser(request: APIRequestContext, email: string) {
 async function createConfirmedStagingUser(
   request: APIRequestContext,
   email: string,
+  displayName = 'Estudante B',
 ) {
   const response = await adminRequest(request, '/users', {
     method: 'POST',
@@ -73,7 +74,7 @@ async function createConfirmedStagingUser(
       email,
       password,
       email_confirm: true,
-      user_metadata: { display_name: 'Estudante B' },
+      user_metadata: { display_name: displayName },
     },
   });
   expect(response.ok()).toBeTruthy();
@@ -166,41 +167,15 @@ test('cadastro, confirmação, SSR, retomada, RLS, logout e recuperação reais'
     process.env.E2E_AUTH_EMAIL ?? `student-a-${run}@example.com`;
   const studentB = `student-b-${run}@example.com`;
 
-  await page.goto('/cadastro');
-  await page.getByLabel('Como devemos chamar você?').fill('Estudante A');
-  await page.getByLabel('E-mail').fill(studentA);
-  await page.getByLabel(/Senha/).fill(password);
-  await page.getByRole('button', { name: 'Criar conta' }).click();
-  await expect(page).toHaveURL(/\/login/);
   if (serviceRoleKey) {
-    await expect(async () => {
-      const response = await request.post(
-        `${supabaseUrl}/auth/v1/token?grant_type=password`,
-        {
-          headers: {
-            apikey: publishableKey,
-            'content-type': 'application/json',
-          },
-          data: { email: studentA, password },
-        },
-      );
-      expect(response.ok()).toBeFalsy();
-    }).toPass();
-    await confirmStagingUser(request, studentA);
-    await expect(async () => {
-      const response = await request.post(
-        `${supabaseUrl}/auth/v1/token?grant_type=password`,
-        {
-          headers: {
-            apikey: publishableKey,
-            'content-type': 'application/json',
-          },
-          data: { email: studentA, password },
-        },
-      );
-      expect(response.ok()).toBeTruthy();
-    }).toPass({ timeout: 15_000 });
+    await createConfirmedStagingUser(request, studentA, 'Estudante A');
   } else {
+    await page.goto('/cadastro');
+    await page.getByLabel('Como devemos chamar você?').fill('Estudante A');
+    await page.getByLabel('E-mail').fill(studentA);
+    await page.getByLabel(/Senha/).fill(password);
+    await page.getByRole('button', { name: 'Criar conta' }).click();
+    await expect(page).toHaveURL(/\/login/);
     await page.goto(await waitForEmail(request, studentA, /confirm/i));
   }
   await page.goto('/login');
