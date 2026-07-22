@@ -3,8 +3,12 @@ import { AuthForm, Field, Submit } from '@/components/auth/auth-form';
 import { recoverPassword } from '../auth/actions';
 export default async function RecoveryPage() {
   const h = await headers();
+  const protocol =
+    h.get('x-forwarded-proto') ??
+    (process.env.NODE_ENV === 'production' ? 'https' : 'http');
+  const host = h.get('x-forwarded-host') ?? h.get('host') ?? 'localhost:3000';
   const origin =
-    h.get('origin') ?? `http://${h.get('host') ?? 'localhost:3000'}`;
+    h.get('origin') ?? `${protocol.split(',')[0]}://${host.split(',')[0]}`;
   return (
     <AuthForm
       title="Recuperar senha"

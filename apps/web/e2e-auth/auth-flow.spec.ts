@@ -28,13 +28,19 @@ async function adminRequest(
 }
 
 async function findAdminUser(request: APIRequestContext, email: string) {
-  const response = await adminRequest(request, '/users', { method: 'GET' });
-  expect(response.ok()).toBeTruthy();
-  const body = (await response.json()) as { users?: AdminUser[] };
-  const user = body.users?.find((candidate) => candidate.email === email);
-  if (!user) throw new Error('Usuário E2E recém-criado não foi encontrado.');
-  createdUserIds.add(user.id);
-  return user;
+  for (let attempt = 0; attempt < 10; attempt += 1) {
+    const response = await adminRequest(request, '/users', { method: 'GET' });
+    if (response.ok()) {
+      const body = (await response.json()) as { users?: AdminUser[] };
+      const user = body.users?.find((candidate) => candidate.email === email);
+      if (user) {
+        createdUserIds.add(user.id);
+        return user;
+      }
+    }
+    await new Promise((resolve) => setTimeout(resolve, 500));
+  }
+  throw new Error('Usuário E2E recém-criado não foi encontrado.');
 }
 
 async function confirmStagingUser(request: APIRequestContext, email: string) {
@@ -44,6 +50,24 @@ async function confirmStagingUser(request: APIRequestContext, email: string) {
     data: { email_confirm: true },
   });
   expect(response.ok()).toBeTruthy();
+}
+
+async function createConfirmedStagingUser(
+  request: APIRequestContext,
+  email: string,
+) {
+  const response = await adminRequest(request, '/users', {
+    method: 'POST',
+    data: {
+      email,
+      password,
+      email_confirm: true,
+      user_metadata: { display_name: 'Estudante B' },
+    },
+  });
+  expect(response.ok()).toBeTruthy();
+  const user = (await response.json()) as AdminUser;
+  createdUserIds.add(user.id);
 }
 
 async function recoveryLink(request: APIRequestContext, email: string) {
@@ -127,7 +151,8 @@ test('cadastro, confirmação, SSR, retomada, RLS, logout e recuperação reais'
   request,
 }) => {
   const run = `${Date.now()}-${crypto.randomUUID().slice(0, 8)}`;
-  const studentA = `student-a-${run}@example.com`;
+  const studentA =
+    process.env.E2E_AUTH_EMAIL ?? `student-a-${run}@example.com`;
   const studentB = `student-b-${run}@example.com`;
 
   await page.goto('/cadastro');
@@ -174,7 +199,11 @@ test('cadastro, confirmação, SSR, retomada, RLS, logout e recuperação reais'
   await expect(page).toHaveURL(/\/app$/);
 
   const tokenA = await tokenFor(request, studentA);
-  await signUpApi(request, studentB);
+  if (serviceRoleKey) {
+    await createConfirmedStagingUser(request, studentB);
+  } else {
+    await signUpApi(request, studentB);
+  }
   const tokenB = await tokenFor(request, studentB);
   const meA = await request.get(`${apiBaseUrl}/v1/me`, {
     headers: { authorization: `Bearer ${tokenA}` },

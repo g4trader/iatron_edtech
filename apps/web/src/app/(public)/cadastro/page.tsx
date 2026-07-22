@@ -9,9 +9,15 @@ export default async function SignupPage({
 }) {
   const query = await searchParams;
   const headerStore = await headers();
+  const protocol =
+    headerStore.get('x-forwarded-proto') ??
+    (process.env.NODE_ENV === 'production' ? 'https' : 'http');
+  const host =
+    headerStore.get('x-forwarded-host') ??
+    headerStore.get('host') ??
+    'localhost:3000';
   const origin =
-    headerStore.get('origin') ??
-    `http://${headerStore.get('host') ?? 'localhost:3000'}`;
+    headerStore.get('origin') ?? `${protocol.split(',')[0]}://${host.split(',')[0]}`;
   return (
     <AuthForm
       title="Criar conta"
