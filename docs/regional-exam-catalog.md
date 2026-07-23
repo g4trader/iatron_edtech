@@ -1,9 +1,11 @@
 # Catálogo regional de processos seletivos
 
-O catálogo regional complementa o seed técnico e é carregado em staging por
-`supabase/catalogs/south-region.sql`. Ele contém somente processos verificados
-em fontes institucionais ou da organizadora. Dados pessoais e questões de prova
-não fazem parte deste catálogo.
+O catálogo regional complementa o seed técnico e é versionado em
+`supabase/migrations/202607230008_seed_south_region_catalog.sql`. A migration
+garante sua presença após deploys e o seed de staging a reaplica de forma
+idempotente em resets controlados. Ele contém somente processos verificados em
+fontes institucionais ou da organizadora. Dados pessoais e questões de prova não
+fazem parte deste catálogo.
 
 ## Modelo e deduplicação
 
@@ -19,8 +21,9 @@ não fazem parte deste catálogo.
   edição.
 
 IDs existentes nunca devem ser trocados. Uma edição nova recebe novo ID e o
-mesmo `exam_program_id`. O script é idempotente e não deve ser copiado para
-`seed.sql`, que permanece um seed técnico mínimo.
+mesmo `exam_program_id`. Novas edições entram em uma migration de catálogo
+posterior e não devem ser copiadas para `seed.sql`, que permanece um seed
+técnico mínimo.
 
 ## Fontes verificadas
 

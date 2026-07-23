@@ -7,4 +7,4 @@ end
 $$;
 
 \ir seed.sql
-\ir catalogs/south-region.sql
+\ir migrations/202607230008_seed_south_region_catalog.sql
