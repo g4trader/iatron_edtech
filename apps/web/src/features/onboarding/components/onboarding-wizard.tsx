@@ -5,7 +5,12 @@ import { saveOnboarding } from '../actions';
 interface Edition {
   id: string;
   year: number;
+  edition?: string | null;
   programName: string;
+  programCode?: string | null;
+  stateCode?: string | null;
+  city?: string | null;
+  institutionName?: string;
 }
 interface WizardProps {
   e2eBypass?: boolean;
@@ -144,7 +149,9 @@ function inferRoutine(
   const match = routineProfiles.find(
     (profile) =>
       profile.id !== 'manual' &&
-      profile.minutes.every((minutes, weekday) => availability[weekday] === minutes),
+      profile.minutes.every(
+        (minutes, weekday) => availability[weekday] === minutes,
+      ),
   );
   if (match) return match.id;
   return Object.values(availability).some((minutes) => minutes > 0)
@@ -189,6 +196,9 @@ export function OnboardingWizard(props: WizardProps) {
       ) === 'manual',
   );
   const [targets, setTargets] = useState(props.initialTargets);
+  const [targetRegion, setTargetRegion] = useState('S');
+  const [targetState, setTargetState] = useState('RS');
+  const [targetSearch, setTargetSearch] = useState('');
   const [error, setError] = useState('');
   const nameRef = useRef<HTMLInputElement>(null);
   const targetGroupRef = useRef<HTMLFieldSetElement>(null);
@@ -198,11 +208,6 @@ export function OnboardingWizard(props: WizardProps) {
     if (step === 1 && !name.trim()) {
       setError('Informe seu nome para continuar.');
       nameRef.current?.focus();
-      return false;
-    }
-    if (step === 3 && targets.length === 0) {
-      setError('Selecione ao menos uma prova-alvo.');
-      targetGroupRef.current?.focus();
       return false;
     }
     if (step === 2 && !routine) {
@@ -237,6 +242,24 @@ export function OnboardingWizard(props: WizardProps) {
       : remainingMinutes === 0
         ? `${weeklyHours} ${weeklyHours === 1 ? 'hora' : 'horas'}`
         : `${weeklyHours} ${weeklyHours === 1 ? 'hora' : 'horas'} e ${remainingMinutes} minutos`;
+  const normalizedTargetSearch = targetSearch.trim().toLocaleLowerCase('pt-BR');
+  const visibleEditions = props.editions.filter((edition) => {
+    if (
+      targetRegion === 'S' &&
+      !['RS', 'SC', 'PR'].includes(edition.stateCode ?? '')
+    )
+      return false;
+    if (targetState && edition.stateCode !== targetState) return false;
+    if (!normalizedTargetSearch) return true;
+    return [
+      edition.programName,
+      edition.programCode,
+      edition.institutionName,
+      edition.city,
+    ].some((value) =>
+      value?.toLocaleLowerCase('pt-BR').includes(normalizedTargetSearch),
+    );
+  });
 
   const persist = (complete = false) => {
     if (!validateStep()) return;
@@ -553,13 +576,63 @@ export function OnboardingWizard(props: WizardProps) {
               priorizar conteúdos relevantes para suas provas. Você pode
               selecionar mais de uma opção e alterar depois.
             </p>
+            <div className="target-catalog-filters">
+              <label className="form-field" htmlFor="target-region">
+                Região
+                <select
+                  className="form-control"
+                  id="target-region"
+                  value={targetRegion}
+                  onChange={(event) => {
+                    setTargetRegion(event.target.value);
+                    if (event.target.value !== 'S') setTargetState('');
+                  }}
+                >
+                  <option value="S">Sul</option>
+                  <option value="">Todas as regiões</option>
+                </select>
+              </label>
+              <label className="form-field" htmlFor="target-state">
+                Estado
+                <select
+                  className="form-control"
+                  id="target-state"
+                  value={targetState}
+                  onChange={(event) => setTargetState(event.target.value)}
+                >
+                  <option value="">Todos</option>
+                  <option value="RS">Rio Grande do Sul</option>
+                  <option value="SC">Santa Catarina</option>
+                  <option value="PR">Paraná</option>
+                </select>
+              </label>
+            </div>
+            <label className="form-field" htmlFor="target-search">
+              Buscar prova, instituição ou cidade
+              <input
+                className="form-control"
+                id="target-search"
+                placeholder="Ex.: AMRIGS, HCPA ou Porto Alegre"
+                type="search"
+                value={targetSearch}
+                onChange={(event) => setTargetSearch(event.target.value)}
+              />
+            </label>
+            {targets.length > 0 && (
+              <p aria-live="polite" className="target-selection-summary">
+                {targets.length}{' '}
+                {targets.length === 1
+                  ? 'prova selecionada'
+                  : 'provas selecionadas'}
+              </p>
+            )}
             <fieldset
               ref={targetGroupRef}
               className="target-options"
               tabIndex={-1}
             >
               <legend className="sr-only">Provas-alvo</legend>
-              {props.editions.map((edition) => (
+              {visibleEditions.map((edition) => (
                 <label className="target-option" key={edition.id}>
                   <input
                     type="checkbox"
@@ -574,11 +647,31 @@ export function OnboardingWizard(props: WizardProps) {
                   />
                   <span>
                     <strong>{edition.programName}</strong>
-                    <small>Edição {edition.year}</small>
+                    <small>
+                      {[edition.city, edition.stateCode]
+                        .filter(Boolean)
+                        .join(' — ') || edition.institutionName}
+                    </small>
+                    <small>{edition.edition ?? `Edição ${edition.year}`}</small>
                   </span>
                 </label>
               ))}
             </fieldset>
+            {visibleEditions.length === 0 && (
+              <section className="target-empty-state" role="status">
+                <strong>Não encontrou sua prova?</strong>
+                <p>
+                  Continue o onboarding e envie uma sugestão pelo Tutor. Você
+                  poderá alterar esse objetivo depois.
+                </p>
+              </section>
+            )}
+            {targets.length === 0 && visibleEditions.length > 0 && (
+              <p className="onboarding-help">
+                Ainda não decidiu? Você pode continuar sem escolher e definir
+                suas provas depois.
+              </p>
+            )}
           </div>
         )}
         {step === 4 && (
@@ -593,8 +686,8 @@ export function OnboardingWizard(props: WizardProps) {
             <p className="onboarding-description">
               Já conhecemos sua rotina e suas {targets.length}{' '}
               {targets.length === 1 ? 'prova-alvo' : 'provas-alvo'}. Agora, seu
-              primeiro diagnóstico vai mostrar o ponto de partida para
-              montarmos um plano com evidências reais.
+              primeiro diagnóstico vai mostrar o ponto de partida para montarmos
+              um plano com evidências reais.
             </p>
           </div>
         )}

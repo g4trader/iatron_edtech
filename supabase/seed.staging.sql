@@ -7,3 +7,4 @@ end
 $$;
 
 \ir seed.sql
+\ir catalogs/south-region.sql

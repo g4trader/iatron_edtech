@@ -40,7 +40,7 @@ jobs:
         run: pnpm db:push:staging
       - name: Install PostgreSQL client
         run: sudo apt-get update && sudo apt-get install --yes postgresql-client
-      - name: Seed fictitious staging catalog
+      - name: Seed technical data and verified regional catalog
         run: pnpm db:seed:staging
       - name: Run pgTAP
         run: pnpm db:test:staging

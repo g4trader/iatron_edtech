@@ -455,9 +455,17 @@ export type Database = {
           id: string
           is_active: boolean
           modality: string | null
+          official_url: string | null
           question_count: number | null
           registration_deadline: string | null
+          source_title: string | null
+          source_url: string | null
+          status: string
+          unconfirmed_fields: string[]
+          update_method: string | null
           updated_at: string
+          verification_status: string
+          verified_at: string | null
           year: number
         }
         Insert: {
@@ -471,9 +479,17 @@ export type Database = {
           id?: string
           is_active?: boolean
           modality?: string | null
+          official_url?: string | null
           question_count?: number | null
           registration_deadline?: string | null
+          source_title?: string | null
+          source_url?: string | null
+          status?: string
+          unconfirmed_fields?: string[]
+          update_method?: string | null
           updated_at?: string
+          verification_status?: string
+          verified_at?: string | null
           year: number
         }
         Update: {
@@ -487,9 +503,17 @@ export type Database = {
           id?: string
           is_active?: boolean
           modality?: string | null
+          official_url?: string | null
           question_count?: number | null
           registration_deadline?: string | null
+          source_title?: string | null
+          source_url?: string | null
+          status?: string
+          unconfirmed_fields?: string[]
+          update_method?: string | null
           updated_at?: string
+          verification_status?: string
+          verified_at?: string | null
           year?: number
         }
         Relationships: [
@@ -509,32 +533,83 @@ export type Database = {
           },
         ]
       }
+      exam_program_institutions: {
+        Row: {
+          created_at: string
+          exam_program_id: string
+          institution_id: string
+          participation_role: string
+        }
+        Insert: {
+          created_at?: string
+          exam_program_id: string
+          institution_id: string
+          participation_role?: string
+        }
+        Update: {
+          created_at?: string
+          exam_program_id?: string
+          institution_id?: string
+          participation_role?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "exam_program_institutions_exam_program_id_fkey"
+            columns: ["exam_program_id"]
+            isOneToOne: false
+            referencedRelation: "exam_programs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "exam_program_institutions_institution_id_fkey"
+            columns: ["institution_id"]
+            isOneToOne: false
+            referencedRelation: "institutions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       exam_programs: {
         Row: {
+          city: string | null
+          code: string | null
           created_at: string
           exam_board_id: string | null
           id: string
           institution_id: string
           is_active: boolean
           name: string
+          region_code: string | null
+          scope: string
+          state_code: string | null
           updated_at: string
         }
         Insert: {
+          city?: string | null
+          code?: string | null
           created_at?: string
           exam_board_id?: string | null
           id?: string
           institution_id: string
           is_active?: boolean
           name: string
+          region_code?: string | null
+          scope?: string
+          state_code?: string | null
           updated_at?: string
         }
         Update: {
+          city?: string | null
+          code?: string | null
           created_at?: string
           exam_board_id?: string | null
           id?: string
           institution_id?: string
           is_active?: boolean
           name?: string
+          region_code?: string | null
+          scope?: string
+          state_code?: string | null
           updated_at?: string
         }
         Relationships: [

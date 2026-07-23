@@ -16,7 +16,28 @@ const baseProps = {
   initialAssessmentPreference: 'guided' as const,
   initialAvailability: [],
   initialTargets: [],
-  editions: [],
+  editions: [
+    {
+      id: '64000000-0000-4000-8000-000000000001',
+      year: 2026,
+      edition: 'Ingresso 2026',
+      programName: 'Prova AMB/AMRIGS — Processo Seletivo Unificado',
+      programCode: 'AMRIGS',
+      stateCode: 'RS',
+      city: 'Porto Alegre',
+      institutionName: 'Associação Médica do Rio Grande do Sul',
+    },
+    {
+      id: '64000000-0000-4000-8000-000000000006',
+      year: 2026,
+      edition: 'Ingresso 2026',
+      programName: 'Residência Médica do Hospital Universitário da UFSC',
+      programCode: 'UFSC',
+      stateCode: 'SC',
+      city: 'Florianópolis',
+      institutionName: 'Universidade Federal de Santa Catarina',
+    },
+  ],
 };
 
 describe('rotina de estudos do onboarding', () => {
@@ -43,10 +64,10 @@ describe('rotina de estudos do onboarding', () => {
       ).toHaveTextContent(`${total} minutos`);
 
       if (profile !== 'Prefiro configurar manualmente') {
-        expect(screen.queryByLabelText('Dom em minutos')).not.toBeInTheDocument();
-        fireEvent.click(
-          screen.getByRole('button', { name: 'Personalizar' }),
-        );
+        expect(
+          screen.queryByLabelText('Dom em minutos'),
+        ).not.toBeInTheDocument();
+        fireEvent.click(screen.getByRole('button', { name: 'Personalizar' }));
       }
       expect(screen.getByLabelText('Dom em minutos')).toHaveValue(
         sundayMinutes,
@@ -176,9 +197,7 @@ describe('rotina de estudos do onboarding', () => {
       ),
     ).toBeVisible();
     expect(
-      screen.getByText(
-        'Escolha o tempo por sessão. Você poderá mudar depois.',
-      ),
+      screen.getByText('Escolha o tempo por sessão. Você poderá mudar depois.'),
     ).toBeVisible();
 
     const feedback = screen.getByLabelText(
@@ -208,5 +227,88 @@ describe('rotina de estudos do onboarding', () => {
         'Essas preferências ajudam o Iatron a criar um plano mais adequado para sua rotina. Você poderá alterá-las depois.',
       ),
     ).toBeVisible();
+  });
+});
+
+describe('provas-alvo regionais do onboarding', () => {
+  beforeEach(() => {
+    saveOnboarding.mockReset();
+    saveOnboarding.mockResolvedValue({ ok: true });
+  });
+
+  it('prioriza o Rio Grande do Sul e pesquisa por sigla, instituição ou cidade', () => {
+    render(<OnboardingWizard {...baseProps} initialStep={3} />);
+
+    expect(screen.getByLabelText('Estado')).toHaveValue('RS');
+    expect(screen.getByText(/Prova AMB\/AMRIGS/)).toBeVisible();
+    expect(
+      screen.queryByText(/Hospital Universitário da UFSC/),
+    ).not.toBeInTheDocument();
+
+    fireEvent.change(screen.getByLabelText('Estado'), {
+      target: { value: '' },
+    });
+    fireEvent.change(
+      screen.getByLabelText('Buscar prova, instituição ou cidade'),
+      { target: { value: 'Florianópolis' } },
+    );
+
+    expect(screen.getByText(/Hospital Universitário da UFSC/)).toBeVisible();
+    expect(screen.queryByText(/Prova AMB\/AMRIGS/)).not.toBeInTheDocument();
+  });
+
+  it('seleciona e persiste mais de uma prova-alvo', async () => {
+    render(<OnboardingWizard {...baseProps} initialStep={3} />);
+    fireEvent.click(screen.getByText(/Prova AMB\/AMRIGS/));
+    fireEvent.change(screen.getByLabelText('Estado'), {
+      target: { value: '' },
+    });
+    fireEvent.click(screen.getByText(/Hospital Universitário da UFSC/));
+
+    expect(screen.getByText('2 provas selecionadas')).toBeVisible();
+    fireEvent.click(screen.getByRole('button', { name: 'Salvar e continuar' }));
+
+    await waitFor(() => expect(saveOnboarding).toHaveBeenCalledOnce());
+    expect(saveOnboarding).toHaveBeenCalledWith(
+      expect.objectContaining({
+        examEditionIds: [
+          '64000000-0000-4000-8000-000000000001',
+          '64000000-0000-4000-8000-000000000006',
+        ],
+      }),
+    );
+  });
+
+  it('não bloqueia o onboarding quando a prova ainda não está no catálogo', async () => {
+    render(<OnboardingWizard {...baseProps} initialStep={3} />);
+    fireEvent.change(
+      screen.getByLabelText('Buscar prova, instituição ou cidade'),
+      { target: { value: 'processo inexistente' } },
+    );
+
+    expect(screen.getByRole('status')).toHaveTextContent(
+      'Não encontrou sua prova?',
+    );
+    fireEvent.click(screen.getByRole('button', { name: 'Salvar e continuar' }));
+
+    await waitFor(() => expect(saveOnboarding).toHaveBeenCalledOnce());
+    expect(saveOnboarding).toHaveBeenCalledWith(
+      expect.objectContaining({ examEditionIds: [] }),
+    );
+  });
+
+  it('retoma seleções já persistidas', () => {
+    render(
+      <OnboardingWizard
+        {...baseProps}
+        initialStep={3}
+        initialTargets={['64000000-0000-4000-8000-000000000001']}
+      />,
+    );
+
+    expect(screen.getByText('1 prova selecionada')).toBeVisible();
+    expect(
+      screen.getByRole('checkbox', { name: /Prova AMB\/AMRIGS/ }),
+    ).toBeChecked();
   });
 });
