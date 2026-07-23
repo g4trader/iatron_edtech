@@ -162,6 +162,16 @@ test.describe('hardening mobile', () => {
     await page
       .getByRole('radio', { name: /Prefiro configurar manualmente/ })
       .click();
+    await expect(
+      page.getByText(
+        'Ajuda o Iatron a montar um plano que caiba na sua rotina.',
+      ),
+    ).toBeVisible();
+    await expect(
+      page.getByLabel(
+        'Como você prefere receber feedback durante os exercícios?',
+      ),
+    ).toBeVisible();
 
     const onboarding = page.locator('.onboarding-page');
     await expect(onboarding).toHaveCSS('overflow-y', 'auto');
@@ -176,6 +186,15 @@ test.describe('hardening mobile', () => {
     expect(scroll.scrollHeight).toBeGreaterThan(scroll.clientHeight);
     expect(scroll.scrollTop).toBeGreaterThan(0);
     await expect(page.getByRole('button', { name: 'Salvar e continuar' })).toBeVisible();
+    await expectNoPageOverflow(page);
+    const accessibility = await new AxeBuilder({ page })
+      .withTags(['wcag2a', 'wcag2aa', 'wcag21aa'])
+      .analyze();
+    expect(
+      accessibility.violations.filter(({ impact }) =>
+        ['critical', 'serious'].includes(impact ?? ''),
+      ),
+    ).toEqual([]);
   });
 
   test('drawer prende foco, fecha por Escape e não desloca conteúdo', async ({

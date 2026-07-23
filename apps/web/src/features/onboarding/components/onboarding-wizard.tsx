@@ -59,6 +59,25 @@ const routineProfiles = [
   },
 ] as const;
 type RoutineId = (typeof routineProfiles)[number]['id'];
+const assessmentDescriptions = {
+  guided: 'Receba explicações e dicas durante o estudo.',
+  independent: 'Veja o resultado e consulte explicações quando desejar.',
+  mixed: 'Receba orientação apenas nos momentos mais importantes.',
+} as const;
+
+function InformationIcon() {
+  return (
+    <svg
+      aria-hidden="true"
+      className="question-information-icon"
+      fill="none"
+      viewBox="0 0 24 24"
+    >
+      <circle cx="12" cy="12" r="9" />
+      <path d="M12 11v6M12 7.5v.01" />
+    </svg>
+  );
+}
 
 function RoutineIcon({ id }: { id: RoutineId }) {
   const commonProps = {
@@ -446,9 +465,22 @@ export function OnboardingWizard(props: WizardProps) {
                 ))}
               </fieldset>
             )}
-            <label className="form-field" htmlFor="session-duration">
-              Duração preferida da sessão
+            <section className="onboarding-preference-question">
+              <label
+                className="onboarding-question-title"
+                htmlFor="session-duration"
+              >
+                Duração preferida da sessão
+                <InformationIcon />
+              </label>
+              <p id="session-duration-context">
+                Ajuda o Iatron a montar um plano que caiba na sua rotina.
+              </p>
+              <p id="session-duration-help">
+                Escolha o tempo por sessão. Você poderá mudar depois.
+              </p>
               <select
+                aria-describedby="session-duration-context session-duration-help"
                 className="form-control"
                 id="session-duration"
                 value={preferredSessionMinutes}
@@ -462,10 +494,23 @@ export function OnboardingWizard(props: WizardProps) {
                   </option>
                 ))}
               </select>
-            </label>
-            <label className="form-field" htmlFor="assessment-preference">
-              Preferência de avaliação
+            </section>
+            <section className="onboarding-preference-question">
+              <label
+                className="onboarding-question-title"
+                htmlFor="assessment-preference"
+              >
+                Como você prefere receber feedback durante os exercícios?
+                <InformationIcon />
+              </label>
+              <p id="assessment-preference-context">
+                Isso define quanta orientação você verá durante os exercícios.
+              </p>
+              <p id="assessment-preference-help">
+                Você poderá mudar essa escolha depois.
+              </p>
               <select
+                aria-describedby="assessment-preference-context assessment-preference-help assessment-option-description"
                 className="form-control"
                 id="assessment-preference"
                 value={assessmentPreference}
@@ -476,13 +521,20 @@ export function OnboardingWizard(props: WizardProps) {
                 }
               >
                 <option value="guided">Com orientação</option>
-                <option value="independent">Sem intervenções</option>
-                <option value="mixed">Mista</option>
+                <option value="independent">Somente resultado</option>
+                <option value="mixed">Orientação equilibrada</option>
               </select>
-            </label>
+              <p
+                aria-live="polite"
+                className="assessment-option-description"
+                id="assessment-option-description"
+              >
+                {assessmentDescriptions[assessmentPreference]}
+              </p>
+            </section>
             <p className="onboarding-help">
-              Essas informações ajudam o Iatron a distribuir seu plano de
-              estudos. Você poderá alterá-las depois.
+              Essas preferências ajudam o Iatron a criar um plano mais adequado
+              para sua rotina. Você poderá alterá-las depois nas configurações.
             </p>
           </div>
         )}

@@ -644,8 +644,47 @@ button:disabled {
   min-height: 44px;
   padding: 0.65rem 1rem;
 }
+.onboarding-preference-question {
+  display: grid;
+  gap: 0.4rem;
+  padding-top: 0.25rem;
+}
+.onboarding-question-title {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  color: var(--foreground);
+  font-weight: 700;
+  line-height: 1.35;
+}
+.question-information-icon {
+  width: 18px;
+  height: 18px;
+  flex: 0 0 18px;
+  color: var(--primary);
+  stroke: currentColor;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.onboarding-preference-question > p {
+  margin: 0;
+  color: var(--foreground-muted);
+  font-size: 0.9rem;
+  line-height: 1.4;
+}
+.onboarding-preference-question .form-control {
+  margin-top: 0.25rem;
+}
+.onboarding-preference-question .assessment-option-description {
+  padding: 0.65rem 0.75rem;
+  border-left: 2px solid var(--primary);
+  background: #f3f7f4;
+  color: #48534c;
+}
 .onboarding-help {
   margin: 0;
+  padding-top: 0.25rem;
   color: var(--foreground-muted);
   font-size: 0.9rem;
   line-height: 1.45;

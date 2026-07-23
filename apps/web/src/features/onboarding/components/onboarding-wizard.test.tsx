@@ -155,6 +155,58 @@ describe('rotina de estudos do onboarding', () => {
     expect(screen.getAllByRole('radio')).toHaveLength(5);
     expect(screen.queryByLabelText('Dom em minutos')).not.toBeInTheDocument();
     expect(screen.getByLabelText('Duração preferida da sessão')).toBeVisible();
-    expect(screen.getByLabelText('Preferência de avaliação')).toBeVisible();
+    expect(
+      screen.getByLabelText(
+        'Como você prefere receber feedback durante os exercícios?',
+      ),
+    ).toBeVisible();
+  });
+
+  it('explica como a duração e o feedback serão usados', () => {
+    render(<OnboardingWizard {...baseProps} />);
+
+    const duration = screen.getByLabelText('Duração preferida da sessão');
+    expect(duration).toHaveAttribute(
+      'aria-describedby',
+      'session-duration-context session-duration-help',
+    );
+    expect(
+      screen.getByText(
+        'Ajuda o Iatron a montar um plano que caiba na sua rotina.',
+      ),
+    ).toBeVisible();
+    expect(
+      screen.getByText(
+        'Escolha o tempo por sessão. Você poderá mudar depois.',
+      ),
+    ).toBeVisible();
+
+    const feedback = screen.getByLabelText(
+      'Como você prefere receber feedback durante os exercícios?',
+    );
+    expect(feedback).toHaveAttribute(
+      'aria-describedby',
+      'assessment-preference-context assessment-preference-help assessment-option-description',
+    );
+    expect(
+      screen.getByText(
+        'Isso define quanta orientação você verá durante os exercícios.',
+      ),
+    ).toBeVisible();
+    expect(
+      screen.getByText('Receba explicações e dicas durante o estudo.'),
+    ).toBeVisible();
+
+    fireEvent.change(feedback, { target: { value: 'independent' } });
+    expect(
+      screen.getByText(
+        'Veja o resultado e consulte explicações quando desejar.',
+      ),
+    ).toBeVisible();
+    expect(
+      screen.getByText(
+        'Essas preferências ajudam o Iatron a criar um plano mais adequado para sua rotina. Você poderá alterá-las depois nas configurações.',
+      ),
+    ).toBeVisible();
   });
 });
