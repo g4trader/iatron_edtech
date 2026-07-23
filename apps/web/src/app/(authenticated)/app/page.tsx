@@ -52,18 +52,18 @@ export default async function AppHomePage() {
   return (
     <PageContainer>
       <section className="page-intro">
-        <p className="eyebrow">Próxima melhor ação</p>
-        <h1>Vamos retomar sua preparação.</h1>
+        <p className="eyebrow">Seu espaço de estudo</p>
+        <h1>Bom ter você aqui.</h1>
         <p>
-          O Iatron organiza seus próximos passos para você começar pelo que mais
-          importa agora.
+          Escolha um próximo passo. Você pode começar pelo diagnóstico, seguir
+          seu plano ou conversar com o tutor.
         </p>
       </section>
       <section aria-labelledby="actions-title">
         <div className="section-heading">
           <div>
-            <p className="eyebrow">Seu espaço de estudo</p>
-            <h2 id="actions-title">O que você quer fazer agora?</h2>
+            <p className="eyebrow">No seu ritmo</p>
+            <h2 id="actions-title">Por onde você quer continuar?</h2>
           </div>
         </div>
         <div className="action-card-grid">

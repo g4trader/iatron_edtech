@@ -106,6 +106,7 @@ test.describe('hardening mobile', () => {
   }) => {
     test.skip(!isMobile, 'Cobertura executada nos dispositivos móveis');
     await page.goto('/app/onboarding');
+    await page.waitForLoadState('networkidle');
 
     await page.getByRole('button', { name: 'Salvar e continuar' }).click();
     await expect(
@@ -149,7 +150,9 @@ test.describe('hardening mobile', () => {
     await page.getByRole('button', { name: 'Salvar e continuar' }).click();
     await page.getByRole('checkbox').check();
     await page.getByRole('button', { name: 'Salvar e continuar' }).click();
-    await page.getByRole('button', { name: 'Concluir' }).click();
+    await page
+      .getByRole('button', { name: 'Começar minha preparação' })
+      .click();
     await expect(page).toHaveURL(/\/app$/);
     await expectNoPageOverflow(page);
   });
@@ -158,6 +161,7 @@ test.describe('hardening mobile', () => {
     page,
   }) => {
     await page.goto('/app/onboarding');
+    await page.waitForLoadState('networkidle');
     await page.getByLabel('Nome completo').fill('Teste de rolagem');
     await page.getByRole('button', { name: 'Salvar e continuar' }).click();
     await page

@@ -1,6 +1,10 @@
 import type { ReactNode } from 'react';
 
-export function LoadingState({ label = 'Carregando…' }: { label?: string }) {
+export function LoadingState({
+  label = 'Estamos organizando as informações mais importantes para você.',
+}: {
+  label?: string;
+}) {
   return (
     <section
       aria-busy="true"

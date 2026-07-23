@@ -155,6 +155,26 @@ Exemplo:
 - “Salvando suas preferências…”
 - “Preferências salvas”
 
+O texto em andamento descreve o benefício, não o mecanismo:
+
+- Evite: “Processando…”
+- Use: “Organizando suas prioridades…”
+- Evite: “Loading assessment…”
+- Use: “Preparando seu diagnóstico…”
+
+### Resultados e progresso
+
+Apresente primeiro o significado, depois os números.
+
+- Evite: “Resultado: 62%. Coverage: 40%.”
+- Use: “Agora já conhecemos seu ponto de partida. Avaliamos 40% das
+  competências selecionadas e continuaremos refinando esse retrato.”
+
+Celebre conclusão sem exagero:
+
+- Evite: “Incrível! Você arrasou!”
+- Use: “Sessão concluída. Este resultado já atualizou sua evolução.”
+
 ## Vocabulário preferido
 
 | Evite | Prefira |
@@ -179,4 +199,3 @@ Antes de publicar um texto, confirme:
 - evita jargão interno e promessas artificiais?
 - funciona fora do contexto visual?
 - continua claro em uma tela pequena e para leitor de tela?
-

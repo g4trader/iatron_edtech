@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import type { ReactNode } from 'react';
 import type { StudyPlanItem } from '@iatron/contracts';
+import { ActionSubmitButton } from '@/components/feedback/action-submit-button';
 import { executePlanItem } from '../actions';
 
 export function PlanPage({
@@ -85,7 +86,12 @@ export function PlanItemCard({ item }: { item: StudyPlanItem }) {
             <form action={executePlanItem}>
               <input name="itemId" type="hidden" value={item.id} />
               <input name="action" type="hidden" value="start" />
-              <button className="secondary-button">Iniciar</button>
+              <ActionSubmitButton
+                pendingLabel="Iniciando…"
+                variant="secondary"
+              >
+                Iniciar atividade
+              </ActionSubmitButton>
             </form>
           )}
           <form action={executePlanItem}>
@@ -96,7 +102,12 @@ export function PlanItemCard({ item }: { item: StudyPlanItem }) {
               type="hidden"
               value={item.estimatedMinutes}
             />
-            <button className="secondary-button">Concluir</button>
+            <ActionSubmitButton
+              pendingLabel="Salvando conclusão…"
+              variant="secondary"
+            >
+              Concluir atividade
+            </ActionSubmitButton>
           </form>
           <form action={executePlanItem}>
             <input name="itemId" type="hidden" value={item.id} />
@@ -106,7 +117,12 @@ export function PlanItemCard({ item }: { item: StudyPlanItem }) {
               type="hidden"
               value="Reagendado pelo estudante"
             />
-            <button className="secondary-button">Adiar</button>
+            <ActionSubmitButton
+              pendingLabel="Reorganizando…"
+              variant="secondary"
+            >
+              Fazer depois
+            </ActionSubmitButton>
           </form>
           <form action={executePlanItem}>
             <input name="itemId" type="hidden" value={item.id} />
@@ -116,7 +132,12 @@ export function PlanItemCard({ item }: { item: StudyPlanItem }) {
               type="hidden"
               value="Item pulado pelo estudante"
             />
-            <button className="secondary-button">Pular</button>
+            <ActionSubmitButton
+              pendingLabel="Atualizando plano…"
+              variant="secondary"
+            >
+              Remover de hoje
+            </ActionSubmitButton>
           </form>
         </div>
       )}

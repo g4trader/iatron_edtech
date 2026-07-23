@@ -317,7 +317,8 @@ export function OnboardingWizard(props: WizardProps) {
               Vamos conhecer você
             </h1>
             <p className="onboarding-description">
-              Estas informações personalizam sua preparação.
+              Conte só o essencial. Usaremos estas respostas para adaptar sua
+              preparação ao seu momento — e você poderá mudar tudo depois.
             </p>
             <label className="form-field" htmlFor="display-name">
               Nome completo
@@ -534,7 +535,7 @@ export function OnboardingWizard(props: WizardProps) {
             </section>
             <p className="onboarding-help">
               Essas preferências ajudam o Iatron a criar um plano mais adequado
-              para sua rotina. Você poderá alterá-las depois nas configurações.
+              para sua rotina. Você poderá alterá-las depois.
             </p>
           </div>
         )}
@@ -548,7 +549,9 @@ export function OnboardingWizard(props: WizardProps) {
               Escolha suas provas
             </h1>
             <p className="onboarding-description">
-              Você pode selecionar mais de uma opção.
+              Escolha onde pretende prestar residência. Isso nos ajuda a
+              priorizar conteúdos relevantes para suas provas. Você pode
+              selecionar mais de uma opção e alterar depois.
             </p>
             <fieldset
               ref={targetGroupRef}
@@ -588,9 +591,10 @@ export function OnboardingWizard(props: WizardProps) {
               Tudo pronto
             </h1>
             <p className="onboarding-description">
-              Seu plano será baseado em {targets.length} prova(s)-alvo e na
-              disponibilidade semanal informada. Métricas pedagógicas só serão
-              calculadas após atividades reais.
+              Já conhecemos sua rotina e suas {targets.length}{' '}
+              {targets.length === 1 ? 'prova-alvo' : 'provas-alvo'}. Agora, seu
+              primeiro diagnóstico vai mostrar o ponto de partida para
+              montarmos um plano com evidências reais.
             </p>
           </div>
         )}
@@ -617,7 +621,7 @@ export function OnboardingWizard(props: WizardProps) {
             {pending
               ? 'Salvando…'
               : step === 4
-                ? 'Concluir'
+                ? 'Começar minha preparação'
                 : 'Salvar e continuar'}
           </button>
         </div>

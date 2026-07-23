@@ -197,7 +197,9 @@ test('cadastro, confirmação, SSR, retomada, RLS, logout e recuperação reais'
   await page.getByRole('button', { name: 'Salvar e continuar' }).click();
   await page.getByRole('checkbox').first().check();
   await page.getByRole('button', { name: 'Salvar e continuar' }).click();
-  await page.getByRole('button', { name: 'Concluir' }).click();
+  await page
+    .getByRole('button', { name: 'Começar minha preparação' })
+    .click();
   await expect(page).toHaveURL(/\/app$/);
   await page.reload();
   await expect(page).toHaveURL(/\/app$/);

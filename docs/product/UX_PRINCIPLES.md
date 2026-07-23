@@ -46,6 +46,10 @@ Nunca burocracia.
 13. Toda recomendação precisa ser explicável em linguagem humana.
 14. O estudante deve perceber valor imediato nas informações que compartilha.
 15. Mobile first. Desktop é uma adaptação, nunca o contrário.
+16. Projete para o estudante cansado. O fluxo deve continuar claro depois de
+    um plantão longo, sem depender de memória, exploração ou tentativa e erro.
+17. Momentos de transição devem contar uma história: o que aprendemos, o que
+    mudou e qual é o próximo passo.
 
 ## Padrões de aplicação
 
@@ -79,6 +83,16 @@ Um estado vazio deve:
 - Ações relevantes devem responder visualmente com resultado claro.
 - Erros devem explicar o que aconteceu em linguagem simples e, quando
   possível, oferecer recuperação.
+- Botões que iniciam trabalho devem comunicar o estado em andamento e impedir
+  envios duplicados.
+
+### Primeiros momentos
+
+- O primeiro acesso acolhe e oferece um ponto de partida.
+- O diagnóstico explica propósito, esforço, progresso e resultado esperado.
+- O resultado transforma métricas em uma narrativa fiel às evidências.
+- O plano explica critérios, tempo considerado e possibilidade de ajuste.
+- O Tutor se apresenta, delimita seu papel e oferece perguntas concretas.
 
 ### IA e recomendações
 

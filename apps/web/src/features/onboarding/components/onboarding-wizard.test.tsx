@@ -205,7 +205,7 @@ describe('rotina de estudos do onboarding', () => {
     ).toBeVisible();
     expect(
       screen.getByText(
-        'Essas preferências ajudam o Iatron a criar um plano mais adequado para sua rotina. Você poderá alterá-las depois nas configurações.',
+        'Essas preferências ajudam o Iatron a criar um plano mais adequado para sua rotina. Você poderá alterá-las depois.',
       ),
     ).toBeVisible();
   });

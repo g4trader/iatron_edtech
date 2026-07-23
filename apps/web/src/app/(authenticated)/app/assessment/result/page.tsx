@@ -12,6 +12,11 @@ const classificationLabel = {
   developing: 'em desenvolvimento',
   unmeasured: 'ainda não avaliada',
 } as const;
+const confidenceLabel = {
+  low: 'baixa',
+  medium: 'média',
+  high: 'alta',
+} as const;
 
 export default async function ResultPage({
   searchParams,
@@ -40,11 +45,35 @@ export default async function ResultPage({
       </AssessmentPage>
     );
   const result = await assessmentResult(id);
+  const strongCount = result.competencies.filter(
+    ({ classification }) => classification === 'strong',
+  ).length;
+  const priorityCount = result.competencies.filter(
+    ({ classification }) => classification === 'weak',
+  ).length;
   return (
     <AssessmentPage
-      title="Seu resultado"
-      description="Use este retrato para entender seus pontos fortes e escolher onde concentrar o estudo."
+      title="Agora já conhecemos seu ponto de partida"
+      description="Seu resultado mostra o que já está consistente e onde seu tempo de estudo pode gerar mais avanço."
     >
+      <section className="experience-callout" aria-label="Resumo do diagnóstico">
+        <div>
+          <p className="eyebrow">Seu retrato de hoje</p>
+          <h2>
+            {strongCount > 0
+              ? `${strongCount} ${strongCount === 1 ? 'ponto forte identificado' : 'pontos fortes identificados'}`
+              : 'Seu primeiro retrato está pronto'}
+          </h2>
+          <p>
+            {priorityCount > 0
+              ? `${priorityCount} ${priorityCount === 1 ? 'competência merece' : 'competências merecem'} atenção agora. Seu plano usará exatamente essas evidências para organizar os próximos passos.`
+              : 'Continue praticando para aumentarmos a confiança deste diagnóstico e refinarmos seu plano.'}
+          </p>
+        </div>
+        <Link className="primary-button inline-flex" href="/app/plan">
+          Ver meu plano
+        </Link>
+      </section>
       <div className="grid gap-3 sm:grid-cols-3">
         <Metric
           label="Respostas corretas"
@@ -83,7 +112,7 @@ export default async function ResultPage({
             </strong>
             <p>
               Domínio {Math.round(item.mastery * 100)}% · confiança{' '}
-              {item.confidenceLevel} ·{' '}
+              {confidenceLabel[item.confidenceLevel]} ·{' '}
               {classificationLabel[item.classification]}
             </p>
           </article>

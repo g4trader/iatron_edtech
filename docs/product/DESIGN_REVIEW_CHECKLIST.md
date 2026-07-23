@@ -31,6 +31,8 @@ Uma tela só pode ser aprovada quando:
 
 ## Clareza
 
+- [ ] Uma pessoa cansada consegue identificar a ação principal sem explorar a
+      tela?
 - [ ] O estudante entende imediatamente onde está?
 - [ ] A ação principal está evidente?
 - [ ] A tela explica por que existe?
@@ -80,6 +82,7 @@ Uma tela só pode ser aprovada quando:
 - [ ] A interface confirma que a ação terminou?
 - [ ] O resultado e o próximo passo estão claros?
 - [ ] O feedback pode ser percebido por tecnologias assistivas?
+- [ ] O feedback é factual e evita celebração artificial?
 
 ### Vazio
 

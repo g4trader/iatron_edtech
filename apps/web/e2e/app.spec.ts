@@ -3,14 +3,14 @@ import { expect, test } from '@playwright/test';
 test('abre o início autenticado e inicia uma conversa', async ({ page }) => {
   await page.goto('/app');
   await expect(
-    page.getByRole('heading', { name: 'Vamos retomar sua preparação.' }),
+    page.getByRole('heading', { name: 'Bom ter você aqui.' }),
   ).toBeVisible();
   await page
     .getByRole('link', { name: /conversar com meu tutor/i })
     .first()
     .click();
   await expect(
-    page.getByRole('heading', { name: 'Como posso ajudar no seu estudo?' }),
+    page.getByRole('heading', { name: 'Por onde vamos começar?' }),
   ).toBeVisible();
 });
 
@@ -23,6 +23,20 @@ test('envia mensagem e interrompe streaming', async ({ page }) => {
   ).toBeVisible();
   await page.getByRole('button', { name: /interromper/i }).click();
   await expect(page.getByText('Explique o tema')).toBeVisible();
+});
+
+test('apresenta o tutor antes da primeira conversa', async ({ page }) => {
+  await page.goto('/app/tutor');
+  await expect(
+    page.getByRole('heading', { name: 'Olá, sou seu tutor de estudos' }),
+  ).toBeVisible();
+  await page
+    .getByRole('button', { name: 'Fazer minha primeira pergunta' })
+    .click();
+  await expect(page).toHaveURL(/\/app\/chat\/new/);
+  await expect(
+    page.getByRole('heading', { name: 'Por onde vamos começar?' }),
+  ).toBeVisible();
 });
 
 test('abre uma questão, responde e confirma', async ({ page }) => {

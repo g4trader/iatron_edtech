@@ -1,10 +1,10 @@
 'use client';
 
 const suggestions = [
-  'Revisar um tema importante',
-  'Praticar com uma questão',
-  'Organizar meu estudo de hoje',
-  'Entender minhas prioridades',
+  'Por que esta competência está no meu plano?',
+  'O que significa meu domínio?',
+  'Como posso melhorar minha principal prioridade?',
+  'Ajude-me a revisar um tema de hoje',
 ];
 
 export function EmptyChatState({
@@ -17,10 +17,10 @@ export function EmptyChatState({
       <span className="empty-chat-mark" aria-hidden="true">
         ia
       </span>
-      <h2>Como posso ajudar no seu estudo?</h2>
+      <h2>Por onde vamos começar?</h2>
       <p>
-        Escolha um ponto de partida ou pergunte sobre seu diagnóstico, plano ou
-        conteúdo.
+        Posso explicar seus resultados, ajudar com um conteúdo ou mostrar o
+        motivo de uma recomendação. Escolha uma pergunta ou escreva a sua.
       </p>
       <div className="suggestion-grid">
         {suggestions.map((suggestion) => (

@@ -1633,6 +1633,61 @@ button:disabled {
 .empty-state > .primary-button {
   margin-top: 0.9rem;
 }
+.experience-callout {
+  display: grid;
+  gap: 1.25rem;
+  align-items: end;
+  padding: clamp(1rem, 3vw, 1.5rem);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background:
+    linear-gradient(135deg, rgb(236 244 239 / 82%), rgb(255 255 255 / 88%));
+}
+.experience-callout h2,
+.experience-callout p {
+  margin: 0;
+}
+.experience-callout h2 {
+  margin-top: 0.2rem;
+  font-size: clamp(1.2rem, 3vw, 1.55rem);
+}
+.experience-callout h2 + p {
+  margin-top: 0.65rem;
+  color: var(--foreground-muted);
+}
+.experience-steps {
+  display: grid;
+  gap: 0.65rem;
+  margin: 1rem 0 0;
+  padding-left: 1.35rem;
+}
+.experience-reassurance {
+  margin-top: 1rem !important;
+  color: var(--primary);
+  font-weight: 650;
+}
+.guided-progress {
+  display: grid;
+  gap: 0.65rem;
+  padding: 1rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--surface);
+}
+.guided-progress > div {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+}
+.guided-progress progress {
+  width: 100%;
+  accent-color: var(--primary);
+}
+.guided-progress p {
+  margin: 0;
+  color: var(--foreground-muted);
+  font-size: 0.9rem;
+}
 .loading-state {
   display: flex;
   align-items: center;

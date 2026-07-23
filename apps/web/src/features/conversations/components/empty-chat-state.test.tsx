@@ -7,8 +7,12 @@ describe('EmptyChatState', () => {
     const onSelect = vi.fn();
     render(<EmptyChatState onSelect={onSelect} />);
     fireEvent.click(
-      screen.getByRole('button', { name: /praticar com uma questão/i }),
+      screen.getByRole('button', {
+        name: /por que esta competência está no meu plano/i,
+      }),
     );
-    expect(onSelect).toHaveBeenCalledWith('Praticar com uma questão');
+    expect(onSelect).toHaveBeenCalledWith(
+      'Por que esta competência está no meu plano?',
+    );
   });
 });

@@ -3,6 +3,7 @@ import {
   submitDiagnosticAnswer,
 } from '@/features/assessments/actions';
 import Link from 'next/link';
+import { ActionSubmitButton } from '@/components/feedback/action-submit-button';
 import { AssessmentPage } from '@/features/assessments/components/adaptive-page';
 import { nextQuestion } from '@/features/assessments/server/adaptive-assessment';
 
@@ -33,7 +34,9 @@ export default async function SessionPage({
       >
         <form action={completeDiagnostic}>
           <input type="hidden" name="assessmentId" value={id} />
-          <button className="primary-button">Concluir avaliação</button>
+          <ActionSubmitButton pendingLabel="Analisando suas competências…">
+            Ver meu resultado
+          </ActionSubmitButton>
         </form>
       </AssessmentPage>
     );
@@ -41,8 +44,23 @@ export default async function SessionPage({
   return (
     <AssessmentPage
       title={`Questão ${question.number} de ${question.total}`}
-      description={question.selectionReason}
+      description="Responda com calma. Cada questão ajuda a tornar seu diagnóstico mais confiável."
     >
+      <section
+        aria-label={`Progresso: questão ${question.number} de ${question.total}`}
+        className="guided-progress"
+      >
+        <div>
+          <span>Seu progresso</span>
+          <strong>
+            {question.number} de {question.total}
+          </strong>
+        </div>
+        <progress max={question.total} value={question.number} />
+        <p>
+          <strong>Por que esta questão?</strong> {question.selectionReason}
+        </p>
+      </section>
       <form action={submitDiagnosticAnswer} className="space-y-5">
         <input type="hidden" name="assessmentId" value={id} />
         <input
@@ -86,7 +104,9 @@ export default async function SessionPage({
             <option value="high">Alta</option>
           </select>
         </label>
-        <button className="primary-button">Confirmar resposta</button>
+        <ActionSubmitButton pendingLabel="Salvando sua resposta…">
+          Confirmar resposta
+        </ActionSubmitButton>
       </form>
     </AssessmentPage>
   );
