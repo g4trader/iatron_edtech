@@ -115,13 +115,24 @@ test.describe('hardening mobile', () => {
     await page.getByLabel('Nome completo').fill('Maria Mobile');
     await page.getByRole('button', { name: 'Salvar e continuar' }).click();
     await expect(
-      page.getByRole('heading', { name: 'Sua semana de estudos' }),
+      page.getByRole('heading', { name: 'Sua rotina de estudos' }),
     ).toBeVisible();
+    await expect(page.getByLabel('Dom em minutos')).toBeHidden();
 
     await page.getByRole('button', { name: 'Voltar' }).click();
     await expect(page.getByLabel('Nome completo')).toHaveValue('Maria Mobile');
     await page.getByRole('button', { name: 'Salvar e continuar' }).click();
+    await page
+      .getByRole('radio', { name: /Estudo praticamente todos os dias/ })
+      .click();
+    await expect(
+      page.getByRole('region', { name: 'Disponibilidade semanal' }),
+    ).toContainText('315 minutos');
+    await page.getByRole('button', { name: 'Personalizar' }).click();
     await page.getByLabel('Seg em minutos').fill('60');
+    await expect(
+      page.getByRole('region', { name: 'Disponibilidade semanal' }),
+    ).toContainText('330 minutos');
     await page.getByRole('button', { name: 'Salvar e continuar' }).click();
     await page.getByRole('checkbox').check();
     await page.getByRole('button', { name: 'Salvar e continuar' }).click();

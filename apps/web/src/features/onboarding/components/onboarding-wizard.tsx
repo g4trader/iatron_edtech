@@ -25,6 +25,70 @@ interface WizardProps {
   editions: Edition[];
 }
 const weekdays = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
+const routineProfiles = [
+  {
+    id: 'daily',
+    icon: '📚',
+    title: 'Estudo praticamente todos os dias',
+    description: 'Tenho uma rotina relativamente constante durante a semana.',
+    minutes: [45, 45, 45, 45, 45, 45, 45],
+  },
+  {
+    id: 'weekdays',
+    icon: '💼',
+    title: 'Consigo estudar principalmente em dias úteis',
+    description: 'Durante a semana tenho mais disponibilidade.',
+    minutes: [0, 60, 60, 60, 60, 60, 0],
+  },
+  {
+    id: 'shifts',
+    icon: '🏥',
+    title: 'Minha rotina depende de plantões',
+    description: 'Minha disponibilidade muda bastante.',
+    minutes: [90, 0, 90, 0, 90, 0, 90],
+  },
+  {
+    id: 'manual',
+    icon: '⚙️',
+    title: 'Prefiro configurar manualmente',
+    description: 'Quero informar a disponibilidade de cada dia.',
+    minutes: [0, 0, 0, 0, 0, 0, 0],
+  },
+  {
+    id: 'unsure',
+    icon: '✨',
+    title: 'Não tenho certeza ainda',
+    description:
+      'Sem problemas. Vamos começar com uma rotina equilibrada e você poderá ajustar isso depois.',
+    minutes: [45, 45, 45, 45, 45, 45, 45],
+  },
+] as const;
+type RoutineId = (typeof routineProfiles)[number]['id'];
+
+function availabilityFrom(items: WizardProps['initialAvailability']) {
+  return Object.fromEntries(
+    weekdays.map((_, index) => [
+      index,
+      items.find((item) => item.weekday === index)?.minutesAvailable ?? 0,
+    ]),
+  ) as Record<number, number>;
+}
+
+function inferRoutine(
+  availability: Record<number, number>,
+  hasPersistedAvailability: boolean,
+): RoutineId | null {
+  if (!hasPersistedAvailability) return null;
+  const match = routineProfiles.find(
+    (profile) =>
+      profile.id !== 'manual' &&
+      profile.minutes.every((minutes, weekday) => availability[weekday] === minutes),
+  );
+  if (match) return match.id;
+  return Object.values(availability).some((minutes) => minutes > 0)
+    ? 'manual'
+    : null;
+}
 
 export function OnboardingWizard(props: WizardProps) {
   const [step, setStep] = useState(
@@ -47,13 +111,20 @@ export function OnboardingWizard(props: WizardProps) {
     props.initialAssessmentPreference ?? 'guided',
   );
   const [availability, setAvailability] = useState(() =>
-    Object.fromEntries(
-      weekdays.map((_, index) => [
-        index,
-        props.initialAvailability.find((item) => item.weekday === index)
-          ?.minutesAvailable ?? 0,
-      ]),
+    availabilityFrom(props.initialAvailability),
+  );
+  const [routine, setRoutine] = useState<RoutineId | null>(() =>
+    inferRoutine(
+      availabilityFrom(props.initialAvailability),
+      props.initialAvailability.length > 0,
     ),
+  );
+  const [customizingAvailability, setCustomizingAvailability] = useState(
+    () =>
+      inferRoutine(
+        availabilityFrom(props.initialAvailability),
+        props.initialAvailability.length > 0,
+      ) === 'manual',
   );
   const [targets, setTargets] = useState(props.initialTargets);
   const [error, setError] = useState('');
@@ -72,8 +143,38 @@ export function OnboardingWizard(props: WizardProps) {
       targetGroupRef.current?.focus();
       return false;
     }
+    if (step === 2 && !routine) {
+      setError('Escolha a rotina que mais combina com você.');
+      return false;
+    }
     return true;
   };
+
+  const selectRoutine = (id: RoutineId) => {
+    const profile = routineProfiles.find((item) => item.id === id);
+    if (!profile) return;
+    setRoutine(id);
+    setAvailability(
+      Object.fromEntries(
+        profile.minutes.map((minutes, weekday) => [weekday, minutes]),
+      ),
+    );
+    setCustomizingAvailability(id === 'manual');
+    setError('');
+  };
+
+  const weeklyMinutes = weekdays.reduce(
+    (total, _, weekday) => total + Number(availability[weekday] ?? 0),
+    0,
+  );
+  const weeklyHours = Math.floor(weeklyMinutes / 60);
+  const remainingMinutes = weeklyMinutes % 60;
+  const weeklyDuration =
+    weeklyHours === 0
+      ? `${remainingMinutes} minutos`
+      : remainingMinutes === 0
+        ? `${weeklyHours} ${weeklyHours === 1 ? 'hora' : 'horas'}`
+        : `${weeklyHours} ${weeklyHours === 1 ? 'hora' : 'horas'} e ${remainingMinutes} minutos`;
 
   const persist = (complete = false) => {
     if (!validateStep()) return;
@@ -227,70 +328,121 @@ export function OnboardingWizard(props: WizardProps) {
               id="onboarding-title"
               tabIndex={-1}
             >
-              Sua semana de estudos
+              Sua rotina de estudos
             </h1>
             <p className="onboarding-description">
-              Informe os minutos disponíveis em cada dia.
+              Como é sua rotina de estudos?
             </p>
-            <fieldset className="availability-grid">
-              <legend className="sr-only">Disponibilidade por dia</legend>
-              {weekdays.map((day, index) => (
-                <label className="availability-field" key={day}>
-                  <span>{day}</span>
-                  <input
-                    aria-label={`${day} em minutos`}
-                    className="form-control"
-                    inputMode="numeric"
-                    type="number"
-                    min="0"
-                    max="1440"
-                    value={availability[index]}
-                    onChange={(event) =>
-                      setAvailability((current) => ({
-                        ...current,
-                        [index]: Number(event.target.value),
-                      }))
-                    }
-                  />
-                </label>
+            <fieldset className="routine-options">
+              <legend className="sr-only">Perfil da rotina de estudos</legend>
+              {routineProfiles.map((profile) => (
+                <button
+                  aria-checked={routine === profile.id}
+                  className="routine-option"
+                  key={profile.id}
+                  onClick={() => selectRoutine(profile.id)}
+                  role="radio"
+                  type="button"
+                >
+                  <span aria-hidden="true" className="routine-option-icon">
+                    {profile.icon}
+                  </span>
+                  <span>
+                    <strong>{profile.title}</strong>
+                    <small>{profile.description}</small>
+                  </span>
+                </button>
               ))}
             </fieldset>
-            <div className="onboarding-field-grid">
-              <label className="form-field" htmlFor="session-duration">
-                Duração preferida da sessão
-                <select
-                  className="form-control"
-                  id="session-duration"
-                  value={preferredSessionMinutes}
-                  onChange={(event) =>
-                    setPreferredSessionMinutes(Number(event.target.value))
-                  }
+            {routine && (
+              <>
+                <section
+                  aria-label="Disponibilidade semanal"
+                  className="availability-summary"
                 >
-                  {[30, 45, 60, 90].map((minutes) => (
-                    <option key={minutes} value={minutes}>
-                      {minutes} minutos
-                    </option>
-                  ))}
-                </select>
-              </label>
-              <label className="form-field" htmlFor="assessment-preference">
-                Preferência de avaliação
-                <select
-                  className="form-control"
-                  id="assessment-preference"
-                  value={assessmentPreference}
-                  onChange={(event) =>
-                    setAssessmentPreference(
-                      event.target.value as typeof assessmentPreference,
-                    )
-                  }
-                >
-                  <option value="guided">Com orientação</option>
-                  <option value="independent">Sem intervenções</option>
-                  <option value="mixed">Mista</option>
-                </select>
-              </label>
-            </div>
+                  <span>Disponibilidade semanal</span>
+                  <strong>{weeklyMinutes} minutos</strong>
+                  <small>≈ {weeklyDuration}</small>
+                </section>
+                <div className="availability-customize">
+                  <p>Deseja ajustar algum dia?</p>
+                  <button
+                    aria-controls="availability-fields"
+                    aria-expanded={customizingAvailability}
+                    className="secondary-button"
+                    onClick={() =>
+                      setCustomizingAvailability((current) => !current)
+                    }
+                    type="button"
+                  >
+                    {customizingAvailability ? 'Recolher' : 'Personalizar'}
+                  </button>
+                </div>
+              </>
+            )}
+            {customizingAvailability && (
+              <fieldset className="availability-grid" id="availability-fields">
+                <legend className="sr-only">Disponibilidade por dia</legend>
+                {weekdays.map((day, index) => (
+                  <label className="availability-field" key={day}>
+                    <span>{day}</span>
+                    <input
+                      aria-label={`${day} em minutos`}
+                      className="form-control"
+                      inputMode="numeric"
+                      type="number"
+                      min="0"
+                      max="1440"
+                      value={availability[index]}
+                      onChange={(event) =>
+                        setAvailability((current) => ({
+                          ...current,
+                          [index]: Number(event.target.value),
+                        }))
+                      }
+                    />
+                  </label>
+                ))}
+              </fieldset>
+            )}
+            <label className="form-field" htmlFor="session-duration">
+              Duração preferida da sessão
+              <select
+                className="form-control"
+                id="session-duration"
+                value={preferredSessionMinutes}
+                onChange={(event) =>
+                  setPreferredSessionMinutes(Number(event.target.value))
+                }
+              >
+                {[30, 45, 60, 90].map((minutes) => (
+                  <option key={minutes} value={minutes}>
+                    {minutes} minutos
+                  </option>
+                ))}
+              </select>
+            </label>
+            <label className="form-field" htmlFor="assessment-preference">
+              Preferência de avaliação
+              <select
+                className="form-control"
+                id="assessment-preference"
+                value={assessmentPreference}
+                onChange={(event) =>
+                  setAssessmentPreference(
+                    event.target.value as typeof assessmentPreference,
+                  )
+                }
+              >
+                <option value="guided">Com orientação</option>
+                <option value="independent">Sem intervenções</option>
+                <option value="mixed">Mista</option>
+              </select>
+            </label>
+            <p className="onboarding-help">
+              Essas informações ajudam o Iatron a distribuir seu plano de
+              estudos. Você poderá alterá-las depois.
+            </p>
           </div>
         )}
         {step === 3 && (

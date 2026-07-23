@@ -547,6 +547,97 @@ button:disabled {
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 1rem;
 }
+.routine-options {
+  display: grid;
+  gap: 0.75rem;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+.routine-option {
+  display: flex;
+  width: 100%;
+  min-height: 76px;
+  align-items: flex-start;
+  gap: 0.8rem;
+  padding: 1rem;
+  border: 1px solid #aeb6af;
+  border-radius: 1rem;
+  background: var(--surface-elevated);
+  color: var(--foreground);
+  cursor: pointer;
+  text-align: left;
+  transition:
+    border-color 160ms ease,
+    background 160ms ease,
+    box-shadow 160ms ease;
+}
+.routine-option:hover {
+  border-color: var(--primary);
+}
+.routine-option[aria-checked='true'] {
+  border-color: var(--primary);
+  background: #edf4ef;
+  box-shadow: 0 0 0 2px rgb(53 101 78 / 14%);
+}
+.routine-option:focus-visible {
+  outline: 3px solid color-mix(in srgb, var(--primary) 35%, transparent);
+  outline-offset: 2px;
+}
+.routine-option-icon {
+  font-size: 1.35rem;
+  line-height: 1.2;
+}
+.routine-option strong,
+.routine-option small {
+  display: block;
+}
+.routine-option small {
+  margin-top: 0.25rem;
+  color: var(--foreground-muted);
+  font-size: 0.9rem;
+  line-height: 1.35;
+}
+.availability-summary {
+  display: grid;
+  gap: 0.2rem;
+  padding: 1rem;
+  border: 1px solid var(--border);
+  border-radius: 1rem;
+  background: var(--surface);
+}
+.availability-summary span {
+  color: var(--foreground-muted);
+  font-size: 0.9rem;
+  font-weight: 700;
+}
+.availability-summary strong {
+  font-size: 1.5rem;
+}
+.availability-summary small {
+  color: var(--foreground-muted);
+  font-size: 1rem;
+}
+.availability-customize {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+.availability-customize p {
+  margin: 0;
+  font-weight: 700;
+}
+.availability-customize button {
+  min-height: 44px;
+  padding: 0.65rem 1rem;
+}
+.onboarding-help {
+  margin: 0;
+  color: var(--foreground-muted);
+  font-size: 0.9rem;
+  line-height: 1.45;
+}
 .availability-grid {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
@@ -1665,6 +1756,16 @@ button:disabled {
   }
   .onboarding-field-grid {
     grid-template-columns: 1fr;
+  }
+  .routine-option {
+    min-height: 84px;
+  }
+  .availability-customize {
+    align-items: stretch;
+    flex-direction: column;
+  }
+  .availability-customize button {
+    width: 100%;
   }
   .availability-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
