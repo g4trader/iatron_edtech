@@ -531,3 +531,85 @@ export interface ChatTransport {
   sendMessage(input: SendMessageInput): AsyncIterable<ChatTransportEvent>;
   cancel(requestId: string): Promise<void>;
 }
+
+export const tutorModeSchema = z.enum([
+  'general',
+  'competency_explanation',
+  'question_explanation',
+  'gap_coaching',
+  'plan_explanation',
+  'study_guidance',
+]);
+export type TutorMode = z.infer<typeof tutorModeSchema>;
+
+export const tutorOriginTypeSchema = z.enum([
+  'competency',
+  'question',
+  'gap',
+  'plan_item',
+  'assessment',
+]);
+export type TutorOriginType = z.infer<typeof tutorOriginTypeSchema>;
+
+export const createTutorConversationSchema = z
+  .object({
+    mode: tutorModeSchema.default('general'),
+    originType: tutorOriginTypeSchema.nullable().default(null),
+    originId: uuidSchema.nullable().default(null),
+  })
+  .refine((input) => (input.originType === null) === (input.originId === null), {
+    message: 'Origem e identificador devem ser informados juntos.',
+  });
+
+export const sendTutorMessageSchema = z.object({
+  requestId: uuidSchema,
+  text: z.string().trim().min(1).max(4000),
+});
+
+export const tutorConversationSchema = z.object({
+  id: uuidSchema,
+  title: z.string(),
+  mode: tutorModeSchema,
+  originType: tutorOriginTypeSchema.nullable(),
+  originId: uuidSchema.nullable(),
+  status: z.enum(['active', 'archived']),
+  createdAt: z.iso.datetime({ offset: true }),
+  updatedAt: z.iso.datetime({ offset: true }),
+});
+export type TutorConversation = z.infer<typeof tutorConversationSchema>;
+
+export const tutorMessageSchema = z.object({
+  id: uuidSchema,
+  role: z.enum(['user', 'assistant']),
+  content: z.string(),
+  status: z.enum([
+    'pending',
+    'streaming',
+    'complete',
+    'partial',
+    'failed',
+    'cancelled',
+  ]),
+  requestId: uuidSchema.nullable(),
+  createdAt: z.iso.datetime({ offset: true }),
+});
+export type TutorMessage = z.infer<typeof tutorMessageSchema>;
+
+export const tutorReferenceSchema = z.object({
+  type: z.enum([
+    'profile',
+    'target_exam',
+    'study_plan',
+    'competency',
+    'mastery',
+    'gap',
+    'evidence',
+    'question',
+    'guideline',
+    'assessment',
+  ]),
+  entityId: uuidSchema.nullable(),
+  label: z.string(),
+  snapshot: z.record(z.string(), z.unknown()),
+});
+export type TutorReference = z.infer<typeof tutorReferenceSchema>;
