@@ -37,7 +37,7 @@ on conflict (id) do update set institution_id=excluded.institution_id,exam_board
 
 insert into public.exam_program_institutions (exam_program_id,institution_id,participation_role)
 select id,institution_id,'host' from public.exam_programs where id::text like '63000000-0000-4000-8000-%'
-on conflict do update set participation_role=excluded.participation_role;
+on conflict (exam_program_id,institution_id) do update set participation_role=excluded.participation_role;
 
 insert into public.exam_editions
   (id,exam_program_id,year,application_date,registration_deadline,is_active,exam_board_id,edition,city,modality,status,official_url,source_title,source_url,verified_at,verification_status,update_method,unconfirmed_fields) values
