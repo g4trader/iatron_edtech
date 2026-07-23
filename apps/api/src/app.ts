@@ -32,6 +32,9 @@ import {
   type StudyPlanRepository,
 } from './study-plan-repository.js';
 import { registerStudyPlanRoutes } from './study-plan-routes.js';
+import { createOpenAiGateway, type AiGateway } from '@iatron/ai';
+import { createTutorRepository, type TutorRepository } from './tutor-repository.js';
+import { registerTutorRoutes } from './tutor-routes.js';
 
 export interface BuildAppOptions {
   environment: ApiEnvironment;
@@ -44,6 +47,9 @@ export interface BuildAppOptions {
   studyPlanRepositoryFactory?: (token: string) => StudyPlanRepository;
   studyPlanClock?: () => Date;
   learningClock?: () => Date;
+  tutorRepositoryFactory?: (token: string) => TutorRepository;
+  aiGateway?: AiGateway;
+  tutorClock?: () => number;
 }
 
 function isFastifyValidationError(error: unknown): boolean {
@@ -168,6 +174,20 @@ export async function buildApp(
             ((token) => createLearningRepository(options.environment, token)),
           options.studyPlanClock,
         );
+        await registerTutorRoutes(protectedApi, {
+          environment: options.environment,
+          repositoryFactory:
+            options.tutorRepositoryFactory ??
+            ((token) => createTutorRepository(options.environment, token)),
+          gateway:
+            options.aiGateway ??
+            createOpenAiGateway({
+              apiKey: options.environment.OPENAI_API_KEY,
+              model: options.environment.OPENAI_MODEL,
+              timeoutMs: options.environment.OPENAI_REQUEST_TIMEOUT_MS,
+            }),
+          clock: options.tutorClock,
+        });
       });
     },
     { prefix: '/v1' },

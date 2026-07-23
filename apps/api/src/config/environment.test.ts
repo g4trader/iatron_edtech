@@ -36,6 +36,7 @@ describe('readEnvironment', () => {
         SUPABASE_PUBLISHABLE_KEY: 'public-key',
         SUPABASE_JWT_ISSUER: 'https://example.supabase.co/auth/v1',
         CORS_ALLOWED_ORIGINS: 'https://staging.example.com',
+        OPENAI_API_KEY: 'test-key',
       }),
     ).toMatchObject({ APP_ENV: 'staging', ENABLE_API_DOCS: '0' });
   });

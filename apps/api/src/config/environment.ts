@@ -15,6 +15,10 @@ const apiEnvironmentSchema = z.object({
   SUPABASE_JWT_ISSUER: z.url().default('http://127.0.0.1:54321/auth/v1'),
   SUPABASE_JWT_AUDIENCE: z.string().min(1).default('authenticated'),
   SUPABASE_JWT_ALGORITHMS: z.string().default('ES256,RS256'),
+  OPENAI_API_KEY: z.string().min(1).default('local-openai-key'),
+  OPENAI_MODEL: z.string().min(1).default('gpt-5.6-sol'),
+  OPENAI_MAX_OUTPUT_TOKENS: z.coerce.number().int().min(128).max(4096).default(1200),
+  OPENAI_REQUEST_TIMEOUT_MS: z.coerce.number().int().min(1000).max(120000).default(45000),
   CORS_ALLOWED_ORIGINS: z
     .string()
     .refine(
@@ -40,6 +44,7 @@ export function readEnvironment(
       'SUPABASE_PUBLISHABLE_KEY',
       'SUPABASE_JWT_ISSUER',
       'CORS_ALLOWED_ORIGINS',
+      'OPENAI_API_KEY',
     ];
     const missing = required.filter((name) => !environment[name]?.trim());
     if (missing.length > 0) {

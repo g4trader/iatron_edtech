@@ -16,6 +16,7 @@
     "@fastify/swagger": "9.8.1",
     "@fastify/swagger-ui": "6.1.0",
     "@iatron/config": "workspace:*",
+    "@iatron/ai": "workspace:*",
     "@iatron/contracts": "workspace:*",
     "@iatron/database": "workspace:*",
     "fastify": "5.10.0",
