@@ -28,35 +28,30 @@ const weekdays = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
 const routineProfiles = [
   {
     id: 'daily',
-    icon: '📚',
     title: 'Estudo praticamente todos os dias',
     description: 'Tenho uma rotina relativamente constante durante a semana.',
     minutes: [45, 45, 45, 45, 45, 45, 45],
   },
   {
     id: 'weekdays',
-    icon: '💼',
     title: 'Consigo estudar principalmente em dias úteis',
     description: 'Durante a semana tenho mais disponibilidade.',
     minutes: [0, 60, 60, 60, 60, 60, 0],
   },
   {
     id: 'shifts',
-    icon: '🏥',
     title: 'Minha rotina depende de plantões',
     description: 'Minha disponibilidade muda bastante.',
     minutes: [90, 0, 90, 0, 90, 0, 90],
   },
   {
     id: 'manual',
-    icon: '⚙️',
     title: 'Prefiro configurar manualmente',
     description: 'Quero informar a disponibilidade de cada dia.',
     minutes: [0, 0, 0, 0, 0, 0, 0],
   },
   {
     id: 'unsure',
-    icon: '✨',
     title: 'Não tenho certeza ainda',
     description:
       'Sem problemas. Vamos começar com uma rotina equilibrada e você poderá ajustar isso depois.',
@@ -64,6 +59,54 @@ const routineProfiles = [
   },
 ] as const;
 type RoutineId = (typeof routineProfiles)[number]['id'];
+
+function RoutineIcon({ id }: { id: RoutineId }) {
+  const commonProps = {
+    'aria-hidden': true,
+    className: 'routine-option-icon',
+    fill: 'none',
+    viewBox: '0 0 24 24',
+  } as const;
+
+  if (id === 'daily')
+    return (
+      <svg {...commonProps}>
+        <path d="M4 5.5A2.5 2.5 0 0 1 6.5 3H11v16H6.5A2.5 2.5 0 0 0 4 21.5v-16Z" />
+        <path d="M20 5.5A2.5 2.5 0 0 0 17.5 3H13v16h4.5a2.5 2.5 0 0 1 2.5 2.5v-16Z" />
+      </svg>
+    );
+  if (id === 'weekdays')
+    return (
+      <svg {...commonProps}>
+        <path d="M9 6V4.75C9 3.78 9.78 3 10.75 3h2.5C14.22 3 15 3.78 15 4.75V6" />
+        <rect height="14" rx="2" width="20" x="2" y="6" />
+        <path d="M2 11.5c5.9 2.4 14.1 2.4 20 0M9.5 12v2h5v-2" />
+      </svg>
+    );
+  if (id === 'shifts')
+    return (
+      <svg {...commonProps}>
+        <path d="M7 3v3M17 3v3M4 9h16" />
+        <rect height="18" rx="2" width="18" x="3" y="4" />
+        <path d="M12 12v6M9 15h6" />
+      </svg>
+    );
+  if (id === 'manual')
+    return (
+      <svg {...commonProps}>
+        <path d="M4 6h9M17 6h3M4 12h3M11 12h9M4 18h7M15 18h5" />
+        <circle cx="15" cy="6" r="2" />
+        <circle cx="9" cy="12" r="2" />
+        <circle cx="13" cy="18" r="2" />
+      </svg>
+    );
+  return (
+    <svg {...commonProps}>
+      <path d="M12 3a6 6 0 0 0-3.75 10.68c.48.38.75.93.75 1.5V16h6v-.82c0-.57.27-1.12.75-1.5A6 6 0 0 0 12 3Z" />
+      <path d="M9.5 19h5M10.5 22h3M12 6.5v1M7.5 8.5l.87.5M16.5 8.5l-.87.5" />
+    </svg>
+  );
+}
 
 function availabilityFrom(items: WizardProps['initialAvailability']) {
   return Object.fromEntries(
@@ -344,9 +387,7 @@ export function OnboardingWizard(props: WizardProps) {
                   role="radio"
                   type="button"
                 >
-                  <span aria-hidden="true" className="routine-option-icon">
-                    {profile.icon}
-                  </span>
+                  <RoutineIcon id={profile.id} />
                   <span>
                     <strong>{profile.title}</strong>
                     <small>{profile.description}</small>
