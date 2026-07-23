@@ -2,6 +2,7 @@
 
 import { redirect } from 'next/navigation';
 import { studyPlans } from './server/study-plans';
+import { createTutorConversation } from '@/features/tutor/server/tutor';
 
 export async function generatePlan() {
   await studyPlans.generate();
@@ -23,4 +24,14 @@ export async function executePlanItem(formData: FormData) {
     reason: reason || null,
   });
   redirect(action === 'start' ? `/app/plan?item=${id}` : '/app/plan/today');
+}
+
+export async function askTutorAboutPlanItem(formData: FormData) {
+  const itemId = String(formData.get('itemId'));
+  const conversation = await createTutorConversation({
+    mode: 'plan_explanation',
+    originType: 'plan_item',
+    originId: itemId,
+  });
+  redirect(`/app/tutor/${conversation.id}?ask=plan-item`);
 }

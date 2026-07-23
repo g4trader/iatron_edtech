@@ -2,7 +2,7 @@ import Link from 'next/link';
 import type { ReactNode } from 'react';
 import type { StudyPlanItem } from '@iatron/contracts';
 import { ActionSubmitButton } from '@/components/feedback/action-submit-button';
-import { executePlanItem } from '../actions';
+import { askTutorAboutPlanItem, executePlanItem } from '../actions';
 
 export function PlanPage({
   title,
@@ -74,22 +74,22 @@ export function PlanItemCard({ item }: { item: StudyPlanItem }) {
           <li key={reason.code}>{reason.detail}</li>
         ))}
       </ul>
-      <Link
-        className="secondary-button inline-flex"
-        href={{ pathname: '/app/tutor', query: { mode: 'plan_explanation', originType: 'plan_item', originId: item.id } }}
-      >
-        Pedir explicação ao tutor
-      </Link>
+      <form action={askTutorAboutPlanItem}>
+        <input name="itemId" type="hidden" value={item.id} />
+        <ActionSubmitButton
+          pendingLabel="Abrindo explicação…"
+          variant="secondary"
+        >
+          Pedir explicação ao tutor
+        </ActionSubmitButton>
+      </form>
       {['planned', 'in_progress'].includes(item.status) && (
         <div className="flex flex-wrap gap-2">
           {item.status === 'planned' && (
             <form action={executePlanItem}>
               <input name="itemId" type="hidden" value={item.id} />
               <input name="action" type="hidden" value="start" />
-              <ActionSubmitButton
-                pendingLabel="Iniciando…"
-                variant="secondary"
-              >
+              <ActionSubmitButton pendingLabel="Iniciando…" variant="secondary">
                 Iniciar atividade
               </ActionSubmitButton>
             </form>

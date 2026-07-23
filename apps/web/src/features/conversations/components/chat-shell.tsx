@@ -1,7 +1,7 @@
 'use client';
 
 import type { ChatMessage, ChatTransport } from '@iatron/contracts';
-import { useCallback, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { EmptyChatState } from './empty-chat-state';
 import { ChatComposer } from './chat-composer';
 import { MessageList } from './message-list';
@@ -35,20 +35,26 @@ function createDevelopmentTransport(): ChatTransport | null {
 export function ChatShell({
   conversationId = 'new',
   initialMessages,
+  initialPrompt,
   transport: suppliedTransport,
 }: {
   conversationId?: string;
   initialMessages?: ChatMessage[];
+  initialPrompt?: string;
   transport?: ChatTransport;
 }) {
-  const [messages, setMessages] = useState<ChatMessage[]>(() =>
-    initialMessages ?? initialConversation(conversationId),
+  const [messages, setMessages] = useState<ChatMessage[]>(
+    () => initialMessages ?? initialConversation(conversationId),
   );
   const [generating, setGenerating] = useState(false);
   const [offline, setOffline] = useState(false);
   const [transportUnavailable, setTransportUnavailable] = useState(false);
   const activeRequestRef = useRef<string | null>(null);
-  const transport = useMemo(() => suppliedTransport ?? createDevelopmentTransport(), [suppliedTransport]);
+  const initialPromptSentRef = useRef(false);
+  const transport = useMemo(
+    () => suppliedTransport ?? createDevelopmentTransport(),
+    [suppliedTransport],
+  );
 
   const send = useCallback(
     async (text: string) => {
@@ -151,6 +157,18 @@ export function ChatShell({
     },
     [conversationId, transport],
   );
+
+  useEffect(() => {
+    if (!initialPrompt || initialPromptSentRef.current || messages.length > 0)
+      return;
+    initialPromptSentRef.current = true;
+    window.history.replaceState(
+      window.history.state,
+      '',
+      window.location.pathname,
+    );
+    void send(initialPrompt);
+  }, [initialPrompt, messages.length, send]);
 
   const cancel = async () => {
     if (transport && activeRequestRef.current)

@@ -1,5 +1,9 @@
 'use client';
-import type { ChatMessage, TutorConversation, TutorMessage } from '@iatron/contracts';
+import type {
+  ChatMessage,
+  TutorConversation,
+  TutorMessage,
+} from '@iatron/contracts';
 import { useMemo } from 'react';
 import { ChatShell } from '@/features/conversations/components/chat-shell';
 import { RealTutorTransport } from '../transport/real-tutor-transport';
@@ -9,12 +13,25 @@ function toChatMessage(message: TutorMessage): ChatMessage {
     id: message.id,
     role: message.role,
     createdAt: message.createdAt,
-    status: message.status === 'failed' ? 'error' : message.status === 'streaming' ? 'streaming' : 'complete',
+    status:
+      message.status === 'failed'
+        ? 'error'
+        : message.status === 'streaming'
+          ? 'streaming'
+          : 'complete',
     parts: [{ type: 'text', text: message.content }],
   };
 }
 
-export function TutorShell({ conversation, messages }: { conversation: TutorConversation; messages: TutorMessage[] }) {
+export function TutorShell({
+  conversation,
+  initialPrompt,
+  messages,
+}: {
+  conversation: TutorConversation;
+  initialPrompt?: string;
+  messages: TutorMessage[];
+}) {
   const transport = useMemo(() => new RealTutorTransport(), []);
   return (
     <section className="tutor-conversation-page">
@@ -27,7 +44,12 @@ export function TutorShell({ conversation, messages }: { conversation: TutorConv
           atendimento médico.
         </p>
       </header>
-      <ChatShell conversationId={conversation.id} initialMessages={messages.map(toChatMessage)} transport={transport} />
+      <ChatShell
+        conversationId={conversation.id}
+        initialMessages={messages.map(toChatMessage)}
+        initialPrompt={initialPrompt}
+        transport={transport}
+      />
     </section>
   );
 }
