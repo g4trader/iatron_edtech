@@ -65,6 +65,12 @@ export function PlanItemCard({ item }: { item: StudyPlanItem }) {
           <li key={reason.code}>{reason.detail}</li>
         ))}
       </ul>
+      <Link
+        className="secondary-button inline-flex"
+        href={{ pathname: '/app/tutor', query: { mode: 'plan_explanation', originType: 'plan_item', originId: item.id } }}
+      >
+        Pedir explicação ao tutor
+      </Link>
       {['planned', 'in_progress'].includes(item.status) && (
         <div className="flex flex-wrap gap-2">
           {item.status === 'planned' && (

@@ -34,17 +34,21 @@ function createDevelopmentTransport(): ChatTransport | null {
 
 export function ChatShell({
   conversationId = 'new',
+  initialMessages,
+  transport: suppliedTransport,
 }: {
   conversationId?: string;
+  initialMessages?: ChatMessage[];
+  transport?: ChatTransport;
 }) {
   const [messages, setMessages] = useState<ChatMessage[]>(() =>
-    initialConversation(conversationId),
+    initialMessages ?? initialConversation(conversationId),
   );
   const [generating, setGenerating] = useState(false);
   const [offline, setOffline] = useState(false);
   const [transportUnavailable, setTransportUnavailable] = useState(false);
   const activeRequestRef = useRef<string | null>(null);
-  const transport = useMemo(() => createDevelopmentTransport(), []);
+  const transport = useMemo(() => suppliedTransport ?? createDevelopmentTransport(), [suppliedTransport]);
 
   const send = useCallback(
     async (text: string) => {
@@ -52,7 +56,7 @@ export function ChatShell({
         setTransportUnavailable(true);
         return;
       }
-      const requestId = `request-${Date.now()}`;
+      const requestId = crypto.randomUUID();
       const assistantId = `assistant-${requestId}`;
       activeRequestRef.current = requestId;
       setGenerating(true);

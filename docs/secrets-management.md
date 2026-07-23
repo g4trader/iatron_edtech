@@ -17,6 +17,7 @@ segredos de privilégio elevado.
 | `SUPABASE_STAGING_DATABASE_URL`        | não            | não               | não               | não                  | secret         | segredo                |
 | `SUPABASE_*_PROJECT_ID`                | não            | não               | não               | não                  | variable       | configuração           |
 | `CORS_ALLOWED_ORIGINS`                 | não            | não               | variable          | variable             | variable       | configuração           |
+| `OPENAI_API_KEY`                       | não            | não               | Secret Manager    | Secret Manager       | secret         | backend apenas         |
 | `GCP_WORKLOAD_IDENTITY_PROVIDER`       | não            | não               | não               | não                  | variable       | configuração           |
 | `GCP_*_SERVICE_ACCOUNT`                | não            | não               | não               | não                  | variable       | configuração           |
 

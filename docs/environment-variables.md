@@ -12,6 +12,10 @@
 - `SUPABASE_URL`, `SUPABASE_PUBLISHABLE_KEY`: acesso sujeito a RLS.
 - `SUPABASE_JWT_ISSUER`, `SUPABASE_JWT_AUDIENCE`, `SUPABASE_JWT_ALGORITHMS`: validação do token; somente `ES256,RS256` por padrão.
 - `CORS_ALLOWED_ORIGINS`: origens separadas por vírgula; wildcard não é aceito.
+- `OPENAI_API_KEY`: segredo exclusivo do backend, injetado pelo Secret Manager.
+- `OPENAI_MODEL`: modelo do tutor (padrão `gpt-5.6-sol`).
+- `OPENAI_MAX_OUTPUT_TOKENS`: orçamento máximo de saída por geração (padrão `1200`).
+- `OPENAI_REQUEST_TIMEOUT_MS`: limite da Responses API (padrão `45000`).
 
 Vercel e Cloud Run devem receber valores por configuração de ambiente/Secret Manager. Nenhuma service role ou segredo OpenAI é necessário nesta fase.
 

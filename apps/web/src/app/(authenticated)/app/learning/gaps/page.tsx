@@ -4,6 +4,7 @@ import {
   LearningPage,
 } from '@/features/learning/components/learning-page';
 import { learningState } from '@/features/learning/server/learning';
+import Link from 'next/link';
 export default async function GapsPage() {
   const items = await learningState.gaps();
   return (
@@ -23,6 +24,9 @@ export default async function GapsPage() {
             Mastery {Math.round(item.mastery * 100)}% · confiança{' '}
             {Math.round(item.confidence * 100)}%
           </p>
+          <Link className="secondary-button inline-flex" href={{ pathname: '/app/tutor', query: { mode: 'gap_coaching', originType: 'gap', originId: item.competencyId } }}>
+            Trabalhar este gap com o tutor
+          </Link>
         </LearningCard>
       ))}
     </LearningPage>
