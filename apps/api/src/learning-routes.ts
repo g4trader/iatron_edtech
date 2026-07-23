@@ -42,6 +42,7 @@ export async function registerLearningRoutes(
       source.listCompetencies(),
       source.listCurrentMastery(),
     ]);
+    if (mastery.length === 0) return [];
     return identifyLearningGaps(competencies, mastery, clock()).slice(
       input.offset,
       input.offset + input.limit,

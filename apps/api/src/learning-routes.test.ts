@@ -95,6 +95,26 @@ describe('learning read API', () => {
     expect(response.json()[0]).toHaveProperty(property);
   });
 
+  it('does not infer gaps before the first mastery evidence', async () => {
+    app = await buildApp({
+      environment,
+      logger: false,
+      tokenVerifier: async () => ({ sub: 'user-a' }),
+      repositoryFactory: () => ({}) as StudentRepository,
+      learningRepositoryFactory: () => ({
+        ...repository,
+        listCurrentMastery: async () => [],
+      }),
+    });
+    const response = await app.inject({
+      method: 'GET',
+      url: '/v1/learning/gaps',
+      headers: { authorization: 'Bearer valid-test-token' },
+    });
+    expect(response.statusCode).toBe(200);
+    expect(response.json()).toEqual([]);
+  });
+
   it('exposes learning endpoints in OpenAPI', async () => {
     app = await build();
     const response = await app.inject({ method: 'GET', url: '/docs/json' });
