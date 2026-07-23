@@ -1,12 +1,36 @@
 import { redirect } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
 import { OnboardingWizard } from '@/features/onboarding/components/onboarding-wizard';
+import { isAuthBypassEnabled } from '@/lib/auth-bypass';
 
 export default async function OnboardingPage() {
   const client = await createClient();
   const {
     data: { user },
   } = await client.auth.getUser();
+  if (!user && isAuthBypassEnabled(process.env)) {
+    return (
+      <OnboardingWizard
+        e2eBypass
+        initialStep={1}
+        initialName=""
+        initialResidencyYear={null}
+        initialGraduationYear={null}
+        initialExperienceLevel={null}
+        initialSessionMinutes={null}
+        initialAssessmentPreference={null}
+        initialAvailability={[]}
+        initialTargets={[]}
+        editions={[
+          {
+            id: '10000000-0000-4000-8000-000000000001',
+            year: 2027,
+            programName: 'Residência médica nacional',
+          },
+        ]}
+      />
+    );
+  }
   if (!user) redirect('/login?returnTo=/app/onboarding');
   const [
     profileResult,

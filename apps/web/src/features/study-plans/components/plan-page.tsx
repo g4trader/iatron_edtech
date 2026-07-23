@@ -13,15 +13,18 @@ export function PlanPage({
   children: ReactNode;
 }) {
   return (
-    <main className="mx-auto w-full max-w-5xl space-y-6 p-6">
+    <main className="mx-auto w-full max-w-5xl min-w-0 space-y-6 px-4 py-6 sm:p-6">
       <header>
-        <p className="text-sm text-[var(--color-text-muted)]">
+        <p className="text-sm text-[var(--foreground-muted)]">
           Plano adaptativo · study-plan-v1
         </p>
         <h1 className="text-2xl font-semibold">{title}</h1>
         <p>{description}</p>
       </header>
-      <nav className="flex flex-wrap gap-4 text-sm">
+      <nav
+        aria-label="Navegação do plano"
+        className="flex flex-wrap gap-x-4 gap-y-2 text-sm font-semibold text-[var(--primary)]"
+      >
         <Link href="/app/plan">Atual</Link>
         <Link href="/app/plan/today">Hoje</Link>
         <Link href="/app/plan/week">Semana</Link>
@@ -43,9 +46,9 @@ const typeLabel: Record<StudyPlanItem['itemType'], string> = {
 
 export function PlanItemCard({ item }: { item: StudyPlanItem }) {
   return (
-    <article className="space-y-3 rounded-xl border border-[var(--color-border)] p-4">
+    <article className="min-w-0 space-y-3 rounded-xl border border-[var(--border)] bg-[var(--surface)] p-4">
       <div>
-        <p className="text-sm text-[var(--color-text-muted)]">
+        <p className="text-sm text-[var(--foreground-muted)]">
           {typeLabel[item.itemType]} · prioridade{' '}
           {Math.round(item.priority * 100)}%
         </p>
@@ -68,7 +71,7 @@ export function PlanItemCard({ item }: { item: StudyPlanItem }) {
             <form action={executePlanItem}>
               <input name="itemId" type="hidden" value={item.id} />
               <input name="action" type="hidden" value="start" />
-              <button className="rounded border px-3 py-2">Iniciar</button>
+              <button className="secondary-button">Iniciar</button>
             </form>
           )}
           <form action={executePlanItem}>
@@ -79,7 +82,7 @@ export function PlanItemCard({ item }: { item: StudyPlanItem }) {
               type="hidden"
               value={item.estimatedMinutes}
             />
-            <button className="rounded border px-3 py-2">Concluir</button>
+            <button className="secondary-button">Concluir</button>
           </form>
           <form action={executePlanItem}>
             <input name="itemId" type="hidden" value={item.id} />
@@ -89,7 +92,7 @@ export function PlanItemCard({ item }: { item: StudyPlanItem }) {
               type="hidden"
               value="Reagendado pelo estudante"
             />
-            <button className="rounded border px-3 py-2">Adiar</button>
+            <button className="secondary-button">Adiar</button>
           </form>
           <form action={executePlanItem}>
             <input name="itemId" type="hidden" value={item.id} />
@@ -99,7 +102,7 @@ export function PlanItemCard({ item }: { item: StudyPlanItem }) {
               type="hidden"
               value="Item pulado pelo estudante"
             />
-            <button className="rounded border px-3 py-2">Pular</button>
+            <button className="secondary-button">Pular</button>
           </form>
         </div>
       )}

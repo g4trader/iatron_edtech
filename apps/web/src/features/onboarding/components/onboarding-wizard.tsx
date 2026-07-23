@@ -1,5 +1,5 @@
 'use client';
-import { useState, useTransition } from 'react';
+import { useRef, useState, useTransition } from 'react';
 import { saveOnboarding } from '../actions';
 
 interface Edition {
@@ -8,6 +8,7 @@ interface Edition {
   programName: string;
 }
 interface WizardProps {
+  e2eBypass?: boolean;
   initialStep: number;
   initialName: string;
   initialResidencyYear: number | null;
@@ -56,8 +57,32 @@ export function OnboardingWizard(props: WizardProps) {
   );
   const [targets, setTargets] = useState(props.initialTargets);
   const [error, setError] = useState('');
+  const nameRef = useRef<HTMLInputElement>(null);
+  const targetGroupRef = useRef<HTMLFieldSetElement>(null);
   const [pending, startTransition] = useTransition();
-  const persist = (complete = false) =>
+
+  const validateStep = () => {
+    if (step === 1 && !name.trim()) {
+      setError('Informe seu nome para continuar.');
+      nameRef.current?.focus();
+      return false;
+    }
+    if (step === 3 && targets.length === 0) {
+      setError('Selecione ao menos uma prova-alvo.');
+      targetGroupRef.current?.focus();
+      return false;
+    }
+    return true;
+  };
+
+  const persist = (complete = false) => {
+    if (!validateStep()) return;
+    if (props.e2eBypass) {
+      setError('');
+      if (complete) window.location.assign('/app');
+      else setStep((current) => Math.min(4, current + 1));
+      return;
+    }
     startTransition(async () => {
       setError('');
       const result = await saveOnboarding({
@@ -80,36 +105,75 @@ export function OnboardingWizard(props: WizardProps) {
       if (!result.ok) return setError(result.message);
       if (complete) {
         window.location.assign('/app');
-      } else setStep((current) => Math.min(4, current + 1));
+      } else {
+        setStep((current) => Math.min(4, current + 1));
+        document.querySelector<HTMLElement>('.onboarding-title')?.focus();
+      }
     });
+  };
+
+  const goBack = () => {
+    setError('');
+    setStep((current) => Math.max(1, current - 1));
+    requestAnimationFrame(() =>
+      document.querySelector<HTMLElement>('.onboarding-title')?.focus(),
+    );
+  };
+
   return (
-    <main className="mx-auto w-full max-w-2xl px-5 py-10">
-      <p className="text-sm font-semibold text-teal-700">
-        Configuração acadêmica · etapa {step} de 4
-      </p>
-      <div className="mt-3 h-2 overflow-hidden rounded-full bg-slate-200">
+    <main className="onboarding-page">
+      <header className="onboarding-progress">
+        <p>Configuração acadêmica</p>
+        <strong>Etapa {step} de 4</strong>
+      </header>
+      <div
+        aria-label={`Progresso: etapa ${step} de 4`}
+        aria-valuemax={4}
+        aria-valuemin={1}
+        aria-valuenow={step}
+        className="onboarding-progress-track"
+        role="progressbar"
+      >
         <div
-          className="h-full bg-teal-600 transition-all"
+          className="onboarding-progress-value"
           style={{ width: `${step * 25}%` }}
         />
       </div>
-      <section className="mt-6 rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+      <section
+        aria-busy={pending}
+        aria-labelledby="onboarding-title"
+        className="onboarding-card"
+      >
         {step === 1 && (
-          <div className="grid gap-4">
-            <h1 className="text-2xl font-semibold">Vamos conhecer você</h1>
-            <label>
-              Nome
+          <div className="onboarding-step">
+            <h1
+              className="onboarding-title"
+              id="onboarding-title"
+              tabIndex={-1}
+            >
+              Vamos conhecer você
+            </h1>
+            <p className="onboarding-description">
+              Estas informações personalizam sua preparação.
+            </p>
+            <label className="form-field" htmlFor="display-name">
+              Nome completo
               <input
-                className="mt-1 w-full rounded-xl border p-3"
+                ref={nameRef}
+                autoComplete="name"
+                className="form-control"
+                id="display-name"
                 value={name}
                 onChange={(event) => setName(event.target.value)}
               />
             </label>
-            <div className="grid grid-cols-2 gap-3">
-              <label>
+            <div className="onboarding-field-grid">
+              <label className="form-field" htmlFor="residency-year">
                 Ano da residência pretendida
                 <input
-                  className="mt-1 w-full rounded-xl border p-3"
+                  className="form-control"
+                  id="residency-year"
+                  inputMode="numeric"
                   type="number"
                   min="1"
                   max="6"
@@ -119,10 +183,12 @@ export function OnboardingWizard(props: WizardProps) {
                   }
                 />
               </label>
-              <label>
+              <label className="form-field" htmlFor="graduation-year">
                 Ano de formação
                 <input
-                  className="mt-1 w-full rounded-xl border p-3"
+                  className="form-control"
+                  id="graduation-year"
+                  inputMode="numeric"
                   type="number"
                   min="1950"
                   max="2100"
@@ -133,10 +199,11 @@ export function OnboardingWizard(props: WizardProps) {
                 />
               </label>
             </div>
-            <label>
+            <label className="form-field" htmlFor="experience-level">
               Momento profissional
               <select
-                className="mt-1 w-full rounded-xl border p-3"
+                className="form-control"
+                id="experience-level"
                 value={experienceLevel}
                 onChange={(event) =>
                   setExperienceLevel(
@@ -154,18 +221,26 @@ export function OnboardingWizard(props: WizardProps) {
           </div>
         )}
         {step === 2 && (
-          <div className="grid gap-4">
-            <h1 className="text-2xl font-semibold">Quanto tempo você tem?</h1>
-            <p className="text-slate-600">
+          <div className="onboarding-step">
+            <h1
+              className="onboarding-title"
+              id="onboarding-title"
+              tabIndex={-1}
+            >
+              Sua semana de estudos
+            </h1>
+            <p className="onboarding-description">
               Informe os minutos disponíveis em cada dia.
             </p>
-            <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+            <fieldset className="availability-grid">
+              <legend className="sr-only">Disponibilidade por dia</legend>
               {weekdays.map((day, index) => (
-                <label key={day} className="text-sm">
-                  {day}
+                <label className="availability-field" key={day}>
+                  <span>{day}</span>
                   <input
                     aria-label={`${day} em minutos`}
-                    className="mt-1 w-full rounded-xl border p-3"
+                    className="form-control"
+                    inputMode="numeric"
                     type="number"
                     min="0"
                     max="1440"
@@ -179,12 +254,13 @@ export function OnboardingWizard(props: WizardProps) {
                   />
                 </label>
               ))}
-            </div>
-            <div className="grid gap-3 sm:grid-cols-2">
-              <label>
+            </fieldset>
+            <div className="onboarding-field-grid">
+              <label className="form-field" htmlFor="session-duration">
                 Duração preferida da sessão
                 <select
-                  className="mt-1 w-full rounded-xl border p-3"
+                  className="form-control"
+                  id="session-duration"
                   value={preferredSessionMinutes}
                   onChange={(event) =>
                     setPreferredSessionMinutes(Number(event.target.value))
@@ -197,10 +273,11 @@ export function OnboardingWizard(props: WizardProps) {
                   ))}
                 </select>
               </label>
-              <label>
+              <label className="form-field" htmlFor="assessment-preference">
                 Preferência de avaliação
                 <select
-                  className="mt-1 w-full rounded-xl border p-3"
+                  className="form-control"
+                  id="assessment-preference"
                   value={assessmentPreference}
                   onChange={(event) =>
                     setAssessmentPreference(
@@ -217,37 +294,55 @@ export function OnboardingWizard(props: WizardProps) {
           </div>
         )}
         {step === 3 && (
-          <div className="grid gap-4">
-            <h1 className="text-2xl font-semibold">
-              Quais são suas provas-alvo?
+          <div className="onboarding-step">
+            <h1
+              className="onboarding-title"
+              id="onboarding-title"
+              tabIndex={-1}
+            >
+              Escolha suas provas
             </h1>
-            {props.editions.map((edition) => (
-              <label
-                key={edition.id}
-                className="flex items-center gap-3 rounded-xl border p-4"
-              >
-                <input
-                  type="checkbox"
-                  checked={targets.includes(edition.id)}
-                  onChange={() =>
-                    setTargets((current) =>
-                      current.includes(edition.id)
-                        ? current.filter((id) => id !== edition.id)
-                        : [...current, edition.id],
-                    )
-                  }
-                />
-                <span>
-                  {edition.programName} · {edition.year}
-                </span>
-              </label>
-            ))}
+            <p className="onboarding-description">
+              Você pode selecionar mais de uma opção.
+            </p>
+            <fieldset
+              ref={targetGroupRef}
+              className="target-options"
+              tabIndex={-1}
+            >
+              <legend className="sr-only">Provas-alvo</legend>
+              {props.editions.map((edition) => (
+                <label className="target-option" key={edition.id}>
+                  <input
+                    type="checkbox"
+                    checked={targets.includes(edition.id)}
+                    onChange={() =>
+                      setTargets((current) =>
+                        current.includes(edition.id)
+                          ? current.filter((id) => id !== edition.id)
+                          : [...current, edition.id],
+                      )
+                    }
+                  />
+                  <span>
+                    <strong>{edition.programName}</strong>
+                    <small>Edição {edition.year}</small>
+                  </span>
+                </label>
+              ))}
+            </fieldset>
           </div>
         )}
         {step === 4 && (
-          <div className="grid gap-4">
-            <h1 className="text-2xl font-semibold">Tudo pronto para começar</h1>
-            <p className="text-slate-600">
+          <div className="onboarding-step">
+            <h1
+              className="onboarding-title"
+              id="onboarding-title"
+              tabIndex={-1}
+            >
+              Tudo pronto
+            </h1>
+            <p className="onboarding-description">
               Seu plano será baseado em {targets.length} prova(s)-alvo e na
               disponibilidade semanal informada. Métricas pedagógicas só serão
               calculadas após atividades reais.
@@ -255,24 +350,24 @@ export function OnboardingWizard(props: WizardProps) {
           </div>
         )}
         {error && (
-          <p role="alert" className="mt-4 text-sm text-red-700">
+          <p aria-live="assertive" className="form-error" role="alert">
             {error}
           </p>
         )}
-        <div className="mt-8 flex justify-between">
+        <div className="onboarding-actions">
           <button
             disabled={pending || step === 1}
-            onClick={() => setStep((current) => Math.max(1, current - 1))}
-            className="rounded-xl px-4 py-2 disabled:opacity-40"
+            onClick={goBack}
+            className="secondary-button"
+            type="button"
           >
             Voltar
           </button>
           <button
-            disabled={
-              pending || !name.trim() || (step === 3 && targets.length === 0)
-            }
+            disabled={pending}
             onClick={() => persist(step === 4)}
-            className="rounded-xl bg-teal-700 px-5 py-3 font-semibold text-white disabled:opacity-50"
+            className="primary-button"
+            type="button"
           >
             {pending
               ? 'Salvando…'

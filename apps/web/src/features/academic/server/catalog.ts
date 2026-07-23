@@ -8,6 +8,7 @@ import {
   themeCatalogSchema,
 } from '@iatron/contracts';
 import { z } from 'zod';
+import { isAuthBypassEnabled } from '@/lib/auth-bypass';
 import { createClient } from '@/lib/supabase/server';
 
 const apiUrl = () =>
@@ -19,6 +20,7 @@ const apiUrl = () =>
 async function catalog<T>(path: string, schema: z.ZodType<T>): Promise<T> {
   const client = await createClient();
   const { data } = await client.auth.getSession();
+  if (!data.session && isAuthBypassEnabled(process.env)) return schema.parse([]);
   if (!data.session) throw new Error('Sessão acadêmica indisponível.');
   const response = await fetch(`${apiUrl()}/academic/${path}?limit=100`, {
     headers: { authorization: `Bearer ${data.session.access_token}` },

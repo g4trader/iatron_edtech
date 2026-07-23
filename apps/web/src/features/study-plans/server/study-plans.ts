@@ -1,5 +1,6 @@
 import { studyPlanItemSchema, studyPlanSchema } from '@iatron/contracts';
 import { z } from 'zod';
+import { isAuthBypassEnabled } from '@/lib/auth-bypass';
 import { createClient } from '@/lib/supabase/server';
 
 const baseUrl = () =>
@@ -8,6 +9,12 @@ const baseUrl = () =>
 async function request(path: string, init?: RequestInit) {
   const client = await createClient();
   const { data } = await client.auth.getSession();
+  if (!data.session && isAuthBypassEnabled(process.env)) {
+    return new Response(path === '/history' ? '[]' : null, {
+      status: path === '/history' ? 200 : 404,
+      headers: { 'content-type': 'application/json' },
+    });
+  }
   if (!data.session) throw new Error('Sessão de plano indisponível.');
   return fetch(`${baseUrl()}${path}`, {
     ...init,

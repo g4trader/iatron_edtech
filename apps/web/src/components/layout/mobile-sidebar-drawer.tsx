@@ -16,6 +16,8 @@ export function MobileSidebarDrawer({
 
   useEffect(() => {
     if (!open) return;
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
     previousFocusRef.current = document.activeElement as HTMLElement | null;
     closeButtonRef.current?.focus();
     const handleKeyDown = (event: KeyboardEvent) => {
@@ -40,13 +42,14 @@ export function MobileSidebarDrawer({
     document.addEventListener('keydown', handleKeyDown);
     return () => {
       document.removeEventListener('keydown', handleKeyDown);
+      document.body.style.overflow = previousOverflow;
       previousFocusRef.current?.focus();
     };
   }, [onClose, open]);
 
   if (!open) return null;
   return (
-    <div className="drawer-layer">
+    <div className="drawer-layer" data-testid="mobile-drawer-layer">
       <button
         aria-label="Fechar menu"
         className="drawer-backdrop"

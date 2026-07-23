@@ -15,18 +15,20 @@
     "test:e2e:auth:direct": "playwright test --config playwright.auth.config.ts"
   },
   "dependencies": {
-    "@supabase/ssr": "0.8.0",
-    "@supabase/supabase-js": "2.110.8",
     "@iatron/contracts": "workspace:*",
     "@iatron/ui": "workspace:*",
+    "@supabase/ssr": "0.8.0",
+    "@supabase/supabase-js": "2.110.8",
     "next": "16.2.11",
     "react": "19.2.8",
     "react-dom": "19.2.8",
     "zod": "4.4.3"
   },
   "devDependencies": {
+    "@axe-core/playwright": "4.10.2",
     "@iatron/eslint-config": "workspace:*",
     "@iatron/typescript-config": "workspace:*",
+    "@playwright/test": "1.55.0",
     "@tailwindcss/postcss": "4.1.14",
     "@testing-library/jest-dom": "7.0.0",
     "@testing-library/react": "16.3.2",
@@ -34,7 +36,6 @@
     "@types/react": "19.2.17",
     "@types/react-dom": "19.2.3",
     "@vitejs/plugin-react": "6.0.3",
-    "@playwright/test": "1.55.0",
     "eslint": "9.39.2",
     "jsdom": "29.1.1",
     "tailwindcss": "4.1.14",

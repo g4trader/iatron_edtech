@@ -3,8 +3,8 @@ import type { ReactNode } from 'react';
 
 export default function PublicLayout({ children }: { children: ReactNode }) {
   return (
-    <div className="min-h-screen">
-      <header className="mx-auto flex max-w-6xl items-center justify-between px-6 py-6">
+    <div className="public-shell">
+      <header className="public-header">
         <Link className="text-xl font-bold tracking-tight" href="/">
           Iatron
         </Link>
