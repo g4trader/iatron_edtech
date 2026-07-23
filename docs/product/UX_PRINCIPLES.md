@@ -3,6 +3,14 @@
 Este documento é referência obrigatória para toda decisão de produto e
 implementação de interface no Iatron.
 
+Toda contribuição que altere uma experiência também deve seguir:
+
+- [Voz e tom](VOICE_AND_TONE.md);
+- [Checklist de revisão de design](DESIGN_REVIEW_CHECKLIST.md).
+
+Esses três documentos formam o contrato de experiência do produto. A revisão
+de uma mudança de interface só está completa quando o checklist foi aplicado.
+
 ## Filosofia
 
 O Iatron não é um banco de questões. É um orientador de estudos que ajuda cada
@@ -98,4 +106,5 @@ Um estado vazio deve:
 - Há jargão interno visível?
 - Funciona primeiro no mobile, com teclado, zoom e safe area?
 - Componentes semelhantes mantêm linguagem e comportamento consistentes?
-
+- A voz e o tom seguem o padrão do produto?
+- O checklist de revisão de design foi preenchido?
