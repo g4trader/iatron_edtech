@@ -27,6 +27,11 @@ import {
 import { registerLearningRoutes } from './learning-routes.js';
 import { createAssessmentRepository, type AssessmentRepository } from './assessment-repository.js';
 import { registerAssessmentRoutes } from './assessment-routes.js';
+import {
+  createStudyPlanRepository,
+  type StudyPlanRepository,
+} from './study-plan-repository.js';
+import { registerStudyPlanRoutes } from './study-plan-routes.js';
 
 export interface BuildAppOptions {
   environment: ApiEnvironment;
@@ -36,6 +41,8 @@ export interface BuildAppOptions {
   academicRepositoryFactory?: (token: string) => AcademicRepository;
   learningRepositoryFactory?: (token: string) => LearningRepository;
   assessmentRepositoryFactory?: (token: string) => AssessmentRepository;
+  studyPlanRepositoryFactory?: (token: string) => StudyPlanRepository;
+  studyPlanClock?: () => Date;
   learningClock?: () => Date;
 }
 
@@ -152,6 +159,14 @@ export async function buildApp(
           protectedApi,
           options.assessmentRepositoryFactory ?? ((token) => createAssessmentRepository(options.environment, token)),
           options.learningRepositoryFactory ?? ((token) => createLearningRepository(options.environment, token)),
+        );
+        await registerStudyPlanRoutes(
+          protectedApi,
+          options.studyPlanRepositoryFactory ??
+            ((token) => createStudyPlanRepository(options.environment, token)),
+          options.learningRepositoryFactory ??
+            ((token) => createLearningRepository(options.environment, token)),
+          options.studyPlanClock,
         );
       });
     },

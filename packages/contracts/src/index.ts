@@ -297,8 +297,12 @@ export const assessmentQuestionSchema = z.object({
   total: z.int().positive(),
   stem: z.string(),
   difficulty: z.int().min(1).max(5),
-  options: z.array(z.object({ id: uuidSchema, label: z.string(), content: z.string() })).min(2),
-  competencies: z.array(z.object({ id: uuidSchema, code: z.string(), name: z.string() })).min(1),
+  options: z
+    .array(z.object({ id: uuidSchema, label: z.string(), content: z.string() }))
+    .min(2),
+  competencies: z
+    .array(z.object({ id: uuidSchema, code: z.string(), name: z.string() }))
+    .min(1),
   selectionReason: z.string(),
 });
 export type AssessmentQuestion = z.infer<typeof assessmentQuestionSchema>;
@@ -316,15 +320,22 @@ export const assessmentSummarySchema = z.object({
 });
 export type AssessmentSummary = z.infer<typeof assessmentSummarySchema>;
 
-export const assessmentCompetencyResultSchema = masteryStateSchema.pick({
-  competencyId: true,
-  competencyCode: true,
-  competencyName: true,
-  mastery: true,
-  confidence: true,
-  evidenceCount: true,
-}).extend({ confidenceLevel: z.enum(['low', 'medium', 'high']), classification: z.enum(['strong', 'weak', 'unmeasured', 'developing']) });
-export type AssessmentCompetencyResult = z.infer<typeof assessmentCompetencyResultSchema>;
+export const assessmentCompetencyResultSchema = masteryStateSchema
+  .pick({
+    competencyId: true,
+    competencyCode: true,
+    competencyName: true,
+    mastery: true,
+    confidence: true,
+    evidenceCount: true,
+  })
+  .extend({
+    confidenceLevel: z.enum(['low', 'medium', 'high']),
+    classification: z.enum(['strong', 'weak', 'unmeasured', 'developing']),
+  });
+export type AssessmentCompetencyResult = z.infer<
+  typeof assessmentCompetencyResultSchema
+>;
 
 export const assessmentResultSchema = z.object({
   id: uuidSchema,
@@ -338,6 +349,85 @@ export const assessmentResultSchema = z.object({
   competencies: z.array(assessmentCompetencyResultSchema),
 });
 export type AssessmentResult = z.infer<typeof assessmentResultSchema>;
+
+export const studyPlanReasonSchema = z.object({
+  code: z.string(),
+  contribution: z.number().min(0).max(1),
+  detail: z.string(),
+});
+export type StudyPlanReason = z.infer<typeof studyPlanReasonSchema>;
+
+export const studyPlanItemSchema = z.object({
+  id: uuidSchema,
+  competencyId: uuidSchema,
+  competencyCode: z.string(),
+  competencyName: z.string(),
+  itemType: z.enum([
+    'competency_study',
+    'review',
+    'question_practice',
+    'gap_reinforcement',
+    'complementary_diagnosis',
+  ]),
+  priority: z.number().min(0).max(1),
+  estimatedMinutes: z.int().positive(),
+  plannedDate: z.iso.date().nullable(),
+  position: z.int().positive().nullable(),
+  status: z.enum([
+    'planned',
+    'in_progress',
+    'completed',
+    'deferred',
+    'skipped',
+    'unallocated',
+  ]),
+  origin: z.string(),
+  reasons: z.array(studyPlanReasonSchema).min(1),
+  replanCount: z.int().nonnegative(),
+});
+export type StudyPlanItem = z.infer<typeof studyPlanItemSchema>;
+
+export const studyPlanSchema = z.object({
+  planId: uuidSchema,
+  versionId: uuidSchema,
+  version: z.int().positive(),
+  objective: z.string(),
+  algorithmVersion: z.string(),
+  periodStart: z.iso.date(),
+  periodEnd: z.iso.date(),
+  generatedAt: z.iso.datetime({ offset: true }),
+  totalPlannedMinutes: z.int().nonnegative(),
+  totalAvailableMinutes: z.int().nonnegative(),
+  triggerReason: z.string(),
+  items: z.array(studyPlanItemSchema),
+});
+export type StudyPlan = z.infer<typeof studyPlanSchema>;
+
+export const generateStudyPlanInputSchema = z.object({
+  objective: z.string().min(3).max(300).default('Plano adaptativo de 7 dias'),
+  horizonDays: z.int().min(1).max(14).default(7),
+  triggerReason: z
+    .enum([
+      'manual',
+      'assessment_completed',
+      'mastery_changed',
+      'availability_changed',
+      'target_exam_changed',
+      'item_completed',
+      'item_deferred',
+      'item_skipped',
+    ])
+    .default('manual'),
+});
+export type GenerateStudyPlanInput = z.infer<
+  typeof generateStudyPlanInputSchema
+>;
+
+export const studyPlanItemActionSchema = z.object({
+  actualMinutes: z.int().min(0).max(720).nullable().default(null),
+  reason: z.string().min(3).max(500).nullable().default(null),
+});
+export type StudyPlanItemAction = z.infer<typeof studyPlanItemActionSchema>;
 
 export type ChatRole = 'user' | 'assistant' | 'system';
 export type ConfidenceLevel = 'low' | 'medium' | 'high';

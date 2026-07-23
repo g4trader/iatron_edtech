@@ -8,6 +8,7 @@ import {
   onboardingInputSchema,
   profileUpdateSchema,
   serviceStatusSchema,
+  studyPlanSchema,
   targetExamsInputSchema,
 } from './index.js';
 
@@ -123,6 +124,51 @@ describe('learning engine contracts', () => {
         algorithmVersion: 'evidence-v1',
       }),
     ).toThrow();
+  });
+});
+
+describe('adaptive study plan contracts', () => {
+  it('serializes an explainable allocated recommendation', () => {
+    const id = crypto.randomUUID();
+    const plan = studyPlanSchema.parse({
+      planId: id,
+      versionId: crypto.randomUUID(),
+      version: 1,
+      objective: 'Plano adaptativo de 7 dias',
+      algorithmVersion: 'adaptive-study-plan-v1',
+      periodStart: '2026-07-23',
+      periodEnd: '2026-07-29',
+      generatedAt: '2026-07-23T12:00:00+00:00',
+      totalPlannedMinutes: 30,
+      totalAvailableMinutes: 60,
+      triggerReason: 'manual',
+      items: [
+        {
+          id: crypto.randomUUID(),
+          competencyId: crypto.randomUUID(),
+          competencyCode: 'CARD.SCA.001',
+          competencyName: 'Reconhecer infarto',
+          itemType: 'gap_reinforcement',
+          priority: 0.9,
+          estimatedMinutes: 30,
+          plannedDate: '2026-07-23',
+          position: 1,
+          status: 'planned',
+          origin: 'learning-gap-engine',
+          reasons: [
+            {
+              code: 'critical',
+              contribution: 0.45,
+              detail: 'Gap crítico priorizado.',
+            },
+          ],
+          replanCount: 0,
+        },
+      ],
+    });
+
+    expect(plan.planId).toBe(id);
+    expect(plan.items[0]?.reasons[0]?.code).toBe('critical');
   });
 });
 

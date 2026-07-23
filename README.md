@@ -1,6 +1,6 @@
 # Iatron EdTech
 
-Plataforma AI First para preparação de provas de residência médica no Brasil. O repositório contém a arquitetura base, autenticação Supabase, onboarding persistente, modelo acadêmico normalizado e um Learning Engine determinístico. Chamadas de IA ainda não foram implementadas.
+Plataforma AI First para preparação de provas de residência médica no Brasil. O repositório contém a arquitetura base, autenticação Supabase, onboarding persistente, modelo acadêmico normalizado, Learning Engine, diagnóstico adaptativo e plano de estudos determinísticos. Chamadas de IA ainda não foram implementadas.
 
 ## Arquitetura
 
@@ -30,6 +30,11 @@ O navegador acessará somente APIs públicas e recursos permitidos por RLS. Cred
 - `packages/ai`: fronteira de integração de IA, sem implementação real.
 - `packages/observability`: contrato e logger JSON base.
 - `packages/eslint-config` e `packages/typescript-config`: padrões do monorepo.
+
+O plano adaptativo usa mastery, confiança, gaps, cobertura, disponibilidade,
+preferências e provas-alvo para produzir uma agenda reproduzível de sete dias.
+Decisões e itens não alocados são explicáveis, e cada replanejamento preserva uma
+nova versão. Consulte [Plano adaptativo determinístico](docs/adaptive-study-plan-engine.md).
 
 ## Requisitos
 
