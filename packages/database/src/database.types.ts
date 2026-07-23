@@ -1722,6 +1722,252 @@ export type Database = {
           },
         ];
       };
+      study_plan_item_actions: {
+        Row: {
+          action: string;
+          actual_minutes: number | null;
+          from_status: string;
+          id: string;
+          item_id: string;
+          learning_event_id: string | null;
+          occurred_at: string;
+          reason: string | null;
+          student_id: string;
+          to_status: string;
+        };
+        Insert: {
+          action: string;
+          actual_minutes?: number | null;
+          from_status: string;
+          id?: string;
+          item_id: string;
+          learning_event_id?: string | null;
+          occurred_at?: string;
+          reason?: string | null;
+          student_id: string;
+          to_status: string;
+        };
+        Update: {
+          action?: string;
+          actual_minutes?: number | null;
+          from_status?: string;
+          id?: string;
+          item_id?: string;
+          learning_event_id?: string | null;
+          occurred_at?: string;
+          reason?: string | null;
+          student_id?: string;
+          to_status?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'study_plan_item_actions_item_id_fkey';
+            columns: ['item_id'];
+            isOneToOne: false;
+            referencedRelation: 'study_plan_items';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'study_plan_item_actions_learning_event_id_fkey';
+            columns: ['learning_event_id'];
+            isOneToOne: false;
+            referencedRelation: 'learning_events';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'study_plan_item_actions_student_id_fkey';
+            columns: ['student_id'];
+            isOneToOne: false;
+            referencedRelation: 'profiles';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
+      study_plan_items: {
+        Row: {
+          algorithm_version: string;
+          competency_id: string;
+          created_at: string;
+          estimated_minutes: number;
+          id: string;
+          item_type: string;
+          justification: Json;
+          plan_version_id: string;
+          planned_date: string | null;
+          position: number | null;
+          priority: number;
+          recommendation_origin: string;
+          replan_count: number;
+          source_snapshot: Json;
+          status: string;
+          updated_at: string;
+        };
+        Insert: {
+          algorithm_version: string;
+          competency_id: string;
+          created_at?: string;
+          estimated_minutes: number;
+          id?: string;
+          item_type: string;
+          justification: Json;
+          plan_version_id: string;
+          planned_date?: string | null;
+          position?: number | null;
+          priority: number;
+          recommendation_origin: string;
+          replan_count?: number;
+          source_snapshot: Json;
+          status: string;
+          updated_at?: string;
+        };
+        Update: {
+          algorithm_version?: string;
+          competency_id?: string;
+          created_at?: string;
+          estimated_minutes?: number;
+          id?: string;
+          item_type?: string;
+          justification?: Json;
+          plan_version_id?: string;
+          planned_date?: string | null;
+          position?: number | null;
+          priority?: number;
+          recommendation_origin?: string;
+          replan_count?: number;
+          source_snapshot?: Json;
+          status?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'study_plan_items_competency_id_fkey';
+            columns: ['competency_id'];
+            isOneToOne: false;
+            referencedRelation: 'competencies';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'study_plan_items_plan_version_id_fkey';
+            columns: ['plan_version_id'];
+            isOneToOne: false;
+            referencedRelation: 'study_plan_versions';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
+      study_plan_versions: {
+        Row: {
+          algorithm_version: string;
+          availability_snapshot: Json;
+          generated_at: string;
+          id: string;
+          input_hash: string;
+          input_snapshot: Json;
+          period_end: string;
+          period_start: string;
+          plan_id: string;
+          status: string;
+          total_available_minutes: number;
+          total_planned_minutes: number;
+          trigger_reason: string;
+          version: number;
+        };
+        Insert: {
+          algorithm_version: string;
+          availability_snapshot: Json;
+          generated_at?: string;
+          id?: string;
+          input_hash: string;
+          input_snapshot: Json;
+          period_end: string;
+          period_start: string;
+          plan_id: string;
+          status?: string;
+          total_available_minutes: number;
+          total_planned_minutes: number;
+          trigger_reason: string;
+          version: number;
+        };
+        Update: {
+          algorithm_version?: string;
+          availability_snapshot?: Json;
+          generated_at?: string;
+          id?: string;
+          input_hash?: string;
+          input_snapshot?: Json;
+          period_end?: string;
+          period_start?: string;
+          plan_id?: string;
+          status?: string;
+          total_available_minutes?: number;
+          total_planned_minutes?: number;
+          trigger_reason?: string;
+          version?: number;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'study_plan_versions_plan_id_fkey';
+            columns: ['plan_id'];
+            isOneToOne: false;
+            referencedRelation: 'study_plans';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
+      study_plans: {
+        Row: {
+          algorithm: string;
+          algorithm_version: string;
+          created_at: string;
+          current_version: number;
+          id: string;
+          objective: string;
+          status: string;
+          student_id: string;
+          target_exam_edition_id: string | null;
+          updated_at: string;
+        };
+        Insert: {
+          algorithm?: string;
+          algorithm_version?: string;
+          created_at?: string;
+          current_version?: number;
+          id?: string;
+          objective: string;
+          status?: string;
+          student_id: string;
+          target_exam_edition_id?: string | null;
+          updated_at?: string;
+        };
+        Update: {
+          algorithm?: string;
+          algorithm_version?: string;
+          created_at?: string;
+          current_version?: number;
+          id?: string;
+          objective?: string;
+          status?: string;
+          student_id?: string;
+          target_exam_edition_id?: string | null;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'study_plans_student_id_fkey';
+            columns: ['student_id'];
+            isOneToOne: false;
+            referencedRelation: 'profiles';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'study_plans_target_exam_edition_id_fkey';
+            columns: ['target_exam_edition_id'];
+            isOneToOne: false;
+            referencedRelation: 'exam_editions';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
       subthemes: {
         Row: {
           code: string;
@@ -1886,6 +2132,21 @@ export type Database = {
         Args: { p_assessment_id: string };
         Returns: string;
       };
+      persist_study_plan: {
+        Args: {
+          p_availability_snapshot: Json;
+          p_input_hash: string;
+          p_input_snapshot: Json;
+          p_items: Json;
+          p_objective: string;
+          p_period_end: string;
+          p_period_start: string;
+          p_target_exam_edition_id: string;
+          p_total_available_minutes: number;
+          p_trigger_reason: string;
+        };
+        Returns: string;
+      };
       record_learning_event:
         | {
             Args: {
@@ -1909,6 +2170,15 @@ export type Database = {
             };
             Returns: string;
           };
+      record_study_plan_item_action: {
+        Args: {
+          p_action: string;
+          p_actual_minutes?: number;
+          p_item_id: string;
+          p_reason?: string;
+        };
+        Returns: string;
+      };
       save_onboarding: {
         Args: {
           p_assessment_preference?: string;

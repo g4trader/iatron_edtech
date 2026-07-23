@@ -193,3 +193,33 @@ begin
     'phase6-seed-assessment-001'
   );
 end $$;
+
+do $$
+declare
+  v_user uuid;
+  v_plan uuid;
+  v_version uuid;
+  v_completed uuid;
+  v_deferred uuid;
+begin
+  select id into v_user from auth.users where email = 'iatron.edtech+staging@gmail.com' limit 1;
+  if v_user is null or exists(select 1 from public.study_plans where student_id=v_user and status='active') then return; end if;
+  insert into public.study_plans(student_id,objective,current_version)
+  values(v_user,'Plano demonstrativo determinístico',1) returning id into v_plan;
+  insert into public.study_plan_versions(plan_id,version,period_start,period_end,total_planned_minutes,total_available_minutes,availability_snapshot,input_snapshot,input_hash,trigger_reason,algorithm_version)
+  values(v_plan,1,current_date,current_date+6,90,120,jsonb_build_array(jsonb_build_object('date',current_date,'weekday',extract(dow from current_date),'minutesAvailable',60)),jsonb_build_object('seed',true),repeat('e',64),'manual','study-plan-v1')
+  returning id into v_version;
+  insert into public.study_plan_items(plan_version_id,competency_id,item_type,priority,estimated_minutes,planned_date,position,status,recommendation_origin,justification,source_snapshot,algorithm_version)
+  values
+  (v_version,'54000000-0000-4000-8000-000000000001','gap_reinforcement',0.9,30,current_date,1,'planned','learning-gap-engine','{"reasons":[{"code":"low_mastery","contribution":0.2,"detail":"Mastery abaixo do esperado."}]}','{"mastery":0.2,"confidence":0.4}','study-plan-v1'),
+  (v_version,'54000000-0000-4000-8000-000000000002','complementary_diagnosis',0.8,30,null,null,'unallocated','learning-gap-engine','{"reasons":[{"code":"unmeasured","contribution":0.05,"detail":"Competência ainda não avaliada."}],"unallocatedReason":"insufficient_availability"}','{"mastery":0,"confidence":0}','study-plan-v1');
+  insert into public.study_plan_items(plan_version_id,competency_id,item_type,priority,estimated_minutes,planned_date,position,status,recommendation_origin,justification,source_snapshot,algorithm_version)
+  values
+  (v_version,'54000000-0000-4000-8000-000000000003','review',0.65,30,current_date+1,1,'completed','learning-gap-engine','{"reasons":[{"code":"forgotten","contribution":0.05,"detail":"Evidência antiga."}]}','{"mastery":0.5,"confidence":0.6}','study-plan-v1')
+  returning id into v_completed;
+  insert into public.study_plan_items(plan_version_id,competency_id,item_type,priority,estimated_minutes,planned_date,position,status,recommendation_origin,justification,source_snapshot,algorithm_version,replan_count)
+  values(v_version,'54000000-0000-4000-8000-000000000004','question_practice',0.7,30,current_date+2,1,'deferred','learning-gap-engine','{"reasons":[{"code":"low_confidence","contribution":0.1,"detail":"Confiança insuficiente."}]}','{"mastery":0.4,"confidence":0.2}','study-plan-v1',1)
+  returning id into v_deferred;
+  insert into public.study_plan_item_actions(item_id,student_id,action,from_status,to_status,actual_minutes,reason)
+  values(v_completed,v_user,'completed','in_progress','completed',28,null),(v_deferred,v_user,'deferred','planned','deferred',null,'Indisponibilidade demonstrativa');
+end $$;
