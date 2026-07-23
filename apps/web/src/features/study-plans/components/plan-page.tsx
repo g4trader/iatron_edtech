@@ -2,6 +2,7 @@ import Link from 'next/link';
 import type { ReactNode } from 'react';
 import type { StudyPlanItem } from '@iatron/contracts';
 import { ActionSubmitButton } from '@/components/feedback/action-submit-button';
+import { activityReason, studyPriority } from '@/lib/learning-language';
 import { askTutorAboutPlanItem, executePlanItem } from '../actions';
 
 export function PlanPage({
@@ -58,12 +59,9 @@ export function PlanItemCard({ item }: { item: StudyPlanItem }) {
     <article className="min-w-0 space-y-3 rounded-xl border border-[var(--border)] bg-[var(--surface)] p-4">
       <div>
         <p className="text-sm text-[var(--foreground-muted)]">
-          {typeLabel[item.itemType]} · importância{' '}
-          {Math.round(item.priority * 100)}%
+          {typeLabel[item.itemType]} · {studyPriority(item.priority)}
         </p>
-        <h2 className="font-semibold">
-          {item.competencyCode} · {item.competencyName}
-        </h2>
+        <h2 className="font-semibold">{item.competencyName}</h2>
         <p>
           {item.estimatedMinutes} min · {item.plannedDate ?? 'a reorganizar'} ·{' '}
           {statusLabel[item.status]}
@@ -71,7 +69,7 @@ export function PlanItemCard({ item }: { item: StudyPlanItem }) {
       </div>
       <ul className="list-disc pl-5 text-sm">
         {item.reasons.map((reason) => (
-          <li key={reason.code}>{reason.detail}</li>
+          <li key={reason.code}>{activityReason(reason.code)}</li>
         ))}
       </ul>
       <form action={askTutorAboutPlanItem}>

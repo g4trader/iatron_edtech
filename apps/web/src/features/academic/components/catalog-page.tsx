@@ -26,7 +26,6 @@ export function CatalogPage({
 
 export function CatalogCard({
   title,
-  code,
   children,
 }: {
   title: string;
@@ -35,12 +34,7 @@ export function CatalogCard({
 }) {
   return (
     <article className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-      {code && (
-        <p className="text-xs font-semibold uppercase tracking-wide text-teal-700">
-          {code}
-        </p>
-      )}
-      <h3 className="mt-1 text-lg font-semibold">{title}</h3>
+      <h3 className="text-lg font-semibold">{title}</h3>
       <div className="mt-2 grid gap-2 text-sm text-slate-600">{children}</div>
     </article>
   );

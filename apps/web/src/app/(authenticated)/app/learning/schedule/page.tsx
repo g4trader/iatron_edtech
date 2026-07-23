@@ -5,6 +5,7 @@ import {
   learningReasonLabel,
 } from '@/features/learning/components/learning-page';
 import { learningState } from '@/features/learning/server/learning';
+import { studyPriority } from '@/lib/learning-language';
 export default async function SchedulePage() {
   const items = await learningState.schedule();
   return (
@@ -17,12 +18,11 @@ export default async function SchedulePage() {
         <LearningCard
           key={item.competencyId}
           title={`${item.rank}. ${item.competencyName}`}
-          eyebrow={item.competencyCode}
+          eyebrow={studyPriority(item.priority)}
         >
           <p>{item.recommendedMinutes} minutos recomendados</p>
           <p>
-            Importância {Math.round(item.priority * 100)}% ·{' '}
-            {item.reasons.map(learningReasonLabel).join(', ')}
+            Por que estudar: {item.reasons.map(learningReasonLabel).join(', ')}
           </p>
         </LearningCard>
       ))}

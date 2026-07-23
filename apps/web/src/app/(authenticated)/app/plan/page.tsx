@@ -38,9 +38,8 @@ export default async function CurrentPlanPage() {
           <p className="eyebrow">Feito para a sua rotina</p>
           <h2>Seu plano transforma prioridades em próximos passos</h2>
           <p>
-            Consideramos seu diagnóstico, a confiança das evidências e o tempo
-            disponível. Em cada atividade, você pode conferir o motivo da
-            recomendação.
+            Consideramos suas respostas e o tempo disponível. Em cada
+            atividade, você pode conferir o motivo da recomendação.
           </p>
         </div>
       </section>

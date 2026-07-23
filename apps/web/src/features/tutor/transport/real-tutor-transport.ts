@@ -4,6 +4,24 @@ import { createClient } from '@/lib/supabase/browser';
 
 const apiUrl = () => (process.env.NEXT_PUBLIC_API_URL ?? 'http://127.0.0.1:8080/v1').replace(/\/$/, '');
 
+const referenceTypeLabel: Record<string, string> = {
+  profile: 'Seu perfil',
+  target_exam: 'Sua prova escolhida',
+  mastery: 'Seu progresso neste assunto',
+  evidence: 'Suas atividades recentes',
+  study_plan: 'Seu plano de estudos',
+  competency: 'Conteúdo acadêmico',
+  question: 'Questão estudada',
+  assessment: 'Seu diagnóstico',
+};
+
+function referenceTitle(source: TutorReference) {
+  const label = source.label.replace(/^Mastery:\s*/i, '');
+  return label === source.label
+    ? label
+    : `Seu progresso em ${label}`;
+}
+
 async function token() {
   const { data } = await createClient().auth.getSession();
   if (!data.session) throw new Error('Sua sessão expirou.');
@@ -45,7 +63,13 @@ export class RealTutorTransport implements ChatTransport {
             requestId: input.requestId,
             part: {
               type: 'references',
-              items: [{ id: source.entityId ?? `${source.type}-${source.label}`, title: source.label, source: source.type, version: 'vigente', reviewStatus: 'reviewed' }],
+              items: [{
+                id: source.entityId ?? `${source.type}-${source.label}`,
+                title: referenceTitle(source),
+                source: referenceTypeLabel[source.type] ?? 'Informação da sua preparação',
+                version: 'atual',
+                reviewStatus: 'reviewed',
+              }],
             },
           };
         }

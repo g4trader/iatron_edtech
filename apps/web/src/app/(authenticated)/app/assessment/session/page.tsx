@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { ActionSubmitButton } from '@/components/feedback/action-submit-button';
 import { AssessmentPage } from '@/features/assessments/components/adaptive-page';
 import { nextQuestion } from '@/features/assessments/server/adaptive-assessment';
+import { questionSelectionReason } from '@/lib/learning-language';
 
 export default async function SessionPage({
   searchParams,
@@ -58,7 +59,8 @@ export default async function SessionPage({
         </div>
         <progress max={question.total} value={question.number} />
         <p>
-          <strong>Por que esta questão?</strong> {question.selectionReason}
+          <strong>Por que esta questão?</strong>{' '}
+          {questionSelectionReason(question.selectionReason)}
         </p>
       </section>
       <form action={submitDiagnosticAnswer} className="space-y-5">

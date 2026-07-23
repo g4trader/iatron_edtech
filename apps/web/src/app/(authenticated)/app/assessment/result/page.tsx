@@ -5,6 +5,10 @@ import {
   Metric,
 } from '@/features/assessments/components/adaptive-page';
 import { assessmentResult } from '@/features/assessments/server/adaptive-assessment';
+import {
+  learningStage,
+  measurementClarity,
+} from '@/lib/learning-language';
 
 const classificationLabel = {
   strong: 'ponto forte',
@@ -12,12 +16,6 @@ const classificationLabel = {
   developing: 'em desenvolvimento',
   unmeasured: 'ainda não avaliada',
 } as const;
-const confidenceLabel = {
-  low: 'baixa',
-  medium: 'média',
-  high: 'alta',
-} as const;
-
 export default async function ResultPage({
   searchParams,
 }: {
@@ -66,7 +64,7 @@ export default async function ResultPage({
           </h2>
           <p>
             {priorityCount > 0
-              ? `${priorityCount} ${priorityCount === 1 ? 'competência merece' : 'competências merecem'} atenção agora. Seu plano usará exatamente essas evidências para organizar os próximos passos.`
+              ? `${priorityCount} ${priorityCount === 1 ? 'assunto merece' : 'assuntos merecem'} atenção agora. Seu plano usará suas respostas para organizar os próximos passos.`
               : 'Continue praticando para aumentarmos a confiança deste diagnóstico e refinarmos seu plano.'}
           </p>
         </div>
@@ -80,12 +78,18 @@ export default async function ResultPage({
           value={`${result.correctCount}/${result.answeredCount}`}
         />
         <Metric
-          label="Confiança da medição"
-          value={`${Math.round(result.overallConfidence * 100)}%`}
+          label="Precisão deste retrato"
+          value={
+            result.overallConfidence >= 0.75
+              ? 'Bem definida'
+              : result.overallConfidence >= 0.4
+                ? 'Em construção'
+                : 'Precisamos conhecer mais'
+          }
         />
         <Metric
-          label="Competências avaliadas"
-          value={`${Math.round(result.diagnosticCoverage * 100)}%`}
+          label="Assuntos conhecidos"
+          value={`${result.competencies.filter((item) => item.evidenceCount > 0).length} de ${result.competencies.length}`}
         />
       </div>
       <Link
@@ -107,14 +111,10 @@ export default async function ResultPage({
             key={item.competencyId}
             className="rounded-xl border border-[var(--color-border)] p-4"
           >
-            <strong>
-              {item.competencyCode} · {item.competencyName}
-            </strong>
-            <p>
-              Domínio {Math.round(item.mastery * 100)}% · confiança{' '}
-              {confidenceLabel[item.confidenceLevel]} ·{' '}
-              {classificationLabel[item.classification]}
-            </p>
+            <strong>{item.competencyName}</strong>
+            <p>{classificationLabel[item.classification]}.</p>
+            <p>{learningStage(item.mastery)}</p>
+            <p>{measurementClarity(item.confidence)}</p>
           </article>
         ))}
       </section>

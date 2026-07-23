@@ -42,12 +42,26 @@ export default async function CoveragePage() {
       title="O que já foi avaliado"
       description="Veja quanto do seu conhecimento já conseguimos medir com segurança."
     >
+      <section className="experience-callout">
+        <div>
+          <p className="eyebrow">Seu diagnóstico evolui com você</p>
+          <h2>
+            {measured === result.competencies.length
+              ? 'Já passamos por todos os assuntos deste diagnóstico'
+              : 'Alguns assuntos ainda precisam de mais respostas'}
+          </h2>
+          <p>
+            Quanto mais você pratica, mais precisas ficam as prioridades e as
+            sugestões do seu plano.
+          </p>
+        </div>
+      </section>
       <div className="grid gap-3 sm:grid-cols-3">
         <Metric
-          label="Alcance do diagnóstico"
-          value={`${Math.round(result.diagnosticCoverage * 100)}%`}
+          label="Assuntos já observados"
+          value={`${measured} de ${result.competencies.length}`}
         />
-        <Metric label="Competências avaliadas" value={`${measured}`} />
+        <Metric label="Atividades concluídas" value={`${result.answeredCount}`} />
         <Metric
           label="Precisam de mais respostas"
           value={`${result.competencies.filter((item) => item.confidenceLevel === 'low').length}`}

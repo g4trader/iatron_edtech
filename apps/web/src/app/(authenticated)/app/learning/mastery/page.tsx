@@ -5,6 +5,7 @@ import {
   learningTrendLabel,
 } from '@/features/learning/components/learning-page';
 import { learningState } from '@/features/learning/server/learning';
+import { learningStage, measurementClarity } from '@/lib/learning-language';
 export default async function MasteryPage() {
   const items = await learningState.mastery();
   return (
@@ -17,15 +18,14 @@ export default async function MasteryPage() {
         <LearningCard
           key={item.competencyId}
           title={item.competencyName}
-          eyebrow={item.competencyCode}
+          eyebrow={learningTrendLabel(item.trend)}
         >
+          <p>{learningStage(item.mastery)}</p>
+          <p>{measurementClarity(item.confidence)}</p>
           <p>
-            Domínio: {Math.round(item.mastery * 100)}% · confiança:{' '}
-            {Math.round(item.confidence * 100)}%
-          </p>
-          <p>
-            {item.evidenceCount} atividade(s) considerada(s) · tendência{' '}
-            {learningTrendLabel(item.trend)}
+            {item.evidenceCount === 1
+              ? '1 atividade ajudou a construir este retrato.'
+              : `${item.evidenceCount} atividades ajudaram a construir este retrato.`}
           </p>
         </LearningCard>
       ))}

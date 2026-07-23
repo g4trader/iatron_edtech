@@ -27,6 +27,28 @@ async function expectNoPageOverflow(page: Page) {
 }
 
 test.describe('hardening mobile', () => {
+  test('não expõe linguagem interna nas jornadas principais', async ({
+    page,
+  }) => {
+    const forbidden =
+      /\b(learning engine|learning gap engine|scheduler|assessment engine|event store|timeline event|question attempt|algorithm version|mastery|confidence|coverage|evidence)\b/i;
+
+    for (const route of [
+      '/app',
+      '/app/assessment/start',
+      '/app/plan',
+      '/app/learning',
+      '/app/academic',
+      '/app/tutor',
+    ]) {
+      await page.goto(route);
+      await page.waitForLoadState('networkidle');
+      expect(await page.locator('body').innerText(), route).not.toMatch(
+        forbidden,
+      );
+    }
+  });
+
   test('respeita todas as larguras obrigatórias', async ({
     page,
   }, testInfo) => {

@@ -4,6 +4,7 @@ import {
   LearningPage,
 } from '@/features/learning/components/learning-page';
 import { learningState } from '@/features/learning/server/learning';
+import { learningActivityLabel } from '@/lib/learning-language';
 export default async function TimelinePage() {
   const items = await learningState.timeline();
   return (
@@ -16,7 +17,7 @@ export default async function TimelinePage() {
         <LearningCard
           key={`${item.type}-${item.id}`}
           title={item.title}
-          eyebrow={item.type}
+          eyebrow={learningActivityLabel(item.type)}
         >
           <p>{item.detail}</p>
           <time dateTime={item.occurredAt}>

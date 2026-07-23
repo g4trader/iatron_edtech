@@ -4,6 +4,7 @@ import {
   LearningPage,
 } from '@/features/learning/components/learning-page';
 import { learningState } from '@/features/learning/server/learning';
+import { difficultyLabel } from '@/lib/learning-language';
 export default async function EvidencePage() {
   const items = await learningState.evidence();
   return (
@@ -16,20 +17,18 @@ export default async function EvidencePage() {
         <LearningCard
           key={item.id}
           title={item.competencyName}
-          eyebrow={item.competencyCode}
+          eyebrow={item.isCorrect ? 'Resposta correta' : 'Oportunidade de revisão'}
         >
+          <p>Esta foi uma {difficultyLabel(item.difficulty)}.</p>
           <p>
-            {item.isCorrect ? 'Acerto' : 'Erro'} · dificuldade {item.difficulty}{' '}
-            · peso {item.weight}
-          </p>
-          <p>
-            Tempo:{' '}
+            Você respondeu em{' '}
             {item.responseTimeMs === null
-              ? 'não informado'
+              ? 'um tempo não registrado'
               : `${Math.round(item.responseTimeMs / 1000)}s`}
+            .
           </p>
           <p>
-            Registrado em{' '}
+            Esta atividade passou a fazer parte da sua evolução em{' '}
             {new Date(item.observedAt).toLocaleString('pt-BR')}
           </p>
         </LearningCard>
