@@ -66,4 +66,41 @@ describe('tutor routes', () => {
     expect(response.json().error.code).toBe('PROMPT_INJECTION');
     await app.close();
   });
+
+  it('keeps CORS headers on a hijacked SSE response', async () => {
+    const app = Fastify();
+    app.addHook('preHandler', async (request) => {
+      request.auth = { userId: crypto.randomUUID(), accessToken: 'token' };
+    });
+    await registerTutorRoutes(app, {
+      environment: readEnvironment({
+        NODE_ENV: 'test',
+        CORS_ALLOWED_ORIGINS: 'https://staging.example.com',
+      }),
+      repositoryFactory: repository,
+      gateway: {
+        stream: async function* () {
+          yield {
+            type: 'completed' as const,
+            responseId: 'r',
+            usage: { inputTokens: 1, outputTokens: 1, totalTokens: 2 },
+          };
+        },
+      },
+    });
+    const response = await app.inject({
+      method: 'POST',
+      url: `/tutor/conversations/${conversation.id}/messages`,
+      headers: { origin: 'https://staging.example.com' },
+      payload: {
+        requestId: crypto.randomUUID(),
+        text: 'Explique meu plano de estudos',
+      },
+    });
+    expect(response.headers['access-control-allow-origin']).toBe(
+      'https://staging.example.com',
+    );
+    expect(response.headers['access-control-allow-credentials']).toBe('true');
+    await app.close();
+  });
 });

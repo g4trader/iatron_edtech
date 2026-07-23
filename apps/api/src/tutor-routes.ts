@@ -85,7 +85,18 @@ export async function registerTutorRoutes(
     reply.raw.on('close', () => {
       if (!reply.raw.writableEnded) controller.abort();
     });
+    const origin = request.headers.origin;
+    const allowedOrigins = new Set(
+      options.environment.CORS_ALLOWED_ORIGINS.split(',').map((item) =>
+        item.trim(),
+      ),
+    );
     reply.hijack();
+    if (origin && allowedOrigins.has(origin)) {
+      reply.raw.setHeader('access-control-allow-origin', origin);
+      reply.raw.setHeader('access-control-allow-credentials', 'true');
+      reply.raw.setHeader('vary', 'Origin');
+    }
     reply.raw.setHeader('content-type', 'text/event-stream; charset=utf-8');
     reply.raw.setHeader('cache-control', 'no-cache, no-transform');
     reply.raw.setHeader('connection', 'keep-alive');
