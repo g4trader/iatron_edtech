@@ -71,6 +71,22 @@ pnpm build
 pnpm test:e2e
 ```
 
+## Governança de produto e qualidade
+
+Nenhuma entrega é considerada concluída apenas porque funciona. Todo Pull
+Request deve seguir:
+
+- [Definition of Done](docs/product/DEFINITION_OF_DONE.md);
+- [Diretrizes de Code Review](docs/product/CODE_REVIEW_GUIDELINES.md);
+- [Princípios de experiência](docs/product/UX_PRINCIPLES.md);
+- [Voz e tom](docs/product/VOICE_AND_TONE.md);
+- [Checklist de revisão de design](docs/product/DESIGN_REVIEW_CHECKLIST.md).
+
+O [template padrão de Pull Request](.github/pull_request_template.md) transforma
+esses critérios em uma etapa explícita de autorrevisão. Itens não aplicáveis
+devem ser justificados; segurança, privacidade, integridade pedagógica e
+acessibilidade essencial não podem ser dispensadas.
+
 ## Variáveis de ambiente
 
 ### Web
