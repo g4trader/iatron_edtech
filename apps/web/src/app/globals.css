@@ -17,6 +17,10 @@
   --focus-ring: #8b5f25;
   --sidebar: #263a32;
   --sidebar-muted: #c4d0c9;
+  /* Compatibility aliases for feature modules. Keep semantic colors centralized. */
+  --color-accent: var(--primary);
+  --color-border: var(--border);
+  --color-text-muted: var(--foreground-muted);
   --radius-sm: 0.625rem;
   --radius-md: 1rem;
   --radius-lg: 1.5rem;
@@ -130,6 +134,10 @@ button:disabled {
 }
 .primary-button:hover {
   background: var(--primary-hover);
+}
+.primary-button:disabled {
+  background: #aab2ad;
+  color: #29302c;
 }
 .secondary-button {
   background: var(--surface-elevated);

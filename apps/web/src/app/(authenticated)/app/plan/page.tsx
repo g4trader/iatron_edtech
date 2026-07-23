@@ -14,7 +14,7 @@ export default async function CurrentPlanPage() {
         description="Gere um plano de sete dias a partir do seu estado pedagógico."
       >
         <form action={generatePlan}>
-          <button className="rounded-lg bg-[var(--color-accent)] px-4 py-2 text-white">
+          <button className="primary-button">
             Gerar meu plano
           </button>
         </form>

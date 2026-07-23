@@ -72,6 +72,33 @@ test.describe('hardening mobile', () => {
     await expectNoPageOverflow(page);
   });
 
+  test('CTAs primários têm fundo sólido e contraste acessível', async ({
+    page,
+  }) => {
+    for (const [route, label] of [
+      ['/app/assessment/start', 'Iniciar diagnóstico'],
+      ['/app/plan', 'Gerar meu plano'],
+    ] as const) {
+      await page.goto(route);
+      const button = page.getByRole('button', { name: label });
+      await expect(button).toBeVisible();
+      const colors = await button.evaluate((element) => {
+        const style = getComputedStyle(element);
+        return {
+          background: style.backgroundColor,
+          foreground: style.color,
+        };
+      });
+      expect(colors.background, `${label} sem fundo em ${route}`).not.toBe(
+        'rgba(0, 0, 0, 0)',
+      );
+      expect(
+        colors.background,
+        `${label} herdou fundo branco em ${route}`,
+      ).not.toBe('rgb(255, 255, 255)');
+    }
+  });
+
   test('onboarding valida, persiste ao voltar e conclui em uma coluna', async ({
     page,
     isMobile,
@@ -80,7 +107,9 @@ test.describe('hardening mobile', () => {
     await page.goto('/app/onboarding');
 
     await page.getByRole('button', { name: 'Salvar e continuar' }).click();
-    await expect(page.getByText('Informe seu nome para continuar.')).toBeVisible();
+    await expect(
+      page.getByText('Informe seu nome para continuar.'),
+    ).toBeVisible();
     await expect(page.getByLabel('Nome completo')).toBeFocused();
 
     await page.getByLabel('Nome completo').fill('Maria Mobile');
@@ -119,7 +148,13 @@ test.describe('hardening mobile', () => {
   });
 
   test('não possui violações axe críticas ou sérias', async ({ page }) => {
-    for (const route of ['/login', '/app/onboarding', '/app']) {
+    for (const route of [
+      '/login',
+      '/app/onboarding',
+      '/app',
+      '/app/assessment/start',
+      '/app/plan',
+    ]) {
       await page.goto(route);
       const results = await new AxeBuilder({ page })
         .withTags(['wcag2a', 'wcag2aa', 'wcag21aa'])
