@@ -8,7 +8,7 @@ export default async function ThemesPage() {
   return (
     <CatalogPage
       title="Temas"
-      description="Temas pertencem a uma área e agrupam subtemas clínicos."
+      description="Navegue pelos assuntos clínicos que estruturam o que você precisa estudar."
     >
       {items.map((item) => (
         <CatalogCard key={item.id} title={item.name} code={item.code}>

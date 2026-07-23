@@ -9,7 +9,7 @@ export default async function ResetPage({
   return (
     <AuthForm
       title="Nova senha"
-      description="Defina uma nova senha com pelo menos 8 caracteres."
+      description="Escolha uma senha com pelo menos 8 caracteres. Depois, você voltará à sua preparação."
       action={updatePassword}
       error={query.erro}
     >
@@ -19,7 +19,7 @@ export default async function ResetPage({
         type="password"
         autoComplete="new-password"
       />
-      <Submit>Salvar senha</Submit>
+      <Submit>Salvar e continuar</Submit>
     </AuthForm>
   );
 }

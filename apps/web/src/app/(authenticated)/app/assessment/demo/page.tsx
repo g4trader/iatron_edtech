@@ -1,5 +1,5 @@
-import { AssessmentShell } from '@/features/assessments/components/assessment-shell';
+import { redirect } from 'next/navigation';
 
 export default function DemoAssessmentPage() {
-  return <AssessmentShell />;
+  redirect('/app/assessment/start');
 }

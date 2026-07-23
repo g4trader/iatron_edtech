@@ -15,6 +15,7 @@ const primaryRoutes = [
 ] as const;
 
 async function expectNoPageOverflow(page: Page) {
+  await page.waitForLoadState('networkidle');
   const dimensions = await page.evaluate(() => ({
     clientWidth: document.documentElement.clientWidth,
     scrollWidth: document.documentElement.scrollWidth,
@@ -77,7 +78,7 @@ test.describe('hardening mobile', () => {
   }) => {
     for (const [route, label] of [
       ['/app/assessment/start', 'Iniciar diagnóstico'],
-      ['/app/plan', 'Gerar meu plano'],
+      ['/app/plan', 'Criar meu plano'],
     ] as const) {
       await page.goto(route);
       const button = page.getByRole('button', { name: label });

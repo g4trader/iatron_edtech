@@ -7,8 +7,8 @@ export default async function GuidelinesPage() {
   const items = await academicCatalog.guidelines();
   return (
     <CatalogPage
-      title="Guidelines"
-      description="Fontes versionadas com órgão emissor, vigência e rastreabilidade."
+      title="Fontes médicas"
+      description="Consulte as diretrizes que sustentam os conteúdos e explicações da plataforma."
     >
       {items.map((item) => (
         <CatalogCard

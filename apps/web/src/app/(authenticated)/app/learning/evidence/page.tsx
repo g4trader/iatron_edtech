@@ -8,8 +8,8 @@ export default async function EvidencePage() {
   const items = await learningState.evidence();
   return (
     <LearningPage
-      title="Evidências"
-      description="Fatos explicáveis derivados dos eventos de aprendizagem."
+      title="Como seu progresso é reconhecido"
+      description="Cada resposta e atividade ajuda o Iatron a entender seu momento em cada competência."
     >
       {items.length === 0 && <EmptyLearningState />}
       {items.map((item) => (
@@ -29,8 +29,8 @@ export default async function EvidencePage() {
               : `${Math.round(item.responseTimeMs / 1000)}s`}
           </p>
           <p>
-            {new Date(item.observedAt).toLocaleString('pt-BR')} ·{' '}
-            {item.algorithmVersion}
+            Registrado em{' '}
+            {new Date(item.observedAt).toLocaleString('pt-BR')}
           </p>
         </LearningCard>
       ))}

@@ -1,4 +1,5 @@
 import { generatePlan } from '@/features/study-plans/actions';
+import { EmptyState } from '@/components/feedback/states';
 import {
   PlanItemCard,
   PlanPage,
@@ -10,20 +11,24 @@ export default async function CurrentPlanPage() {
   if (!plan)
     return (
       <PlanPage
-        title="Plano adaptativo"
-        description="Gere um plano de sete dias a partir do seu estado pedagógico."
+        title="Seu plano de estudos"
+        description="Vamos distribuir suas prioridades nos horários que você informou, com espaço para estudar e revisar."
       >
-        <form action={generatePlan}>
-          <button className="primary-button">
-            Gerar meu plano
-          </button>
-        </form>
+        <EmptyState
+          title="Seu plano está pronto para ser criado"
+          description="Usaremos seu diagnóstico, suas prioridades e sua rotina para sugerir os próximos sete dias."
+          action={
+            <form action={generatePlan}>
+              <button className="primary-button">Criar meu plano</button>
+            </form>
+          }
+        />
       </PlanPage>
     );
   return (
     <PlanPage
       title="Plano atual"
-      description={`Versão ${plan.version} · ${plan.totalPlannedMinutes} de ${plan.totalAvailableMinutes} minutos disponíveis.`}
+      description={`${plan.totalPlannedMinutes} de ${plan.totalAvailableMinutes} minutos disponíveis foram organizados para os próximos dias.`}
     >
       <div className="space-y-3">
         {plan.items.slice(0, 5).map((item) => (

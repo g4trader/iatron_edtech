@@ -17,11 +17,15 @@ function toChatMessage(message: TutorMessage): ChatMessage {
 export function TutorShell({ conversation, messages }: { conversation: TutorConversation; messages: TutorMessage[] }) {
   const transport = useMemo(() => new RealTutorTransport(), []);
   return (
-    <section>
+    <section className="tutor-conversation-page">
       <header className="catalog-card mx-auto mt-4 max-w-3xl">
-        <p className="eyebrow">Tutor IA · {conversation.mode}</p>
+        <p className="eyebrow">Seu tutor de estudos</p>
         <h1>{conversation.title}</h1>
-        <p>Contexto pedagógico calculado pelo sistema. Respostas educacionais, não atendimento médico.</p>
+        <p>
+          Use esta conversa para entender seu diagnóstico, seu plano e os
+          conteúdos estudados. As orientações são educacionais e não substituem
+          atendimento médico.
+        </p>
       </header>
       <ChatShell conversationId={conversation.id} initialMessages={messages.map(toChatMessage)} transport={transport} />
     </section>

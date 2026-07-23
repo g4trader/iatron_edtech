@@ -3,12 +3,12 @@ import { usePathname } from 'next/navigation';
 
 export const navigationItems = [
   { href: '/app', label: 'Início', icon: 'I' },
-  { href: '/app/assessment/start', label: 'Avaliação', icon: 'A' },
+  { href: '/app/assessment/start', label: 'Diagnóstico', icon: 'D' },
   { href: '/app/plan', label: 'Meu plano', icon: 'P' },
+  { href: '/app/tutor', label: 'Tutor', icon: 'T' },
   { href: '/app/simulations', label: 'Simulados', icon: 'S' },
-  { href: '/app/performance', label: 'Desempenho', icon: 'D' },
-  { href: '/app/academic', label: 'Acadêmico', icon: 'M' },
-  { href: '/app/learning', label: 'Motor', icon: 'L' },
+  { href: '/app/learning', label: 'Meu progresso', icon: 'E' },
+  { href: '/app/academic', label: 'Conteúdos', icon: 'C' },
 ] as const;
 
 export function NavigationLinks({

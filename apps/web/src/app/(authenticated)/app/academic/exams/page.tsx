@@ -11,7 +11,7 @@ export default async function ExamsPage() {
   return (
     <CatalogPage
       title="Provas e bancas"
-      description="Edições de prova ligadas a programas e bancas, sem duplicar questões."
+      description="Conheça as provas que podem orientar seus objetivos e seu plano de estudos."
     >
       <p className="text-sm text-slate-600">
         Bancas: {boards.map((board) => board.acronym ?? board.name).join(', ')}

@@ -3,11 +3,11 @@ import type { ReactNode } from 'react';
 import { PageContainer } from '@/components/layout/page-container';
 
 const items = [
-  ['Mastery', '/app/learning/mastery'],
-  ['Evidências', '/app/learning/evidence'],
-  ['Gaps', '/app/learning/gaps'],
-  ['Timeline', '/app/learning/timeline'],
-  ['Agenda', '/app/learning/schedule'],
+  ['Meu domínio', '/app/learning/mastery'],
+  ['Como aprendemos', '/app/learning/evidence'],
+  ['Prioridades', '/app/learning/gaps'],
+  ['Minha evolução', '/app/learning/timeline'],
+  ['Próximos estudos', '/app/learning/schedule'],
 ] as const;
 
 export function LearningPage({
@@ -22,11 +22,11 @@ export function LearningPage({
   return (
     <PageContainer>
       <section className="page-intro">
-        <p className="eyebrow">Learning Engine determinístico</p>
+        <p className="eyebrow">Seu progresso</p>
         <h2>{title}</h2>
         <p>{description}</p>
       </section>
-      <nav aria-label="Motor pedagógico" className="flex flex-wrap gap-2">
+      <nav aria-label="Acompanhar aprendizado" className="flex flex-wrap gap-2">
         {items.map(([label, href]) => (
           <Link
             className="rounded-full border border-slate-300 bg-white px-4 py-2 text-sm"
@@ -64,10 +64,40 @@ export function LearningCard({
   );
 }
 
-export function EmptyLearningState() {
+export function EmptyLearningState({
+  title = 'Seu progresso aparecerá aqui',
+  description = 'Conclua seu primeiro diagnóstico para identificarmos seus pontos fortes e suas prioridades de estudo.',
+}: {
+  title?: string;
+  description?: string;
+}) {
   return (
-    <p className="rounded-2xl border border-dashed border-slate-300 p-6 text-sm text-slate-600">
-      Ainda não há eventos suficientes para esta visão.
-    </p>
+    <section className="state-card empty-state">
+      <h2>{title}</h2>
+      <p>{description}</p>
+      <Link className="primary-button inline-flex" href="/app/assessment/start">
+        Fazer meu diagnóstico
+      </Link>
+    </section>
+  );
+}
+
+export function learningReasonLabel(reason: string) {
+  return (
+    {
+      critical: 'domínio ainda baixo',
+      forgotten: 'precisa de revisão',
+      low_evidence: 'precisamos conhecer melhor seu nível',
+    }[reason] ?? reason.replaceAll('_', ' ')
+  );
+}
+
+export function learningTrendLabel(trend: string) {
+  return (
+    {
+      improving: 'em evolução',
+      declining: 'precisa de atenção',
+      stable: 'estável',
+    }[trend] ?? trend
   );
 }

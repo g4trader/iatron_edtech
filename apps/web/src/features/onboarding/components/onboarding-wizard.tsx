@@ -286,7 +286,7 @@ export function OnboardingWizard(props: WizardProps) {
   return (
     <main className="onboarding-page">
       <header className="onboarding-progress">
-        <p>Configuração acadêmica</p>
+        <p>Sua preparação</p>
         <strong>Etapa {step} de 4</strong>
       </header>
       <div

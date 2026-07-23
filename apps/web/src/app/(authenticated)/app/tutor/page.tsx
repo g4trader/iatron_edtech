@@ -3,6 +3,7 @@ import type { Route } from 'next';
 import { redirect } from 'next/navigation';
 import type { TutorMode, TutorOriginType } from '@iatron/contracts';
 import { createTutorConversation, listTutorConversations } from '@/features/tutor/server/tutor';
+import { EmptyState } from '@/components/feedback/states';
 
 export default async function TutorPage({ searchParams }: { searchParams: Promise<Record<string, string | undefined>> }) {
   const params = await searchParams;
@@ -17,15 +18,30 @@ export default async function TutorPage({ searchParams }: { searchParams: Promis
   return (
     <main className="catalog-page">
       <header className="catalog-header">
-        <p className="eyebrow">Tutor IA</p>
-        <h1>Converse sobre seu aprendizado</h1>
-        <p>Explicações fundamentadas no seu diagnóstico e plano, sem alterar métricas determinísticas.</p>
-        <form action={create}><button className="primary-action" type="submit">Nova conversa</button></form>
+        <p className="eyebrow">Seu tutor de estudos</p>
+        <h1>Entenda melhor cada próximo passo</h1>
+        <p>
+          Tire dúvidas sobre seu diagnóstico, seu plano ou uma competência. O
+          tutor usa as informações do seu aprendizado para dar explicações mais
+          úteis.
+        </p>
+        <form action={create}>
+          <button className="primary-action" type="submit">
+            Começar conversa
+          </button>
+        </form>
       </header>
       <section className="catalog-grid" aria-label="Histórico de conversas">
+        {conversations.length === 0 && (
+          <EmptyState
+            title="Comece sua primeira conversa"
+            description="Você pode perguntar por que uma prioridade entrou no plano, o que significa seu domínio ou como melhorar em um tema."
+          />
+        )}
         {conversations.map((conversation) => (
           <Link className="catalog-card" href={`/app/tutor/${conversation.id}` as Route} key={conversation.id}>
-            <strong>{conversation.title}</strong><span>{conversation.mode}</span>
+            <strong>{conversation.title}</strong>
+            <span>Continuar conversa</span>
           </Link>
         ))}
       </section>

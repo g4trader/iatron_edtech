@@ -6,11 +6,11 @@ test('abre o início autenticado e inicia uma conversa', async ({ page }) => {
     page.getByRole('heading', { name: 'Vamos retomar sua preparação.' }),
   ).toBeVisible();
   await page
-    .getByRole('link', { name: /nova conversa/i })
+    .getByRole('link', { name: /conversar com meu tutor/i })
     .first()
     .click();
   await expect(
-    page.getByRole('heading', { name: 'O que você quer dominar hoje?' }),
+    page.getByRole('heading', { name: 'Como posso ajudar no seu estudo?' }),
   ).toBeVisible();
 });
 
@@ -43,13 +43,12 @@ test('navega pelo drawer mobile', async ({ page, isMobile }) => {
   await expect(page).toHaveURL(/\/app\/plan/);
 });
 
-test('abre avaliação demonstrativa e pausa', async ({ page }) => {
+test('direciona a antiga demonstração para o diagnóstico real', async ({ page }) => {
   await page.goto('/app/assessment/demo');
   await expect(
-    page.getByRole('heading', { name: /avaliação diagnóstica/i }),
+    page.getByRole('heading', { name: 'Diagnóstico inicial' }),
   ).toBeVisible();
-  await page.getByRole('button', { name: 'Pausar' }).click();
   await expect(
-    page.getByRole('heading', { name: 'Avaliação pausada' }),
+    page.getByRole('button', { name: 'Iniciar diagnóstico' }),
   ).toBeVisible();
 });

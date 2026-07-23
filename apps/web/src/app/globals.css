@@ -376,6 +376,11 @@ button:disabled {
 .mobile-menu-button {
   display: none;
 }
+.header-action-spacer {
+  width: 44px;
+  height: 44px;
+  flex: 0 0 44px;
+}
 .context-panel[hidden] {
   display: none;
 }
@@ -761,6 +766,65 @@ button:disabled {
 }
 .page-container[data-narrow='true'] {
   max-width: 900px;
+}
+.experience-page,
+.catalog-page {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior-y: contain;
+  -webkit-overflow-scrolling: touch;
+}
+.catalog-page {
+  width: 100%;
+  max-width: 1120px;
+  margin-inline: auto;
+  padding: clamp(1.25rem, 3vw, 2.5rem);
+}
+.catalog-header {
+  display: grid;
+  gap: 0.65rem;
+  max-width: 760px;
+  margin-bottom: 1.5rem;
+}
+.catalog-header h1,
+.catalog-header p {
+  margin: 0;
+}
+.catalog-header > p:last-of-type {
+  color: var(--foreground-muted);
+}
+.catalog-grid {
+  display: grid;
+  gap: 0.8rem;
+}
+.catalog-card {
+  display: grid;
+  gap: 0.35rem;
+  padding: 1rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--surface-elevated);
+}
+.catalog-card span,
+.catalog-card p {
+  color: var(--foreground-muted);
+}
+.primary-action {
+  min-height: 44px;
+  padding: 0.65rem 1rem;
+  border: 1px solid var(--primary);
+  border-radius: var(--radius-sm);
+  background: var(--primary);
+  color: white;
+  font-weight: 700;
+}
+.tutor-conversation-page {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
 }
 .page-intro {
   max-width: 720px;
@@ -1562,6 +1626,31 @@ button:disabled {
 .state-card p {
   color: var(--foreground-muted);
 }
+.empty-state {
+  border-style: dashed;
+}
+.empty-state .state-action,
+.empty-state > .primary-button {
+  margin-top: 0.9rem;
+}
+.loading-state {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+.loading-state-mark {
+  width: 2.5rem;
+  height: 2.5rem;
+  flex: 0 0 2.5rem;
+  border: 3px solid #d9e3dd;
+  border-top-color: var(--primary);
+  border-radius: 50%;
+  animation: loading-spin 0.9s linear infinite;
+}
+.loading-state h2,
+.loading-state p {
+  margin: 0;
+}
 .error-state {
   border-color: #e1b6b0;
 }
@@ -1654,6 +1743,11 @@ button:disabled {
   }
   to {
     opacity: 1;
+  }
+}
+@keyframes loading-spin {
+  to {
+    transform: rotate(360deg);
   }
 }
 @media (prefers-reduced-motion: reduce) {

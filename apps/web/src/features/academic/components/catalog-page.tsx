@@ -14,7 +14,7 @@ export function CatalogPage({
   return (
     <PageContainer>
       <section className="page-intro">
-        <p className="eyebrow">Modelo acadêmico</p>
+        <p className="eyebrow">Conteúdo para sua preparação</p>
         <h2>{title}</h2>
         <p>{description}</p>
       </section>

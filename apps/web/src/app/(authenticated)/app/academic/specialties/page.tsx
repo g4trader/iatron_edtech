@@ -8,7 +8,7 @@ export default async function SpecialtiesPage() {
   return (
     <CatalogPage
       title="Especialidades"
-      description="Especialidades vinculadas a programas e às áreas que compartilham."
+      description="Explore como as especialidades e suas áreas se conectam na sua preparação."
     >
       {items.map((item) => (
         <CatalogCard key={item.id} title={item.name} code={item.code}>

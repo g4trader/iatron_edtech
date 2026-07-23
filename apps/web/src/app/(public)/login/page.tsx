@@ -14,7 +14,7 @@ export default async function LoginPage({
   return (
     <AuthForm
       title="Entrar"
-      description="Continue sua preparação para a residência."
+      description="Retome seu plano e continue de onde parou."
       action={login}
       error={query.erro}
       message={query.mensagem}
@@ -29,8 +29,8 @@ export default async function LoginPage({
       />
       <Submit>Entrar</Submit>
       <div className="flex justify-between text-sm">
-        <Link href="/cadastro">Criar conta</Link>
-        <Link href="/esqueci-minha-senha">Esqueci a senha</Link>
+        <Link href="/cadastro">Começar agora</Link>
+        <Link href="/esqueci-minha-senha">Recuperar senha</Link>
       </div>
     </AuthForm>
   );

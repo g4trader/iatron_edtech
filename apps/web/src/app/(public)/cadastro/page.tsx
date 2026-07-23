@@ -21,7 +21,7 @@ export default async function SignupPage({
   return (
     <AuthForm
       title="Criar conta"
-      description="Comece definindo seus objetivos acadêmicos."
+      description="Leva poucos minutos. Depois, vamos conhecer sua rotina e organizar seus primeiros passos."
       action={signup}
       error={query.erro}
     >
@@ -38,9 +38,9 @@ export default async function SignupPage({
         type="password"
         autoComplete="new-password"
       />
-      <Submit>Criar conta</Submit>
+      <Submit>Começar minha preparação</Submit>
       <Link className="text-sm" href="/login">
-        Já tenho conta
+        Já tenho uma conta
       </Link>
     </AuthForm>
   );

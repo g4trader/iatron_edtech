@@ -12,12 +12,12 @@ export default async function RecoveryPage() {
   return (
     <AuthForm
       title="Recuperar senha"
-      description="Enviaremos um link se o endereço estiver cadastrado."
+      description="Informe seu e-mail. Se ele estiver cadastrado, enviaremos um link seguro para você voltar aos estudos."
       action={recoverPassword}
     >
       <input type="hidden" name="origin" value={origin} />
       <Field label="E-mail" name="email" type="email" />
-      <Submit>Enviar instruções</Submit>
+      <Submit>Enviar link de recuperação</Submit>
     </AuthForm>
   );
 }

@@ -3,6 +3,7 @@ import {
   PlanPage,
 } from '@/features/study-plans/components/plan-page';
 import { studyPlans } from '@/features/study-plans/server/study-plans';
+import { EmptyState } from '@/components/feedback/states';
 export default async function WeekPage() {
   const plan = await studyPlans.week();
   return (
@@ -11,16 +12,23 @@ export default async function WeekPage() {
       description={
         plan
           ? `${plan.totalPlannedMinutes} de ${plan.totalAvailableMinutes} minutos alocados.`
-          : 'Nenhum plano atual.'
+          : 'Crie seu plano para organizar os próximos passos.'
       }
     >
-      <div className="space-y-3">
-        {plan?.items
+      {!plan ? (
+        <EmptyState
+          title="Sua semana ainda não foi organizada"
+          description="Crie um plano para distribuir suas prioridades nos horários disponíveis."
+        />
+      ) : (
+        <div className="space-y-3">
+          {plan.items
           .filter((item) => item.status !== 'unallocated')
           .map((item) => (
             <PlanItemCard item={item} key={item.id} />
           ))}
-      </div>
+        </div>
+      )}
     </PlanPage>
   );
 }

@@ -25,7 +25,7 @@ async function learning<T>(path: string, schema: z.ZodType<T>): Promise<T> {
     cache: 'no-store',
   });
   if (!response.ok)
-    throw new Error(`Learning Engine indisponível (${response.status}).`);
+    throw new Error(`Não foi possível carregar seu progresso (${response.status}).`);
   return schema.parse(await response.json());
 }
 

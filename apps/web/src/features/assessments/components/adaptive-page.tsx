@@ -11,10 +11,10 @@ export function AssessmentPage({
   children: ReactNode;
 }) {
   return (
-    <main className="mx-auto w-full max-w-4xl min-w-0 space-y-6 px-4 py-6 sm:p-6">
+    <main className="experience-page mx-auto w-full max-w-4xl min-w-0 space-y-6 px-4 py-6 sm:p-6">
       <header>
         <p className="text-sm font-semibold text-[var(--foreground-muted)]">
-          Diagnóstico adaptativo · assessment-v1
+          Seu diagnóstico
         </p>
         <h1 className="text-2xl font-semibold">{title}</h1>
         <p>{description}</p>
@@ -23,9 +23,9 @@ export function AssessmentPage({
         aria-label="Navegação do diagnóstico"
         className="flex flex-wrap gap-x-5 gap-y-2 text-sm font-semibold text-[var(--primary)]"
       >
-        <Link href="/app/assessment/start">Iniciar</Link>
-        <Link href="/app/assessment/history">Histórico</Link>
-        <Link href="/app/assessment/coverage">Cobertura</Link>
+        <Link href="/app/assessment/start">Começar</Link>
+        <Link href="/app/assessment/history">Meus diagnósticos</Link>
+        <Link href="/app/assessment/coverage">O que já foi avaliado</Link>
       </nav>
       {children}
     </main>

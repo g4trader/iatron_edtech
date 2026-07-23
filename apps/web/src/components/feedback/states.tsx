@@ -2,9 +2,17 @@ import type { ReactNode } from 'react';
 
 export function LoadingState({ label = 'Carregando…' }: { label?: string }) {
   return (
-    <div aria-live="polite" className="state-card">
-      {label}
-    </div>
+    <section
+      aria-busy="true"
+      aria-live="polite"
+      className="state-card loading-state"
+    >
+      <span className="loading-state-mark" aria-hidden="true" />
+      <div>
+        <h2>Preparando seu conteúdo</h2>
+        <p>{label}</p>
+      </div>
+    </section>
   );
 }
 export function EmptyState({
@@ -17,10 +25,10 @@ export function EmptyState({
   action?: ReactNode;
 }) {
   return (
-    <section className="state-card">
+    <section className="state-card empty-state">
       <h2>{title}</h2>
       <p>{description}</p>
-      {action}
+      {action && <div className="state-action">{action}</div>}
     </section>
   );
 }

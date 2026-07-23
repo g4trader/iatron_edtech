@@ -13,10 +13,10 @@ export function PlanPage({
   children: ReactNode;
 }) {
   return (
-    <main className="mx-auto w-full max-w-5xl min-w-0 space-y-6 px-4 py-6 sm:p-6">
+    <main className="experience-page mx-auto w-full max-w-5xl min-w-0 space-y-6 px-4 py-6 sm:p-6">
       <header>
         <p className="text-sm text-[var(--foreground-muted)]">
-          Plano adaptativo · study-plan-v1
+          Seu plano de estudos
         </p>
         <h1 className="text-2xl font-semibold">{title}</h1>
         <p>{description}</p>
@@ -25,11 +25,11 @@ export function PlanPage({
         aria-label="Navegação do plano"
         className="flex flex-wrap gap-x-4 gap-y-2 text-sm font-semibold text-[var(--primary)]"
       >
-        <Link href="/app/plan">Atual</Link>
+        <Link href="/app/plan">Visão geral</Link>
         <Link href="/app/plan/today">Hoje</Link>
         <Link href="/app/plan/week">Semana</Link>
         <Link href="/app/plan/history">Histórico</Link>
-        <Link href="/app/plan/unallocated">Não alocados</Link>
+        <Link href="/app/plan/unallocated">Para reorganizar</Link>
       </nav>
       {children}
     </main>
@@ -37,11 +37,19 @@ export function PlanPage({
 }
 
 const typeLabel: Record<StudyPlanItem['itemType'], string> = {
-  competency_study: 'Estudo de competência',
+  competency_study: 'Estudo direcionado',
   review: 'Revisão',
   question_practice: 'Resolução de questões',
-  gap_reinforcement: 'Reforço de gap',
-  complementary_diagnosis: 'Diagnóstico complementar',
+  gap_reinforcement: 'Reforço de prioridade',
+  complementary_diagnosis: 'Medição complementar',
+};
+const statusLabel: Record<StudyPlanItem['status'], string> = {
+  planned: 'planejada',
+  in_progress: 'em andamento',
+  completed: 'concluída',
+  deferred: 'adiada',
+  skipped: 'ignorada',
+  unallocated: 'para reorganizar',
 };
 
 export function PlanItemCard({ item }: { item: StudyPlanItem }) {
@@ -49,15 +57,15 @@ export function PlanItemCard({ item }: { item: StudyPlanItem }) {
     <article className="min-w-0 space-y-3 rounded-xl border border-[var(--border)] bg-[var(--surface)] p-4">
       <div>
         <p className="text-sm text-[var(--foreground-muted)]">
-          {typeLabel[item.itemType]} · prioridade{' '}
+          {typeLabel[item.itemType]} · importância{' '}
           {Math.round(item.priority * 100)}%
         </p>
         <h2 className="font-semibold">
           {item.competencyCode} · {item.competencyName}
         </h2>
         <p>
-          {item.estimatedMinutes} min · {item.plannedDate ?? 'não alocado'} ·{' '}
-          {item.status}
+          {item.estimatedMinutes} min · {item.plannedDate ?? 'a reorganizar'} ·{' '}
+          {statusLabel[item.status]}
         </p>
       </div>
       <ul className="list-disc pl-5 text-sm">

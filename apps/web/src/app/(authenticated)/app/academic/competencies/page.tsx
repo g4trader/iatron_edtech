@@ -9,7 +9,7 @@ export default async function CompetenciesPage() {
   return (
     <CatalogPage
       title="Competências"
-      description="Menor unidade pedagógica e único nível futuro de medição de domínio."
+      description="Veja exatamente quais conhecimentos e habilidades podem ser desenvolvidos em cada tema."
     >
       {items.map((item) => (
         <CatalogCard key={item.id} title={item.name} code={item.code}>

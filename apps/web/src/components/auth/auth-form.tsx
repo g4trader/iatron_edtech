@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react';
+import { AuthSubmitButton } from './submit-button';
 
 export function AuthForm({
   title,
@@ -21,7 +22,11 @@ export function AuthForm({
         <h1 className="text-2xl font-semibold text-slate-950">{title}</h1>
         <p className="mt-2 text-sm text-slate-600">{description}</p>
         {message && (
-          <p className="mt-4 rounded-xl bg-emerald-50 p-3 text-sm text-emerald-800">
+          <p
+            aria-live="polite"
+            role="status"
+            className="mt-4 rounded-xl bg-emerald-50 p-3 text-sm text-emerald-800"
+          >
             {message}
           </p>
         )}
@@ -65,5 +70,5 @@ export function Field({
   );
 }
 export function Submit({ children }: { children: ReactNode }) {
-  return <button className="primary-button auth-submit">{children}</button>;
+  return <AuthSubmitButton>{children}</AuthSubmitButton>;
 }

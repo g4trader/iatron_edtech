@@ -2,14 +2,15 @@ import {
   EmptyLearningState,
   LearningCard,
   LearningPage,
+  learningTrendLabel,
 } from '@/features/learning/components/learning-page';
 import { learningState } from '@/features/learning/server/learning';
 export default async function MasteryPage() {
   const items = await learningState.mastery();
   return (
     <LearningPage
-      title="Mastery por competência"
-      description="Estado derivado exclusivamente das evidências registradas."
+      title="Seu domínio por competência"
+      description="Veja quanto cada competência está consolidada e quanto já conhecemos sobre seu aprendizado."
     >
       {items.length === 0 && <EmptyLearningState />}
       {items.map((item) => (
@@ -23,9 +24,9 @@ export default async function MasteryPage() {
             {Math.round(item.confidence * 100)}%
           </p>
           <p>
-            {item.evidenceCount} evidência(s) · tendência {item.trend}
+            {item.evidenceCount} atividade(s) considerada(s) · tendência{' '}
+            {learningTrendLabel(item.trend)}
           </p>
-          <p>Algoritmo: {item.algorithmVersion}</p>
         </LearningCard>
       ))}
     </LearningPage>

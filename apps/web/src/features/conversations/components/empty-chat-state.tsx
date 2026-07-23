@@ -4,7 +4,7 @@ const suggestions = [
   'Revisar um tema importante',
   'Praticar com uma questão',
   'Organizar meu estudo de hoje',
-  'Entender meus gaps',
+  'Entender minhas prioridades',
 ];
 
 export function EmptyChatState({
@@ -17,8 +17,11 @@ export function EmptyChatState({
       <span className="empty-chat-mark" aria-hidden="true">
         ia
       </span>
-      <h2>O que você quer dominar hoje?</h2>
-      <p>Escolha um ponto de partida ou escreva sua própria pergunta.</p>
+      <h2>Como posso ajudar no seu estudo?</h2>
+      <p>
+        Escolha um ponto de partida ou pergunte sobre seu diagnóstico, plano ou
+        conteúdo.
+      </p>
       <div className="suggestion-grid">
         {suggestions.map((suggestion) => (
           <button

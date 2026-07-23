@@ -12,11 +12,11 @@ export default function HomePage() {
           Estude com um plano que evolui com você.
         </h1>
         <p className="mx-auto mt-6 max-w-2xl text-lg leading-8 text-slate-600">
-          Diagnóstico, prática e revisão em uma experiência conversacional
-          centrada nos seus gaps de aprendizagem.
+          Descubra suas prioridades, receba um plano que cabe na sua rotina e
+          conte com um tutor para entender cada próximo passo.
         </p>
         <Link href="/login">
-          <Button className="mt-8">Começar preparação</Button>
+          <Button className="mt-8">Começar minha preparação</Button>
         </Link>
       </section>
     </main>

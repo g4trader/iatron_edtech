@@ -8,7 +8,7 @@ export default async function AreasPage() {
   return (
     <CatalogPage
       title="Áreas"
-      description="Áreas médicas reutilizadas entre diferentes especialidades."
+      description="Explore os grandes campos da medicina que organizam os temas da sua preparação."
     >
       {items.map((item) => (
         <CatalogCard key={item.id} title={item.name} code={item.code}>

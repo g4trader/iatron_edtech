@@ -4,9 +4,15 @@ const titleByPath: Record<string, string> = {
   '/app': 'Visão geral',
   '/app/plan': 'Meu plano',
   '/app/simulations': 'Simulados',
-  '/app/performance': 'Desempenho',
-  '/app/assessment/demo': 'Avaliação demonstrativa',
+  '/app/performance': 'Meu progresso',
+  '/app/assessment/demo': 'Diagnóstico',
 };
+const titleByPrefix = [
+  ['/app/assessment', 'Diagnóstico'],
+  ['/app/learning', 'Meu progresso'],
+  ['/app/academic', 'Conteúdos'],
+  ['/app/tutor', 'Tutor'],
+] as const;
 
 export function AppHeader({
   pathname,
@@ -15,9 +21,10 @@ export function AppHeader({
   pathname: string;
   onOpenMenu: () => void;
 }) {
-  const title = pathname.startsWith('/app/chat/')
-    ? 'Conversa de estudo'
-    : (titleByPath[pathname] ?? 'Iatron');
+  const title =
+    titleByPath[pathname] ??
+    titleByPrefix.find(([prefix]) => pathname.startsWith(prefix))?.[1] ??
+    (pathname.startsWith('/app/chat/') ? 'Conversa de estudo' : 'Iatron');
   return (
     <header className="app-header">
       <button
@@ -29,12 +36,10 @@ export function AppHeader({
         ☰
       </button>
       <div>
-        <p>Ambiente de demonstração</p>
+        <p>Sua preparação</p>
         <h1>{title}</h1>
       </div>
-      <button aria-label="Mais opções" className="icon-button" type="button">
-        •••
-      </button>
+      <span aria-hidden="true" className="header-action-spacer" />
     </header>
   );
 }

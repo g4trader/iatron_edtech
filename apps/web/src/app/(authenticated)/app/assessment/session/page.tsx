@@ -2,6 +2,7 @@ import {
   completeDiagnostic,
   submitDiagnosticAnswer,
 } from '@/features/assessments/actions';
+import Link from 'next/link';
 import { AssessmentPage } from '@/features/assessments/components/adaptive-page';
 import { nextQuestion } from '@/features/assessments/server/adaptive-assessment';
 
@@ -13,8 +14,13 @@ export default async function SessionPage({
   const id = (await searchParams).id;
   if (!id)
     return (
-      <AssessmentPage title="Sessão" description="Avaliação não informada.">
-        <p>Inicie um diagnóstico.</p>
+      <AssessmentPage
+        title="Diagnóstico não iniciado"
+        description="Comece pela tela inicial para prepararmos as questões certas para você."
+      >
+        <Link className="primary-button inline-flex" href="/app/assessment/start">
+          Começar diagnóstico
+        </Link>
       </AssessmentPage>
     );
 
@@ -23,7 +29,7 @@ export default async function SessionPage({
     return (
       <AssessmentPage
         title="Questões concluídas"
-        description="Finalize para persistir o relatório diagnóstico."
+        description="Suas respostas foram salvas. Conclua para ver seus pontos fortes, prioridades e próximos passos."
       >
         <form action={completeDiagnostic}>
           <input type="hidden" name="assessmentId" value={id} />
@@ -65,8 +71,12 @@ export default async function SessionPage({
           ))}
         </fieldset>
         <label className="form-field max-w-xs" htmlFor="stated-confidence">
-          Confiança informada
+          Quão seguro você está desta resposta?
+          <small id="confidence-help" className="font-normal text-[var(--foreground-muted)]">
+            Isso nos ajuda a entender melhor o que você já domina.
+          </small>
           <select
+            aria-describedby="confidence-help"
             className="form-control"
             id="stated-confidence"
             name="statedConfidence"
@@ -76,7 +86,7 @@ export default async function SessionPage({
             <option value="high">Alta</option>
           </select>
         </label>
-        <button className="primary-button">Responder e adaptar</button>
+        <button className="primary-button">Confirmar resposta</button>
       </form>
     </AssessmentPage>
   );

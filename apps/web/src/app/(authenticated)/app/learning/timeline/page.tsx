@@ -8,8 +8,8 @@ export default async function TimelinePage() {
   const items = await learningState.timeline();
   return (
     <LearningPage
-      title="Timeline de aprendizagem"
-      description="Histórico append-only de eventos, evidências e evolução de mastery."
+      title="Sua evolução"
+      description="Acompanhe as atividades que construíram seu progresso ao longo do tempo."
     >
       {items.length === 0 && <EmptyLearningState />}
       {items.map((item) => (
