@@ -133,12 +133,49 @@ test.describe('hardening mobile', () => {
     await expect(
       page.getByRole('region', { name: 'Disponibilidade semanal' }),
     ).toContainText('330 minutos');
+    const onboarding = page.locator('.onboarding-page');
+    await expect(onboarding).toHaveCSS('overflow-y', 'auto');
+    const scroll = await onboarding.evaluate((element) => {
+      element.scrollTop = element.scrollHeight;
+      return {
+        clientHeight: element.clientHeight,
+        scrollHeight: element.scrollHeight,
+        scrollTop: element.scrollTop,
+      };
+    });
+    expect(scroll.scrollHeight).toBeGreaterThan(scroll.clientHeight);
+    expect(scroll.scrollTop).toBeGreaterThan(0);
     await page.getByRole('button', { name: 'Salvar e continuar' }).click();
     await page.getByRole('checkbox').check();
     await page.getByRole('button', { name: 'Salvar e continuar' }).click();
     await page.getByRole('button', { name: 'Concluir' }).click();
     await expect(page).toHaveURL(/\/app$/);
     await expectNoPageOverflow(page);
+  });
+
+  test('onboarding expandido mantém rolagem vertical utilizável', async ({
+    page,
+  }) => {
+    await page.goto('/app/onboarding');
+    await page.getByLabel('Nome completo').fill('Teste de rolagem');
+    await page.getByRole('button', { name: 'Salvar e continuar' }).click();
+    await page
+      .getByRole('radio', { name: /Prefiro configurar manualmente/ })
+      .click();
+
+    const onboarding = page.locator('.onboarding-page');
+    await expect(onboarding).toHaveCSS('overflow-y', 'auto');
+    const scroll = await onboarding.evaluate((element) => {
+      element.scrollTop = element.scrollHeight;
+      return {
+        clientHeight: element.clientHeight,
+        scrollHeight: element.scrollHeight,
+        scrollTop: element.scrollTop,
+      };
+    });
+    expect(scroll.scrollHeight).toBeGreaterThan(scroll.clientHeight);
+    expect(scroll.scrollTop).toBeGreaterThan(0);
+    await expect(page.getByRole('button', { name: 'Salvar e continuar' })).toBeVisible();
   });
 
   test('drawer prende foco, fecha por Escape e não desloca conteúdo', async ({
