@@ -214,8 +214,8 @@ O Pull Request deve informar:
 - [ ] Build aprovado
 - [ ] CI verde
 - [ ] Documentação atualizada
-- [ ] Deploy e smoke validados, quando aplicável
+- [ ] Deploy em staging concluído
+- [ ] Smoke e validação manual em staging aprovados
 
 Este checklist também está incorporado no
 [template padrão de Pull Request](../../.github/pull_request_template.md).
-

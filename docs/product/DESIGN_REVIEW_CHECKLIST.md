@@ -8,6 +8,27 @@ Use este documento junto com os
 [princípios de experiência](UX_PRINCIPLES.md) e o guia de
 [voz e tom](VOICE_AND_TONE.md).
 
+## Critérios mensuráveis de aprovação
+
+Uma tela só pode ser aprovada quando:
+
+- a ação principal é identificável sem rolagem na entrada do fluxo, salvo
+  quando a própria leitura é a tarefa;
+- nenhum texto ou controle cria overflow horizontal em 320, 375, 390, 768 e
+  1024 px;
+- controles de toque têm área mínima de 44 por 44 px;
+- texto normal e controles atendem contraste mínimo de 4,5:1; texto grande,
+  3:1;
+- zoom de 200% não remove conteúdo ou funcionalidade;
+- o fluxo principal pode ser concluído apenas com teclado;
+- foco visível e ordem de tabulação acompanham a sequência lógica;
+- loading, erro, sucesso e vazio aplicáveis possuem cobertura;
+- toda pergunta importante explicita contexto, benefício e consequência;
+- não há clique que apenas repita uma decisão já conhecida pelo sistema;
+- testes automatizados de acessibilidade não apresentam violações críticas ou
+  sérias;
+- a evidência visual inclui ao menos uma largura mobile e uma desktop.
+
 ## Clareza
 
 - [ ] O estudante entende imediatamente onde está?
@@ -72,6 +93,7 @@ Use este documento junto com os
 - [ ] A experiência foi projetada e testada primeiro em tela pequena?
 - [ ] A ação principal está ao alcance do polegar?
 - [ ] Alvos de toque têm tamanho e espaçamento confortáveis?
+- [ ] Alvos de toque têm pelo menos 44 por 44 px?
 - [ ] O teclado não encobre campos ou ações?
 - [ ] A rolagem vertical continua disponível em conteúdos longos?
 - [ ] Não há rolagem horizontal acidental?
@@ -82,6 +104,7 @@ Use este documento junto com os
 ## Acessibilidade
 
 - [ ] Texto e controles atendem contraste WCAG AA?
+- [ ] Contraste foi medido em 4,5:1 para texto normal e 3:1 para texto grande?
 - [ ] A ordem de foco acompanha a ordem visual e lógica?
 - [ ] Todo campo possui label associado?
 - [ ] Nomes e estados acessíveis são claros?
@@ -89,6 +112,7 @@ Use este documento junto com os
 - [ ] Mensagens dinâmicas importantes são anunciadas?
 - [ ] A tarefa pode ser concluída apenas com teclado?
 - [ ] A interface permanece compreensível com leitor de tela?
+- [ ] Zoom de 200% preserva conteúdo e funcionalidade?
 - [ ] Movimento e animação respeitam preferências do sistema?
 
 ## Consistência

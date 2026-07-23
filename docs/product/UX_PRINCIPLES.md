@@ -96,6 +96,61 @@ Um estado vazio deve:
   tela.
 - Contraste atende WCAG AA.
 
+## Exemplos
+
+### Pergunta com contexto
+
+Evite:
+
+> Duração da sessão: [45 minutos]
+
+Prefira:
+
+> Quanto tempo você prefere estudar por sessão?
+>
+> Usamos essa escolha para montar um plano que caiba na sua rotina. Você poderá
+> alterá-la depois.
+
+### Estado vazio que ensina
+
+Evite:
+
+> Nenhum dado encontrado.
+
+Prefira:
+
+> Seu domínio aparecerá aqui depois do primeiro diagnóstico. Comece quando
+> estiver pronto.
+
+### Recomendação explicável
+
+Evite:
+
+> Recomendamos Cardiologia.
+
+Prefira:
+
+> Cardiologia é prioridade porque suas evidências recentes indicam baixa
+> confiança nessa competência.
+
+## Anti-patterns
+
+Não aprove:
+
+- campos isolados sem motivo ou benefício;
+- telas que dependem de placeholder para explicar um formulário;
+- botões genéricos como “OK” ou “Continuar” quando a ação pode ser nomeada;
+- estados vazios que parecem erro;
+- spinner sem explicar o que está sendo preparado;
+- sucesso que não confirma a consequência;
+- erro técnico sem recuperação;
+- formulários longos quando uma sugestão inicial é segura;
+- ações destrutivas sem confirmação proporcional;
+- recomendação sem motivo;
+- jargão interno exposto ao estudante;
+- desktop reduzido para mobile sem reconsiderar hierarquia e toque;
+- interface de Tutor que se comporta como chat genérico.
+
 ## Checklist para novas entregas
 
 - A tela explica o que é, por que importa e o próximo passo?

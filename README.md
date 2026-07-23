@@ -78,6 +78,8 @@ Request deve seguir:
 
 - [Definition of Done](docs/product/DEFINITION_OF_DONE.md);
 - [Diretrizes de Code Review](docs/product/CODE_REVIEW_GUIDELINES.md);
+- [Princípios arquiteturais](docs/product/ARCHITECTURAL_PRINCIPLES.md);
+- [Guia de desenvolvimento para Codex](docs/product/AI_DEVELOPMENT_GUIDE.md);
 - [Princípios de experiência](docs/product/UX_PRINCIPLES.md);
 - [Voz e tom](docs/product/VOICE_AND_TONE.md);
 - [Checklist de revisão de design](docs/product/DESIGN_REVIEW_CHECKLIST.md).
@@ -86,6 +88,11 @@ O [template padrão de Pull Request](.github/pull_request_template.md) transform
 esses critérios em uma etapa explícita de autorrevisão. Itens não aplicáveis
 devem ser justificados; segurança, privacidade, integridade pedagógica e
 acessibilidade essencial não podem ser dispensadas.
+
+O `AGENTS.md` exige a leitura desses documentos antes de qualquer
+implementação. Issues de Feature, Bug, UX Improvement e Technical Debt também
+possuem templates próprios para registrar problema, impacto, comportamento
+esperado e critérios de aceite desde o início do fluxo.
 
 ## Variáveis de ambiente
 

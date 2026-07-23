@@ -159,6 +159,22 @@ Exemplo:
 > **bloqueio — segurança:** o `studentId` vem do cliente e é usado sem validar
 > ownership. Resolva o estudante a partir do JWT e cubra o isolamento com teste.
 
+Outros exemplos:
+
+> **bloqueio — arquitetura:** este componente recalcula prioridade pedagógica.
+> Consuma a decisão produzida pelo Learning Engine e mantenha o frontend apenas
+> como apresentação.
+
+> **risco — UX:** o campo pede disponibilidade sem explicar o benefício ou se
+> a escolha pode ser alterada. Aplique o padrão de contexto antes da aprovação.
+
+> **bloqueio — IA:** o prompt permite que o modelo altere o plano diretamente.
+> A IA pode explicar a recomendação, mas a mutação deve passar pelo serviço
+> determinístico autorizado.
+
+> **sugestão — consistência:** este vazio pode reutilizar o componente
+> compartilhado para manter ação, tom e anúncio acessível.
+
 Comentários devem explicar impacto e critério, evitando ordens sem contexto.
 
 ## Critério de aprovação
@@ -171,4 +187,3 @@ Aprove somente quando:
 - testes e CI estão verdes;
 - documentação e evidências são suficientes;
 - a mudança pode ser implantada e revertida com segurança.
-

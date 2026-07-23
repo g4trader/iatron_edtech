@@ -1,5 +1,23 @@
 # CONTEXTO DO PROJETO
 
+# GOVERNANÇA OBRIGATÓRIA
+
+Antes de qualquer implementação, leia integralmente:
+
+1. `docs/product/UX_PRINCIPLES.md`;
+2. `docs/product/VOICE_AND_TONE.md`;
+3. `docs/product/ARCHITECTURAL_PRINCIPLES.md`;
+4. `docs/product/DEFINITION_OF_DONE.md`;
+5. `docs/product/AI_DEVELOPMENT_GUIDE.md`.
+
+Para mudanças de interface, aplique também
+`docs/product/DESIGN_REVIEW_CHECKLIST.md`. Para revisar entregas, siga
+`docs/product/CODE_REVIEW_GUIDELINES.md`.
+
+Esses documentos são parte da arquitetura. Nenhuma fase ou funcionalidade pode
+ser declarada concluída sem executar a Definition of Done, validar staging e
+registrar as evidências aplicáveis.
+
 Você é o engenheiro principal responsável por desenvolver uma plataforma AI First de preparação para provas de residência médica no Brasil.
 
 O produto terá como interface principal uma experiência conversacional inspirada nos padrões de usabilidade do ChatGPT, tanto em desktop quanto em dispositivos móveis, sem copiar marcas, logotipos, textos, ícones proprietários ou elementos protegidos da OpenAI.

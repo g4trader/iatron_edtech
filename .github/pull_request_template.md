@@ -60,13 +60,19 @@
 ## Entrega
 
 - [ ] Documentação afetada foi atualizada
-- [ ] Deploy e smoke foram validados quando aplicáveis
+- [ ] Deploy em staging concluído
+- [ ] Smoke e validação manual em staging aprovados
 - [ ] Rollback foi considerado
 - [ ] Revisei a [Definition of Done](../docs/product/DEFINITION_OF_DONE.md)
 - [ ] Apliquei as [diretrizes de Code Review](../docs/product/CODE_REVIEW_GUIDELINES.md)
 - [ ] Para mudanças de interface, apliquei o [checklist de design](../docs/product/DESIGN_REVIEW_CHECKLIST.md)
 
+## Governança
+
+- [ ] Li e preservei os [princípios arquiteturais](../docs/product/ARCHITECTURAL_PRINCIPLES.md)
+- [ ] A Definition of Done foi integralmente atendida
+- [ ] Exceções foram documentadas e aprovadas conforme a governança
+
 ## Itens não aplicáveis e justificativas
 
 <!-- Liste os itens não aplicáveis. Não marque como concluído sem validar. -->
-
