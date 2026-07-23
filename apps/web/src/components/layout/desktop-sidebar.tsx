@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { recentConversations } from '@/features/conversations/mocks/demo-data';
+import type { Route } from 'next';
 import { NavigationLinks } from './navigation';
 import { logout } from '@/app/(public)/auth/actions';
 
@@ -9,10 +9,12 @@ export function DesktopSidebar({
   collapsed,
   onToggle,
   identity,
+  recentConversations,
 }: {
   collapsed: boolean;
   onToggle: () => void;
   identity: { displayName: string; email: string };
+  recentConversations: { id: string; title: string }[];
 }) {
   const initials = identity.displayName
     .split(/\s+/)
@@ -54,22 +56,25 @@ export function DesktopSidebar({
         {!collapsed && 'Nova conversa'}
       </Link>
       <NavigationLinks collapsed={collapsed} />
-      {!collapsed && (
+      {!collapsed && recentConversations.length > 0 && (
         <section className="recent-section" aria-labelledby="recent-title">
           <h2 id="recent-title">Conversas recentes</h2>
           {recentConversations.map((conversation) => (
-            <Link href={`/app/chat/${conversation.id}`} key={conversation.id}>
+            <Link
+              href={`/app/tutor/${conversation.id}` as Route}
+              key={conversation.id}
+            >
               <span>{conversation.title}</span>
-              <small>{conversation.dateLabel}</small>
+              <small>Continuar conversa</small>
             </Link>
           ))}
         </section>
       )}
-      <form action={logout}>
-        <button
+      <div className="sidebar-account">
+        <div
+          aria-label={`Usuário: ${identity.displayName}`}
           className="profile-menu"
           title={collapsed ? 'Perfil de estudante' : undefined}
-          type="submit"
         >
           <span className="avatar" aria-hidden="true">
             {initials}
@@ -80,8 +85,33 @@ export function DesktopSidebar({
               <small>{identity.email}</small>
             </span>
           )}
-        </button>
-      </form>
+        </div>
+        <form action={logout}>
+          <button
+            aria-label="Sair da conta"
+            className="sidebar-logout-button"
+            title={collapsed ? 'Sair' : undefined}
+            type="submit"
+          >
+            <svg
+              aria-hidden="true"
+              fill="none"
+              height="20"
+              viewBox="0 0 24 24"
+              width="20"
+            >
+              <path
+                d="M10 17l5-5-5-5M15 12H3m9-8h5a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-5"
+                stroke="currentColor"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth="1.8"
+              />
+            </svg>
+            {!collapsed && <span>Sair</span>}
+          </button>
+        </form>
+      </div>
     </aside>
   );
 }

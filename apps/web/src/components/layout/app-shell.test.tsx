@@ -46,4 +46,45 @@ describe('AppShell', () => {
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
     expect(opener).toHaveFocus();
   });
+
+  it('separa a identidade da ação de sair e não exibe conversas fictícias', () => {
+    render(
+      <AppShell
+        identity={{
+          displayName: 'Luciano Terres Rosa',
+          email: 'luciano@example.com',
+        }}
+      >
+        <div>Conteúdo</div>
+      </AppShell>,
+    );
+
+    expect(
+      screen.getByLabelText('Usuário: Luciano Terres Rosa'),
+    ).not.toHaveAttribute('type', 'submit');
+    expect(
+      screen.getByRole('button', { name: 'Sair da conta' }),
+    ).toBeInTheDocument();
+    expect(
+      screen.queryByText('Revisão de clínica médica'),
+    ).not.toBeInTheDocument();
+    expect(screen.queryByText('Questão demonstrativa')).not.toBeInTheDocument();
+    expect(screen.queryByText('Principais gaps')).not.toBeInTheDocument();
+  });
+
+  it('exibe somente conversas reais com destino válido no Tutor', () => {
+    render(
+      <AppShell
+        recentConversations={[
+          { id: 'conversation-123', title: 'Minha conversa' },
+        ]}
+      >
+        <div>Conteúdo</div>
+      </AppShell>,
+    );
+
+    expect(
+      screen.getByRole('link', { name: /Minha conversa/ }),
+    ).toHaveAttribute('href', '/app/tutor/conversation-123');
+  });
 });

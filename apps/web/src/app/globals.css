@@ -310,7 +310,6 @@ button:disabled {
 }
 .profile-menu {
   width: 100%;
-  margin-top: auto;
   display: flex;
   align-items: center;
   gap: 0.7rem;
@@ -320,6 +319,32 @@ button:disabled {
   background: transparent;
   color: white;
   text-align: left;
+}
+.sidebar-account {
+  width: 100%;
+  margin-top: auto;
+}
+.sidebar-logout-button {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  width: 100%;
+  min-height: 44px;
+  padding: 0.55rem;
+  border: 0;
+  border-radius: 0.65rem;
+  background: transparent;
+  color: #d8e2dc;
+  font: inherit;
+  font-weight: 650;
+  text-align: left;
+}
+.sidebar-logout-button:hover {
+  background: rgb(255 255 255 / 0.1);
+  color: white;
+}
+.desktop-sidebar[data-collapsed='true'] .sidebar-logout-button {
+  justify-content: center;
 }
 .profile-menu span:last-child {
   display: flex;
@@ -1670,8 +1695,11 @@ button:disabled {
   padding: clamp(1rem, 3vw, 1.5rem);
   border: 1px solid var(--border);
   border-radius: var(--radius-md);
-  background:
-    linear-gradient(135deg, rgb(236 244 239 / 82%), rgb(255 255 255 / 88%));
+  background: linear-gradient(
+    135deg,
+    rgb(236 244 239 / 82%),
+    rgb(255 255 255 / 88%)
+  );
 }
 .experience-callout h2,
 .experience-callout p {

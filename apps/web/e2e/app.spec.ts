@@ -66,3 +66,22 @@ test('direciona a antiga demonstração para o diagnóstico real', async ({ page
     page.getByRole('button', { name: 'Iniciar diagnóstico' }),
   ).toBeVisible();
 });
+
+test('sidebar não oferece conversas fictícias e separa perfil de logout', async ({
+  page,
+  isMobile,
+}) => {
+  test.skip(isMobile, 'A conta fica na barra lateral desktop');
+  await page.goto('/app');
+
+  await expect(page.getByLabel(/^Usuário:/)).toBeVisible();
+  await expect(
+    page.getByRole('button', { name: 'Sair da conta' }),
+  ).toBeVisible();
+  await expect(page.getByText('Revisão de clínica médica')).toHaveCount(0);
+  await expect(page.getByText('Questão demonstrativa')).toHaveCount(0);
+  await expect(page.getByText('Principais gaps')).toHaveCount(0);
+
+  await page.getByLabel(/^Usuário:/).click();
+  await expect(page).toHaveURL(/\/app$/);
+});
