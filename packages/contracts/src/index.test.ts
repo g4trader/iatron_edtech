@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
+  answerAssessmentInputSchema,
   availabilityInputSchema,
   competencyCatalogSchema,
   contentMetadataSchema,
@@ -285,6 +286,29 @@ describe('adaptive study plan contracts', () => {
 });
 
 describe('public write contracts', () => {
+  it('accepts optional declared safety and rejects unknown values', () => {
+    const base = {
+      questionVersionId: crypto.randomUUID(),
+      selectedOptionId: crypto.randomUUID(),
+      responseTimeMs: 12_000,
+    };
+    expect(
+      answerAssessmentInputSchema.parse(base).statedConfidence,
+    ).toBeUndefined();
+    expect(
+      answerAssessmentInputSchema.parse({
+        ...base,
+        statedConfidence: 'do_not_know',
+      }).statedConfidence,
+    ).toBe('do_not_know');
+    expect(() =>
+      answerAssessmentInputSchema.parse({
+        ...base,
+        statedConfidence: 'overconfident',
+      }),
+    ).toThrow();
+  });
+
   it('rejects mass assignment and unknown properties', () => {
     expect(() =>
       profileUpdateSchema.parse({

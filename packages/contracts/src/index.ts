@@ -545,7 +545,9 @@ export const answerAssessmentInputSchema = z.object({
   questionVersionId: uuidSchema,
   selectedOptionId: uuidSchema,
   responseTimeMs: z.int().min(0).max(7_200_000),
-  statedConfidence: z.enum(['low', 'medium', 'high']),
+  statedConfidence: z
+    .enum(['certain', 'uncertain', 'do_not_know', 'low', 'medium', 'high'])
+    .optional(),
 });
 export type AnswerAssessmentInput = z.infer<typeof answerAssessmentInputSchema>;
 
@@ -606,6 +608,44 @@ export const assessmentResultSchema = z.object({
   algorithmVersion: z.string(),
   createdAt: z.iso.datetime({ offset: true }),
   competencies: z.array(assessmentCompetencyResultSchema),
+  areas: z
+    .array(
+      z.object({
+        areaId: uuidSchema,
+        areaName: z.string(),
+        observedLevel: z.enum([
+          'consolidating',
+          'developing',
+          'needs_attention',
+          'insufficient_evidence',
+        ]),
+        evidenceCount: z.int().nonnegative(),
+        evidenceQuality: z.enum(['low', 'medium', 'high']),
+        calibratedSafety: z.enum([
+          'calibrated',
+          'uncertain',
+          'possible_miscalibration',
+          'insufficient_evidence',
+        ]),
+        strengths: z.array(z.string()),
+        weaknesses: z.array(z.string()),
+        uncertainties: z.array(z.string()),
+        targetExamInfluence: z.string(),
+        recommendedNextStep: z.string(),
+      }),
+    )
+    .default([]),
+  completionReason: z
+    .enum([
+      'coverage_complete',
+      'question_budget_reached',
+      'duration_reached',
+      'content_exhausted',
+      'insufficient_evidence',
+    ])
+    .nullable()
+    .default(null),
+  evidenceSufficient: z.boolean().default(false),
 });
 export type AssessmentResult = z.infer<typeof assessmentResultSchema>;
 

@@ -5,7 +5,11 @@ import type {
 } from '@iatron/contracts';
 import type { ApiEnvironment } from './config/environment.js';
 import { RepositoryError } from './student-repository.js';
-import type { AssessmentCandidate } from './assessment-engine.js';
+import type {
+  AssessmentCandidate,
+  DeclaredSafety,
+  DiagnosticEvidenceSignal,
+} from './assessment-engine.js';
 
 type Row = Record<string, unknown>;
 const object = (value: unknown): Row =>
@@ -21,6 +25,17 @@ export interface CandidateQuestion extends AssessmentCandidate {
   competencies: Array<{ id: string; code: string; name: string }>;
 }
 
+export interface AssessmentObservation {
+  questionVersionId: string;
+  areaIds: string[];
+  competencyIds: string[];
+  difficulty: number;
+  isCorrect: boolean;
+  statedConfidence: DeclaredSafety;
+  responseTimeMs: number;
+  evidenceSignal: DiagnosticEvidenceSignal | null;
+}
+
 export interface AssessmentRepository {
   targetCompetencies(input: StartAssessmentInput): Promise<string[]>;
   start(input: StartAssessmentInput, competencyIds: string[]): Promise<string>;
@@ -28,6 +43,7 @@ export interface AssessmentRepository {
   listHistory(): Promise<AssessmentSummary[]>;
   listCandidates(): Promise<CandidateQuestion[]>;
   attempted(id: string): Promise<{ questionIds: string[]; themeIds: string[] }>;
+  observations(id: string): Promise<AssessmentObservation[]>;
   pendingSelection(id: string): Promise<{
     questionVersionId: string;
     selectionOrder: number;
@@ -45,10 +61,13 @@ export interface AssessmentRepository {
       questionVersionId: string;
       selectedOptionId: string;
       responseTimeMs: number;
-      statedConfidence: string;
+      statedConfidence?: string;
     },
   ): Promise<string>;
-  finish(id: string): Promise<string>;
+  finish(
+    id: string,
+    outcome?: { reason: string; evidenceSufficient: boolean },
+  ): Promise<string>;
   result(id: string): Promise<AssessmentResult | null>;
 }
 
@@ -128,7 +147,7 @@ export function createAssessmentRepository(
     async listCandidates() {
       const result = rows(
         await get(
-          'question_versions?select=id,stem,difficulty,question_options(id,label,content),question_version_competencies(competencies(id,code,name)),question_version_themes(theme_id)&status=eq.published&order=id.asc&limit=1000',
+          'question_versions?select=id,stem,difficulty,question_options(id,label,content),question_version_competencies(competencies(id,code,name)),question_version_themes(theme_id),question_version_specialties(specialty_id)&status=eq.published&order=id.asc&limit=1000',
         ),
       );
       return result
@@ -156,6 +175,9 @@ export function createAssessmentRepository(
             themeIds: rows(row.question_version_themes).map((theme) =>
               text(theme, 'theme_id'),
             ),
+            areaIds: rows(row.question_version_specialties).map((specialty) =>
+              text(specialty, 'specialty_id'),
+            ),
           };
         })
         .filter(
@@ -182,6 +204,36 @@ export function createAssessmentRepository(
           ),
         ),
       };
+    },
+    async observations(id) {
+      const result = rows(
+        await get(
+          `question_attempts?select=question_version_id,is_correct,response_time_ms,stated_confidence,evidence_signal,question_versions(difficulty,question_version_competencies(competency_id),question_version_specialties(specialty_id))&assessment_id=eq.${id}&order=answered_at.asc`,
+        ),
+      );
+      return result.map((row) => {
+        const question = object(row.question_versions);
+        return {
+          questionVersionId: text(row, 'question_version_id'),
+          areaIds: rows(question.question_version_specialties).map(
+            (specialty) => text(specialty, 'specialty_id'),
+          ),
+          competencyIds: rows(question.question_version_competencies).map(
+            (competency) => text(competency, 'competency_id'),
+          ),
+          difficulty: number(question, 'difficulty') || 3,
+          isCorrect: Boolean(row.is_correct),
+          statedConfidence:
+            row.stated_confidence === null
+              ? null
+              : (text(row, 'stated_confidence') as DeclaredSafety),
+          responseTimeMs: number(row, 'response_time_ms'),
+          evidenceSignal:
+            row.evidence_signal === null
+              ? null
+              : (text(row, 'evidence_signal') as DiagnosticEvidenceSignal),
+        };
+      });
     },
     async pendingSelection(id) {
       const [selectionRows, attemptRows] = await Promise.all([
@@ -222,19 +274,30 @@ export function createAssessmentRepository(
           p_question_version_id: input.questionVersionId,
           p_selected_option_id: input.selectedOptionId,
           p_response_time_ms: input.responseTimeMs,
-          p_stated_confidence: input.statedConfidence,
+          p_stated_confidence: input.statedConfidence ?? null,
         }),
       );
     },
-    async finish(id) {
+    async finish(id, outcome) {
       return String(
-        await rpc('finish_diagnostic_assessment', { p_assessment_id: id }),
+        await rpc(
+          outcome
+            ? 'finish_diagnostic_assessment_v2'
+            : 'finish_diagnostic_assessment',
+          outcome
+            ? {
+                p_assessment_id: id,
+                p_completion_reason: outcome.reason,
+                p_evidence_sufficient: outcome.evidenceSufficient,
+              }
+            : { p_assessment_id: id },
+        ),
       );
     },
     async result(id) {
       const resultRows = rows(
         await get(
-          `assessment_results?select=*,assessment_result_competencies(*,competencies(code,name))&assessment_id=eq.${id}&limit=1`,
+          `assessment_results?select=*,assessment_result_competencies(*,competencies(code,name)),assessment_result_areas(*,specialties(name))&assessment_id=eq.${id}&limit=1`,
         ),
       );
       const row = resultRows[0];
@@ -248,6 +311,42 @@ export function createAssessmentRepository(
         diagnosticCoverage: number(row, 'diagnostic_coverage'),
         algorithmVersion: text(row, 'algorithm_version'),
         createdAt: text(row, 'created_at'),
+        completionReason:
+          row.completion_reason === null
+            ? null
+            : (text(
+                row,
+                'completion_reason',
+              ) as AssessmentResult['completionReason']),
+        evidenceSufficient: Boolean(row.evidence_sufficient),
+        areas: rows(row.assessment_result_areas).map((item) => ({
+          areaId: text(item, 'area_id'),
+          areaName: text(object(item.specialties), 'name'),
+          observedLevel: text(
+            item,
+            'observed_level',
+          ) as AssessmentResult['areas'][number]['observedLevel'],
+          evidenceCount: number(item, 'evidence_count'),
+          evidenceQuality: text(
+            item,
+            'evidence_quality',
+          ) as AssessmentResult['areas'][number]['evidenceQuality'],
+          calibratedSafety: text(
+            item,
+            'calibrated_safety',
+          ) as AssessmentResult['areas'][number]['calibratedSafety'],
+          strengths: Array.isArray(item.strengths)
+            ? item.strengths.map(String)
+            : [],
+          weaknesses: Array.isArray(item.weaknesses)
+            ? item.weaknesses.map(String)
+            : [],
+          uncertainties: Array.isArray(item.uncertainties)
+            ? item.uncertainties.map(String)
+            : [],
+          targetExamInfluence: text(item, 'target_exam_influence'),
+          recommendedNextStep: text(item, 'recommended_next_step'),
+        })),
         competencies: rows(row.assessment_result_competencies).map((item) => {
           const competency = object(item.competencies);
           return {

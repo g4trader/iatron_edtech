@@ -167,6 +167,63 @@ export type Database = {
           },
         ]
       }
+      assessment_result_areas: {
+        Row: {
+          area_id: string
+          assessment_result_id: string
+          calibrated_safety: string
+          evidence_count: number
+          evidence_quality: string
+          observed_level: string
+          recommended_next_step: string
+          strengths: string[]
+          target_exam_influence: string
+          uncertainties: string[]
+          weaknesses: string[]
+        }
+        Insert: {
+          area_id: string
+          assessment_result_id: string
+          calibrated_safety: string
+          evidence_count: number
+          evidence_quality: string
+          observed_level: string
+          recommended_next_step: string
+          strengths?: string[]
+          target_exam_influence: string
+          uncertainties?: string[]
+          weaknesses?: string[]
+        }
+        Update: {
+          area_id?: string
+          assessment_result_id?: string
+          calibrated_safety?: string
+          evidence_count?: number
+          evidence_quality?: string
+          observed_level?: string
+          recommended_next_step?: string
+          strengths?: string[]
+          target_exam_influence?: string
+          uncertainties?: string[]
+          weaknesses?: string[]
+        }
+        Relationships: [
+          {
+            foreignKeyName: "assessment_result_areas_assessment_result_id_fkey"
+            columns: ["assessment_result_id"]
+            isOneToOne: false
+            referencedRelation: "assessment_results"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "assessment_result_areas_area_id_fkey"
+            columns: ["area_id"]
+            isOneToOne: false
+            referencedRelation: "specialties"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       assessment_results: {
         Row: {
           algorithm_version: string
@@ -175,6 +232,8 @@ export type Database = {
           correct_count: number
           created_at: string
           diagnostic_coverage: number
+          completion_reason: string | null
+          evidence_sufficient: boolean
           id: string
           overall_confidence: number
           student_id: string
@@ -186,6 +245,8 @@ export type Database = {
           correct_count: number
           created_at?: string
           diagnostic_coverage: number
+          completion_reason?: string | null
+          evidence_sufficient?: boolean
           id?: string
           overall_confidence: number
           student_id: string
@@ -197,6 +258,8 @@ export type Database = {
           correct_count?: number
           created_at?: string
           diagnostic_coverage?: number
+          completion_reason?: string | null
+          evidence_sufficient?: boolean
           id?: string
           overall_confidence?: number
           student_id?: string
@@ -345,6 +408,7 @@ export type Database = {
           id: string
           objective: string
           overall_confidence: number | null
+          policy_version: string
           question_count: number
           specialty_id: string | null
           started_at: string
@@ -362,6 +426,7 @@ export type Database = {
           id?: string
           objective: string
           overall_confidence?: number | null
+          policy_version?: string
           question_count: number
           specialty_id?: string | null
           started_at?: string
@@ -379,6 +444,7 @@ export type Database = {
           id?: string
           objective?: string
           overall_confidence?: number | null
+          policy_version?: string
           question_count?: number
           specialty_id?: string | null
           started_at?: string
@@ -928,6 +994,8 @@ export type Database = {
           difficulty: number
           id: string
           is_correct: boolean
+          evidence_algorithm_version: string | null
+          evidence_signal: string | null
           observed_at: string
           response_time_ms: number | null
           source_event_id: string
@@ -1187,7 +1255,7 @@ export type Database = {
           question_version_id: string
           response_time_ms: number
           selected_option_id: string
-          stated_confidence: string
+          stated_confidence: string | null
           student_id: string
         }
         Insert: {
@@ -1195,12 +1263,14 @@ export type Database = {
           assessment_id: string
           id?: string
           is_correct: boolean
+          evidence_algorithm_version?: string | null
+          evidence_signal?: string | null
           learning_event_id: string
           origin?: string
           question_version_id: string
           response_time_ms: number
           selected_option_id: string
-          stated_confidence: string
+          stated_confidence?: string | null
           student_id: string
         }
         Update: {
@@ -1208,12 +1278,14 @@ export type Database = {
           assessment_id?: string
           id?: string
           is_correct?: boolean
+          evidence_algorithm_version?: string | null
+          evidence_signal?: string | null
           learning_event_id?: string
           origin?: string
           question_version_id?: string
           response_time_ms?: number
           selected_option_id?: string
-          stated_confidence?: string
+          stated_confidence?: string | null
           student_id?: string
         }
         Relationships: [
@@ -2447,7 +2519,7 @@ export type Database = {
           p_question_version_id: string
           p_response_time_ms: number
           p_selected_option_id: string
-          p_stated_confidence: string
+          p_stated_confidence?: string
         }
         Returns: string
       }
@@ -2475,6 +2547,14 @@ export type Database = {
       }
       finish_diagnostic_assessment: {
         Args: { p_assessment_id: string }
+        Returns: string
+      }
+      finish_diagnostic_assessment_v2: {
+        Args: {
+          p_assessment_id: string
+          p_completion_reason: string
+          p_evidence_sufficient: boolean
+        }
         Returns: string
       }
       finish_tutor_generation: {

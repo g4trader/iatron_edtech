@@ -182,6 +182,9 @@ export async function buildApp(
             ((token) => createAssessmentRepository(options.environment, token)),
           options.learningRepositoryFactory ??
             ((token) => createLearningRepository(options.environment, token)),
+          options.examIntelligenceRepositoryFactory ??
+            ((token) =>
+              createExamIntelligenceRepository(options.environment, token)),
         );
         await registerStudyPlanRoutes(
           protectedApi,

@@ -3,8 +3,14 @@ import {
   startAssessmentInputSchema,
 } from '@iatron/contracts';
 import type { FastifyInstance, FastifyRequest } from 'fastify';
-import { selectNextQuestion } from './assessment-engine.js';
+import {
+  DIAGNOSTIC_POLICY_V2,
+  evaluateDiagnosticStop,
+  selectNextQuestion,
+} from './assessment-engine.js';
 import type { AssessmentRepository } from './assessment-repository.js';
+import type { ExamIntelligenceRepository } from './exam-intelligence-repository.js';
+import { selectActiveExamProfile } from './exam-intelligence-service.js';
 import type { LearningRepository } from './learning-repository.js';
 
 const params = (request: FastifyRequest) =>
@@ -14,6 +20,7 @@ export async function registerAssessmentRoutes(
   app: FastifyInstance,
   assessmentFactory: (token: string) => AssessmentRepository,
   learningFactory: (token: string) => LearningRepository,
+  examIntelligenceFactory: (token: string) => ExamIntelligenceRepository,
 ) {
   const repositories = (request: FastifyRequest) => ({
     assessment: assessmentFactory(request.auth.accessToken),
@@ -44,25 +51,47 @@ export async function registerAssessmentRoutes(
       const { assessment, learning } = repositories(request);
       const state = await assessment.getAssessment(id);
       if (!state || state.status !== 'active')
-        return reply
-          .status(404)
-          .send({
-            error: {
-              code: 'ACTIVE_ASSESSMENT_NOT_FOUND',
-              message: 'Avaliação ativa não encontrada.',
-              requestId: request.id,
-            },
-          });
+        return reply.status(404).send({
+          error: {
+            code: 'ACTIVE_ASSESSMENT_NOT_FOUND',
+            message: 'Avaliação ativa não encontrada.',
+            requestId: request.id,
+          },
+        });
       if (state.answeredCount >= state.questionCount)
         return reply.status(204).send();
-      const [candidates, mastery, attempted, pending] = await Promise.all([
-        assessment.listCandidates(),
-        learning.listCurrentMastery(),
-        assessment.attempted(id),
-        assessment.pendingSelection(id),
+      const [candidates, mastery, attempted, pending, observations] =
+        await Promise.all([
+          assessment.listCandidates(),
+          learning.listCurrentMastery(),
+          assessment.attempted(id),
+          assessment.pendingSelection(id),
+          assessment.observations(id),
+        ]);
+      const examRepository = examIntelligenceFactory(request.auth.accessToken);
+      const [targetExam, profiles] = await Promise.all([
+        examRepository.getTargetExam(),
+        examRepository.listProfiles(),
       ]);
+      const activeProfile = targetExam
+        ? selectActiveExamProfile(profiles, targetExam.programId, new Date())
+        : null;
+      const blueprint = activeProfile
+        ? await examRepository.getBlueprint(activeProfile.id)
+        : null;
+      const examWeights = new Map(
+        blueprint?.areas.map((area) => [area.id, area.expectedProportion]) ??
+          [],
+      );
+      const candidatesWithExamContext = candidates.map((candidate) => ({
+        ...candidate,
+        examRelevance: Math.max(
+          0,
+          ...candidate.areaIds.map((areaId) => examWeights.get(areaId) ?? 0),
+        ),
+      }));
       if (pending) {
-        const question = candidates.find(
+        const question = candidatesWithExamContext.find(
           (item) => item.questionVersionId === pending.questionVersionId,
         );
         if (!question)
@@ -85,11 +114,28 @@ export async function registerAssessmentRoutes(
           selectionReason: pending.reason,
         };
       }
+      const stopping = evaluateDiagnosticStop({
+        observations,
+        policy: {
+          ...DIAGNOSTIC_POLICY_V2,
+          maximumQuestions: Math.min(
+            state.questionCount,
+            DIAGNOSTIC_POLICY_V2.maximumQuestions,
+          ),
+          maximumDurationMinutes: Math.min(
+            state.durationMinutes,
+            DIAGNOSTIC_POLICY_V2.maximumDurationMinutes,
+          ),
+        },
+      });
+      if (stopping.shouldStop) return reply.status(204).send();
       const selection = selectNextQuestion({
-        candidates,
+        candidates: candidatesWithExamContext,
         mastery,
         attemptedQuestionIds: attempted.questionIds,
         usedThemeIds: attempted.themeIds,
+        observations,
+        policy: DIAGNOSTIC_POLICY_V2,
       });
       if (!selection) return reply.status(204).send();
       await assessment.recordSelection(
@@ -99,10 +145,11 @@ export async function registerAssessmentRoutes(
         {
           score: selection.score,
           reason: selection.reason,
-          algorithmVersion: 'assessment-v1',
+          algorithmVersion: 'assessment-v2',
+          policyVersion: DIAGNOSTIC_POLICY_V2.version,
         },
       );
-      const question = candidates.find(
+      const question = candidatesWithExamContext.find(
         (item) =>
           item.questionVersionId === selection.candidate.questionVersionId,
       )!;
@@ -146,15 +193,38 @@ export async function registerAssessmentRoutes(
             requestId: request.id,
           },
         });
-      if (state.answeredCount < state.questionCount)
+      const observations = await repository.observations(params(request));
+      const stopping = evaluateDiagnosticStop({
+        observations,
+        policy: {
+          ...DIAGNOSTIC_POLICY_V2,
+          maximumQuestions: Math.min(
+            state.questionCount,
+            DIAGNOSTIC_POLICY_V2.maximumQuestions,
+          ),
+          maximumDurationMinutes: Math.min(
+            state.durationMinutes,
+            DIAGNOSTIC_POLICY_V2.maximumDurationMinutes,
+          ),
+        },
+        contentAvailable:
+          state.answeredCount >= state.questionCount ? false : undefined,
+      });
+      if (!stopping.shouldStop)
         return reply.status(409).send({
           error: {
             code: 'ASSESSMENT_INCOMPLETE',
-            message: `Responda as ${state.questionCount} questões antes de concluir o diagnóstico.`,
+            message:
+              'Continue o diagnóstico para completar a cobertura mínima necessária.',
             requestId: request.id,
           },
         });
-      return { resultId: await repository.finish(params(request)) };
+      return {
+        resultId: await repository.finish(params(request), {
+          reason: stopping.reason ?? 'insufficient_evidence',
+          evidenceSufficient: stopping.evidenceSufficient,
+        }),
+      };
     },
   );
   app.get(
@@ -164,15 +234,13 @@ export async function registerAssessmentRoutes(
       (await assessmentFactory(request.auth.accessToken).result(
         params(request),
       )) ??
-      reply
-        .status(404)
-        .send({
-          error: {
-            code: 'RESULT_NOT_FOUND',
-            message: 'Resultado não encontrado.',
-            requestId: request.id,
-          },
-        }),
+      reply.status(404).send({
+        error: {
+          code: 'RESULT_NOT_FOUND',
+          message: 'Resultado não encontrado.',
+          requestId: request.id,
+        },
+      }),
   );
   app.get(
     '/assessments/:id/confidence',

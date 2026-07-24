@@ -4,6 +4,7 @@ import { buildApp } from './app.js';
 import { readEnvironment } from './config/environment.js';
 import type { AssessmentRepository } from './assessment-repository.js';
 import type { LearningRepository } from './learning-repository.js';
+import type { ExamIntelligenceRepository } from './exam-intelligence-repository.js';
 import type { StudentRepository } from './student-repository.js';
 
 const id = '70000000-0000-4000-8000-000000000001';
@@ -30,6 +31,9 @@ const result = {
   diagnosticCoverage: 1,
   algorithmVersion: 'assessment-v1',
   createdAt: '2026-07-23T00:10:00Z',
+  completionReason: 'question_budget_reached' as const,
+  evidenceSufficient: false,
+  areas: [],
   competencies: [
     {
       competencyId,
@@ -54,6 +58,7 @@ const assessment: AssessmentRepository = {
       stem: 'Pergunta?',
       difficulty: 2,
       themeIds: ['theme'],
+      areaIds: ['50000000-0000-4000-8000-000000000001'],
       competencyIds: [competencyId],
       competencies: [{ id: competencyId, code: 'CARD.1', name: 'Competência' }],
       options: [
@@ -71,6 +76,21 @@ const assessment: AssessmentRepository = {
     },
   ],
   attempted: async () => ({ questionIds: [], themeIds: [] }),
+  observations: async () =>
+    answeredCount
+      ? [
+          {
+            questionVersionId: questionId,
+            areaIds: ['50000000-0000-4000-8000-000000000001'],
+            competencyIds: [competencyId],
+            difficulty: 2,
+            isCorrect: true,
+            statedConfidence: 'certain',
+            responseTimeMs: 10000,
+            evidenceSignal: 'evidence_of_consolidation',
+          },
+        ]
+      : [],
   pendingSelection: async () => null,
   recordSelection: async () => undefined,
   answer: async () => {
@@ -85,6 +105,13 @@ const learning: LearningRepository = {
   listEvidence: async () => [],
   listCurrentMastery: async () => [],
   listTimeline: async () => [],
+};
+const examIntelligence: ExamIntelligenceRepository = {
+  listProfiles: async () => [],
+  getProfile: async () => null,
+  getBlueprint: async () => null,
+  listStatistics: async () => [],
+  getTargetExam: async () => null,
 };
 let app: FastifyInstance | undefined;
 beforeEach(() => {
@@ -102,6 +129,7 @@ const build = (repository: AssessmentRepository = assessment) =>
     repositoryFactory: () => ({}) as StudentRepository,
     assessmentRepositoryFactory: () => repository,
     learningRepositoryFactory: () => learning,
+    examIntelligenceRepositoryFactory: () => examIntelligence,
   });
 describe('assessment API', () => {
   it('requires authentication', async () => {
@@ -152,7 +180,7 @@ describe('assessment API', () => {
             questionVersionId: questionId,
             selectedOptionId: '73000000-0000-4000-8000-000000000001',
             responseTimeMs: 10000,
-            statedConfidence: 'high',
+            statedConfidence: 'certain',
           },
         })
       ).statusCode,
