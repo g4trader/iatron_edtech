@@ -1,8 +1,13 @@
-# Ambiente de staging
+# Ambiente ativo de desenvolvimento e validação
 
-Staging contém somente dados fictícios e permite limpeza controlada. Antes do
-primeiro uso, confirme no painel Supabase que `dajdcecjaobdsgatubsb` é dedicado
-ao Iatron staging, anote a região e não reutilize um projeto com dados reais.
+O ambiente atual contém somente dados fictícios e permite limpeza controlada.
+A referência oficial para desenvolvimento, validação visual e aceite do
+stakeholder é `https://go.iatron.com.br`. Um deployment em outro domínio não
+representa aceite.
+
+Antes do primeiro uso, confirme no painel Supabase que
+`dajdcecjaobdsgatubsb` é dedicado ao Iatron, anote a região e não reutilize um
+projeto com dados reais.
 
 ## Checklist do proprietário
 
@@ -17,21 +22,25 @@ ao Iatron staging, anote a região e não reutilize um projeto com dados reais.
    o projeto explicitamente porque o projeto padrão local pode ser outro.
 4. Vercel: autentique `iatron.edtech@gmail.com`, selecione a equipe correta,
    importe este repositório como projeto `iatron-web-staging`, root directory
-   `apps/web`, production branch `staging` e configure somente as variáveis
-   públicas de Preview/Staging.
-5. Supabase Auth: use a URL Vercel estável como Site URL; cadastre exatamente
-   `<staging-url>/auth/callback` e `<staging-url>/redefinir-senha`. Evite wildcard
-   global de `vercel.app`.
+   `apps/web`, production branch `main` e configure as variáveis públicas no
+   ambiente Production desse projeto.
+5. Supabase Auth: use `https://go.iatron.com.br` como Site URL; cadastre
+   `https://go.iatron.com.br/auth/callback` e
+   `https://go.iatron.com.br/redefinir-senha`. Evite wildcard global de
+   `vercel.app`.
 
 Localhost pode continuar autorizado para depuração, mas não é necessário ao
 pipeline cloud.
 
 ## Recursos implantados
 
-- Web: `https://iatron-web-staging.vercel.app`.
+- Web oficial: `https://go.iatron.com.br`.
 - API: serviço Cloud Run `iatron-api-staging`, região `us-west1`.
 - Banco/Auth: projeto Supabase `dajdcecjaobdsgatubsb`, região `us-west-2`.
 
 O primeiro deploy da web pode ser feito pelo CLI. A automação por push só fica
 ativa depois que o GitHub App da Vercel recebe acesso explícito ao repositório
 privado.
+
+Uma separação futura entre development, staging e production deverá ser
+configurada e documentada formalmente antes de alterar este processo.

@@ -1,6 +1,13 @@
 # E2E remoto
 
 `pnpm test:e2e:auth` escolhe o modo remoto quando `E2E_WEB_BASE_URL` existe.
+No ambiente ativo de desenvolvimento e validação, use:
+
+```text
+E2E_WEB_BASE_URL=https://go.iatron.com.br
+```
+
+Outra URL Vercel não representa aceite do stakeholder.
 Esse modo exige `E2E_ALLOW_DESTRUCTIVE_TESTS=1`, project ref duplicado como alvo
 e aprovação e URL Supabase exatamente correspondente. A flag isolada não basta.
 
