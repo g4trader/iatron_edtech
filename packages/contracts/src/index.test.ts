@@ -5,6 +5,9 @@ import {
   contentMetadataSchema,
   guidelineCatalogSchema,
   questionCatalogSchema,
+  examIntelligenceContextSchema,
+  examIntelligenceExplanationSchema,
+  examRelevanceQuerySchema,
   learningEvidenceSchema,
   masteryStateSchema,
   onboardingInputSchema,
@@ -120,6 +123,55 @@ describe('academic read contracts', () => {
         competencyCount: 0,
       }),
     ).toThrow();
+  });
+});
+
+describe('exam intelligence contracts', () => {
+  it('serializes an explicitly synthetic and insufficient explanation', () => {
+    const id = crypto.randomUUID();
+    expect(
+      examIntelligenceExplanationSchema.parse({
+        targetExam: 'AMRIGS',
+        profileId: id,
+        profileVersion: 1,
+        dimension: null,
+        relevance: 'insufficient',
+        expectedDistribution: null,
+        evidence: {
+          status: 'synthetic',
+          sampleSize: 0,
+          occurrences: 0,
+          denominator: 0,
+          coverage: 0,
+          periodStart: null,
+          periodEnd: null,
+          confidence: 'insufficient',
+        },
+        limitations: ['Nenhuma prova licenciada foi analisada.'],
+        explanation:
+          'O perfil atual é demonstrativo e ainda não deve orientar decisões reais de estudo.',
+        isSynthetic: true,
+      }).profileId,
+    ).toBe(id);
+  });
+
+  it('requires dimension type and id together', () => {
+    expect(() =>
+      examRelevanceQuerySchema.parse({ dimensionType: 'area' }),
+    ).toThrow();
+    expect(examRelevanceQuerySchema.parse({})).toEqual({});
+  });
+
+  it('represents unsupported target exams without a silent fallback', () => {
+    expect(
+      examIntelligenceContextSchema.parse({
+        availability: 'unavailable',
+        targetExamEditionId: crypto.randomUUID(),
+        reason: 'unsupported_exam',
+        message:
+          'Ainda não há um perfil disponível para a prova escolhida. Nenhuma prioridade de banca foi aplicada.',
+      }).availability,
+    ).toBe('unavailable');
   });
 });
 

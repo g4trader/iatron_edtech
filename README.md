@@ -164,6 +164,11 @@ O [Content Intelligence MVP — AMRIGS](docs/content-intelligence-mvp.md)
 documenta o pipeline idempotente e o fixture autoral de validação. Nenhuma
 questão oficial da banca foi importada.
 
+O [Exam Intelligence MVP — AMRIGS](docs/exam-intelligence-amrigs-mvp.md)
+documenta o perfil e o blueprint versionados, a resolução da prova escolhida e
+as explicações determinísticas. Todos os números atuais são sintéticos,
+insuficientes e não alteram diagnóstico ou plano.
+
 ## Motor pedagógico
 
 Eventos imutáveis originam evidências, mastery por competência, gaps, agenda e timeline sem participação de IA. Regras, versionamento dos algoritmos, segurança e endpoints estão em [docs/learning-engine.md](docs/learning-engine.md). As páginas de inspeção começam em `/app/learning`.

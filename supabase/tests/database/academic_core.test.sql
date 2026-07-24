@@ -3,7 +3,7 @@ set local role postgres;
 set local search_path = public, extensions;
 select extensions.plan(20);
 
-select extensions.is((select count(*) from public.specialties), 3::bigint, 'seed contains specialties');
+select extensions.is((select count(*) from public.specialties), 5::bigint, 'seed contains the five blueprint specialties');
 select extensions.is((select count(*) from public.medical_areas), 3::bigint, 'seed contains reusable areas');
 select extensions.is((select count(*) from public.themes), 3::bigint, 'seed contains themes');
 select extensions.is((select count(*) from public.subthemes), 3::bigint, 'seed contains subthemes');

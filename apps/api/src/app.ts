@@ -25,7 +25,10 @@ import {
   type LearningRepository,
 } from './learning-repository.js';
 import { registerLearningRoutes } from './learning-routes.js';
-import { createAssessmentRepository, type AssessmentRepository } from './assessment-repository.js';
+import {
+  createAssessmentRepository,
+  type AssessmentRepository,
+} from './assessment-repository.js';
 import { registerAssessmentRoutes } from './assessment-routes.js';
 import {
   createStudyPlanRepository,
@@ -33,8 +36,16 @@ import {
 } from './study-plan-repository.js';
 import { registerStudyPlanRoutes } from './study-plan-routes.js';
 import { createOpenAiGateway, type AiGateway } from '@iatron/ai';
-import { createTutorRepository, type TutorRepository } from './tutor-repository.js';
+import {
+  createTutorRepository,
+  type TutorRepository,
+} from './tutor-repository.js';
 import { registerTutorRoutes } from './tutor-routes.js';
+import {
+  createExamIntelligenceRepository,
+  type ExamIntelligenceRepository,
+} from './exam-intelligence-repository.js';
+import { registerExamIntelligenceRoutes } from './exam-intelligence-routes.js';
 
 export interface BuildAppOptions {
   environment: ApiEnvironment;
@@ -50,6 +61,10 @@ export interface BuildAppOptions {
   tutorRepositoryFactory?: (token: string) => TutorRepository;
   aiGateway?: AiGateway;
   tutorClock?: () => number;
+  examIntelligenceRepositoryFactory?: (
+    token: string,
+  ) => ExamIntelligenceRepository;
+  examIntelligenceClock?: () => Date;
 }
 
 function isFastifyValidationError(error: unknown): boolean {
@@ -163,8 +178,10 @@ export async function buildApp(
         );
         await registerAssessmentRoutes(
           protectedApi,
-          options.assessmentRepositoryFactory ?? ((token) => createAssessmentRepository(options.environment, token)),
-          options.learningRepositoryFactory ?? ((token) => createLearningRepository(options.environment, token)),
+          options.assessmentRepositoryFactory ??
+            ((token) => createAssessmentRepository(options.environment, token)),
+          options.learningRepositoryFactory ??
+            ((token) => createLearningRepository(options.environment, token)),
         );
         await registerStudyPlanRoutes(
           protectedApi,
@@ -188,6 +205,13 @@ export async function buildApp(
             }),
           clock: options.tutorClock,
         });
+        await registerExamIntelligenceRoutes(
+          protectedApi,
+          options.examIntelligenceRepositoryFactory ??
+            ((token) =>
+              createExamIntelligenceRepository(options.environment, token)),
+          options.examIntelligenceClock,
+        );
       });
     },
     { prefix: '/v1' },

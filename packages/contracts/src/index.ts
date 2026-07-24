@@ -266,6 +266,203 @@ export const contentMetadataSchema = z.object({
 });
 export type ContentMetadata = z.infer<typeof contentMetadataSchema>;
 
+export const examIntelligenceConfidenceSchema = z.enum([
+  'insufficient',
+  'low',
+  'medium',
+  'high',
+]);
+export type ExamIntelligenceConfidence = z.infer<
+  typeof examIntelligenceConfidenceSchema
+>;
+
+export const examIntelligenceProfileSchema = z.object({
+  id: uuidSchema,
+  displayName: z.string(),
+  version: z.int().positive(),
+  validFrom: z.iso.date(),
+  validUntil: z.iso.date().nullable(),
+  editorialStatus: editorialStatusSchema,
+  isActive: z.boolean(),
+  analysisPeriod: z.object({
+    start: z.iso.date().nullable(),
+    end: z.iso.date().nullable(),
+  }),
+  examsAnalyzed: z.int().nonnegative(),
+  questionsAnalyzed: z.int().nonnegative(),
+  coverage: z.number().min(0).max(1),
+  confidence: examIntelligenceConfidenceSchema,
+  limitations: z.array(z.string()),
+  source: z.object({
+    title: z.string(),
+    url: z.url().nullable(),
+    origin: z.string(),
+  }),
+  responsibleEditorial: z.string(),
+  responsibleStatistical: z.string().nullable(),
+  notes: z.string().nullable(),
+  methodVersion: z.string(),
+  isSynthetic: z.boolean(),
+  lastUpdatedAt: z.iso.datetime(),
+  program: z.object({
+    id: uuidSchema,
+    code: z.string(),
+    name: z.string(),
+    board: boardCatalogSchema.nullable(),
+    institution: z.object({
+      id: uuidSchema,
+      name: z.string(),
+      acronym: z.string(),
+    }),
+  }),
+});
+export type ExamIntelligenceProfile = z.infer<
+  typeof examIntelligenceProfileSchema
+>;
+
+export const examBlueprintSchema = z.object({
+  id: uuidSchema,
+  profileId: uuidSchema,
+  version: z.int().positive(),
+  isActive: z.boolean(),
+  expectedQuestionCount: z.int().positive().nullable(),
+  durationMinutes: z.int().positive().nullable(),
+  formatDescription: z.string(),
+  correctionRules: z.string(),
+  notes: z.string().nullable(),
+  source: z.object({ title: z.string(), url: z.url().nullable() }),
+  period: z.object({
+    start: z.iso.date().nullable(),
+    end: z.iso.date().nullable(),
+  }),
+  confidence: examIntelligenceConfidenceSchema,
+  editorialStatus: editorialStatusSchema,
+  isSynthetic: z.boolean(),
+  areas: z.array(
+    z.object({
+      id: uuidSchema,
+      code: z.string(),
+      name: z.string(),
+      expectedProportion: z.number().min(0).max(1),
+      expectedQuestionCount: z.int().nonnegative().nullable(),
+      weight: z.number().positive().nullable(),
+      notes: z.string().nullable(),
+      position: z.int().positive(),
+    }),
+  ),
+});
+export type ExamBlueprint = z.infer<typeof examBlueprintSchema>;
+
+export const examIntelligenceDimensionSchema = z.enum([
+  'large_area',
+  'area',
+  'theme',
+  'subtheme',
+  'competency',
+]);
+export type ExamIntelligenceDimension = z.infer<
+  typeof examIntelligenceDimensionSchema
+>;
+
+export const examRecurrenceStatisticSchema = z.object({
+  id: uuidSchema,
+  profileId: uuidSchema,
+  version: z.int().positive(),
+  dimension: z.object({
+    type: examIntelligenceDimensionSchema,
+    id: uuidSchema,
+    code: z.string(),
+    name: z.string(),
+  }),
+  period: z.object({
+    start: z.iso.date().nullable(),
+    end: z.iso.date().nullable(),
+  }),
+  sampleSize: z.int().nonnegative(),
+  sampleUnit: z.string(),
+  occurrences: z.int().nonnegative(),
+  denominator: z.int().nonnegative(),
+  coverage: z.number().min(0).max(1),
+  relevance: z.enum(['insufficient', 'low', 'moderate', 'high']),
+  confidence: examIntelligenceConfidenceSchema,
+  origin: z.string(),
+  methodVersion: z.string(),
+  missingData: z.array(z.string()),
+  limitations: z.array(z.string()),
+  responsibleStatistical: z.string().nullable(),
+  editorialStatus: editorialStatusSchema,
+  isSynthetic: z.boolean(),
+  lastUpdatedAt: z.iso.datetime(),
+});
+export type ExamRecurrenceStatistic = z.infer<
+  typeof examRecurrenceStatisticSchema
+>;
+
+export const examRelevanceQuerySchema = z
+  .object({
+    dimensionType: examIntelligenceDimensionSchema.optional(),
+    dimensionId: uuidSchema.optional(),
+  })
+  .refine(
+    (input) =>
+      (input.dimensionType === undefined) === (input.dimensionId === undefined),
+    {
+      message: 'Tipo e identificador da dimensão devem ser informados juntos.',
+    },
+  );
+export type ExamRelevanceQuery = z.infer<typeof examRelevanceQuerySchema>;
+
+export const examIntelligenceExplanationSchema = z.object({
+  targetExam: z.string(),
+  profileId: uuidSchema,
+  profileVersion: z.int().positive(),
+  dimension: examRecurrenceStatisticSchema.shape.dimension.nullable(),
+  relevance: z.enum(['insufficient', 'low', 'moderate', 'high']),
+  expectedDistribution: z.number().min(0).max(1).nullable(),
+  evidence: z.object({
+    status: z.enum(['synthetic', 'authorized', 'insufficient']),
+    sampleSize: z.int().nonnegative(),
+    occurrences: z.int().nonnegative(),
+    denominator: z.int().nonnegative(),
+    coverage: z.number().min(0).max(1),
+    periodStart: z.iso.date().nullable(),
+    periodEnd: z.iso.date().nullable(),
+    confidence: examIntelligenceConfidenceSchema,
+  }),
+  limitations: z.array(z.string()),
+  explanation: z.string(),
+  isSynthetic: z.boolean(),
+});
+export type ExamIntelligenceExplanation = z.infer<
+  typeof examIntelligenceExplanationSchema
+>;
+
+export const examIntelligenceContextSchema = z.discriminatedUnion(
+  'availability',
+  [
+    z.object({
+      availability: z.literal('available'),
+      targetExamEditionId: uuidSchema,
+      profile: examIntelligenceProfileSchema,
+      blueprint: examBlueprintSchema,
+      explanations: z.array(examIntelligenceExplanationSchema),
+    }),
+    z.object({
+      availability: z.literal('unavailable'),
+      targetExamEditionId: uuidSchema.nullable(),
+      reason: z.enum([
+        'no_target_exam',
+        'unsupported_exam',
+        'no_active_profile',
+      ]),
+      message: z.string(),
+    }),
+  ],
+);
+export type ExamIntelligenceContext = z.infer<
+  typeof examIntelligenceContextSchema
+>;
+
 export const guidelineCatalogSchema = z.object({
   id: uuidSchema,
   stableKey: z.string(),
@@ -619,9 +816,12 @@ export const createTutorConversationSchema = z
     originType: tutorOriginTypeSchema.nullable().default(null),
     originId: uuidSchema.nullable().default(null),
   })
-  .refine((input) => (input.originType === null) === (input.originId === null), {
-    message: 'Origem e identificador devem ser informados juntos.',
-  });
+  .refine(
+    (input) => (input.originType === null) === (input.originId === null),
+    {
+      message: 'Origem e identificador devem ser informados juntos.',
+    },
+  );
 
 export const sendTutorMessageSchema = z.object({
   requestId: uuidSchema,
