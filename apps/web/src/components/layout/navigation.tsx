@@ -1,14 +1,12 @@
 import Link from 'next/link';
+import type { Route } from 'next';
 import { usePathname } from 'next/navigation';
 
 export const navigationItems = [
-  { href: '/app', label: 'Início', icon: 'I' },
-  { href: '/app/assessment/start', label: 'Diagnóstico', icon: 'D' },
-  { href: '/app/plan', label: 'Meu plano', icon: 'P' },
+  { href: '/app', label: 'Jornada', icon: 'J' },
   { href: '/app/tutor', label: 'Mentores', icon: 'M' },
   { href: '/app/simulations', label: 'Simulados', icon: 'S' },
-  { href: '/app/learning', label: 'Meu progresso', icon: 'E' },
-  { href: '/app/academic', label: 'Conteúdos', icon: 'C' },
+  { href: '/app/profile', label: 'Perfil', icon: 'P' },
 ] as const;
 
 export function NavigationLinks({
@@ -31,7 +29,7 @@ export function NavigationLinks({
             aria-current={active ? 'page' : undefined}
             className="sidebar-link"
             data-active={active}
-            href={item.href}
+            href={item.href as Route}
             key={item.href}
             onClick={onNavigate}
             title={collapsed ? item.label : undefined}

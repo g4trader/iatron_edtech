@@ -76,13 +76,6 @@ export function MobileSidebarDrawer({
             ×
           </button>
         </div>
-        <Link
-          className="new-chat-button"
-          href="/app/tutor"
-          onClick={onClose}
-        >
-          ＋ Falar com um mentor
-        </Link>
         <NavigationLinks onNavigate={onClose} />
       </aside>
     </div>

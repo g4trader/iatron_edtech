@@ -1,7 +1,8 @@
 'use client';
 
 const titleByPath: Record<string, string> = {
-  '/app': 'Visão geral',
+  '/app': 'Jornada',
+  '/app/profile': 'Perfil',
   '/app/plan': 'Meu plano',
   '/app/simulations': 'Simulados',
   '/app/performance': 'Meu progresso',
@@ -9,8 +10,8 @@ const titleByPath: Record<string, string> = {
 };
 const titleByPrefix = [
   ['/app/assessment', 'Diagnóstico'],
-  ['/app/learning', 'Meu progresso'],
-  ['/app/academic', 'Conteúdos'],
+  ['/app/learning', 'Jornada'],
+  ['/app/academic', 'Jornada'],
   ['/app/tutor', 'Mentores'],
 ] as const;
 

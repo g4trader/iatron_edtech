@@ -1,7 +1,6 @@
 'use client';
 
 import Link from 'next/link';
-import type { Route } from 'next';
 import { NavigationLinks } from './navigation';
 import { logout } from '@/app/(public)/auth/actions';
 
@@ -9,12 +8,10 @@ export function DesktopSidebar({
   collapsed,
   onToggle,
   identity,
-  recentConversations,
 }: {
   collapsed: boolean;
   onToggle: () => void;
   identity: { displayName: string; email: string };
-  recentConversations: { id: string; title: string }[];
 }) {
   const initials = identity.displayName
     .split(/\s+/)
@@ -47,29 +44,7 @@ export function DesktopSidebar({
           {collapsed ? '›' : '‹'}
         </button>
       </div>
-      <Link
-        className="new-chat-button"
-        href="/app/tutor"
-        title={collapsed ? 'Falar com um mentor' : undefined}
-      >
-        <span aria-hidden="true">＋</span>
-        {!collapsed && 'Falar com um mentor'}
-      </Link>
       <NavigationLinks collapsed={collapsed} />
-      {!collapsed && recentConversations.length > 0 && (
-        <section className="recent-section" aria-labelledby="recent-title">
-          <h2 id="recent-title">Orientações recentes</h2>
-          {recentConversations.map((conversation) => (
-            <Link
-              href={`/app/tutor/${conversation.id}` as Route}
-              key={conversation.id}
-            >
-              <span>{conversation.title}</span>
-              <small>Continuar orientação</small>
-            </Link>
-          ))}
-        </section>
-      )}
       <div className="sidebar-account">
         <div
           aria-label={`Usuário: ${identity.displayName}`}

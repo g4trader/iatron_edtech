@@ -12,11 +12,9 @@ const storageKey = 'iatron:sidebar-collapsed';
 export function AppShell({
   children,
   identity = { displayName: 'Estudante', email: '' },
-  recentConversations = [],
 }: {
   children: ReactNode;
   identity?: { displayName: string; email: string };
-  recentConversations?: { id: string; title: string }[];
 }) {
   const pathname = usePathname();
   const [collapsed, setCollapsed] = useState(
@@ -40,7 +38,6 @@ export function AppShell({
         collapsed={collapsed}
         onToggle={toggleCollapsed}
         identity={identity}
-        recentConversations={recentConversations}
       />
       <MobileSidebarDrawer
         open={drawerOpen}

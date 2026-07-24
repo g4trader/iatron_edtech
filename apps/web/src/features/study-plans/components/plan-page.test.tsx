@@ -44,8 +44,15 @@ describe('atividade do plano', () => {
         name: 'Ressuscitação inicial do choque séptico',
       }),
     ).toBeVisible();
-    expect(screen.getByText('Vale estudar agora', { exact: false })).toBeVisible();
-    expect(screen.getByText(/principais oportunidades de evolução/i)).toBeVisible();
+    expect(
+      screen.getByText('Vale estudar agora', { exact: false }),
+    ).toBeVisible();
+    expect(
+      screen.getByText(/principais oportunidades de evolução/i),
+    ).toBeVisible();
+    expect(
+      screen.getByText('Como esta atividade ajuda sua prova'),
+    ).toBeVisible();
     expect(document.body.textContent).not.toMatch(
       /EMERG\.CHOQUE\.002|Learning Gap Engine|Mastery|importância 72%/i,
     );

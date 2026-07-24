@@ -5,13 +5,18 @@ export function AssessmentPage({
   title,
   description,
   children,
+  focused = false,
 }: {
   title: string;
   description: string;
   children: ReactNode;
+  focused?: boolean;
 }) {
   return (
-    <main className="experience-page mx-auto w-full max-w-4xl min-w-0 space-y-6 px-4 py-6 sm:p-6">
+    <main
+      className="experience-page mx-auto w-full max-w-4xl min-w-0 space-y-6 px-4 py-6 sm:p-6"
+      data-focused={focused}
+    >
       <header>
         <p className="text-sm font-semibold text-[var(--foreground-muted)]">
           Seu diagnóstico
@@ -19,14 +24,16 @@ export function AssessmentPage({
         <h1 className="text-2xl font-semibold">{title}</h1>
         <p>{description}</p>
       </header>
-      <nav
-        aria-label="Navegação do diagnóstico"
-        className="flex flex-wrap gap-x-5 gap-y-2 text-sm font-semibold text-[var(--primary)]"
-      >
-        <Link href="/app/assessment/start">Começar</Link>
-        <Link href="/app/assessment/history">Meus diagnósticos</Link>
-        <Link href="/app/assessment/coverage">O que já foi avaliado</Link>
-      </nav>
+      {!focused && (
+        <nav
+          aria-label="Navegação do diagnóstico"
+          className="flex flex-wrap gap-x-5 gap-y-2 text-sm font-semibold text-[var(--primary)]"
+        >
+          <Link href="/app/assessment/start">Começar</Link>
+          <Link href="/app/assessment/history">Meus diagnósticos</Link>
+          <Link href="/app/assessment/coverage">O que já foi avaliado</Link>
+        </nav>
+      )}
       {children}
     </main>
   );

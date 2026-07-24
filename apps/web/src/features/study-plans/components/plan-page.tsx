@@ -71,6 +71,7 @@ export function PlanItemCard({ item }: { item: StudyPlanItem }) {
         </p>
       </div>
       <MentorRecommendation mentor={mentor}>
+        <strong>Como esta atividade ajuda sua prova</strong>
         <ul className="list-disc pl-5 text-sm">
           {item.reasons.map((reason) => (
             <li key={reason.code}>{activityReason(reason.code)}</li>
@@ -92,7 +93,7 @@ export function PlanItemCard({ item }: { item: StudyPlanItem }) {
             <form action={executePlanItem}>
               <input name="itemId" type="hidden" value={item.id} />
               <input name="action" type="hidden" value="start" />
-              <ActionSubmitButton pendingLabel="Iniciando…" variant="secondary">
+              <ActionSubmitButton pendingLabel="Iniciando…" variant="primary">
                 Iniciar atividade
               </ActionSubmitButton>
             </form>
@@ -107,7 +108,7 @@ export function PlanItemCard({ item }: { item: StudyPlanItem }) {
             />
             <ActionSubmitButton
               pendingLabel="Salvando conclusão…"
-              variant="secondary"
+              variant={item.status === 'in_progress' ? 'primary' : 'secondary'}
             >
               Concluir atividade
             </ActionSubmitButton>

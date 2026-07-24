@@ -72,19 +72,17 @@ describe('AppShell', () => {
     expect(screen.queryByText('Principais gaps')).not.toBeInTheDocument();
   });
 
-  it('exibe somente conversas reais com destino válido no Tutor', () => {
+  it('mantém a navegação focada na jornada', () => {
     render(
-      <AppShell
-        recentConversations={[
-          { id: 'conversation-123', title: 'Minha conversa' },
-        ]}
-      >
+      <AppShell>
         <div>Conteúdo</div>
       </AppShell>,
     );
 
-    expect(
-      screen.getByRole('link', { name: /Minha conversa/ }),
-    ).toHaveAttribute('href', '/app/tutor/conversation-123');
+    expect(screen.getByRole('link', { name: /Jornada/ })).toBeVisible();
+    expect(screen.getByRole('link', { name: /Simulados/ })).toBeVisible();
+    expect(screen.getByRole('link', { name: /Mentores/ })).toBeVisible();
+    expect(screen.getByRole('link', { name: /Perfil/ })).toBeVisible();
+    expect(screen.queryByText('Orientações recentes')).not.toBeInTheDocument();
   });
 });

@@ -1,215 +1,167 @@
 import Link from 'next/link';
-import type { Route } from 'next';
 import { PageContainer } from '@/components/layout/page-container';
-import { EmptyState, ErrorState } from '@/components/feedback/states';
-import { listTutorConversations } from '@/features/tutor/server/tutor';
-import { isAuthBypassEnabled } from '@/lib/auth-bypass';
 import { getAuthState } from '@/lib/auth';
 import { studyPlans } from '@/features/study-plans/server/study-plans';
+import { assessmentHistory } from '@/features/assessments/server/adaptive-assessment';
+import { activityReason } from '@/lib/learning-language';
 import { dominantMentor } from '@/features/mentors/mentors';
-import {
-  MentorIdentity,
-  MentorMessage,
-  TargetExamBadge,
-} from '@/features/mentors/components/mentor';
+import { MentorIdentity } from '@/features/mentors/components/mentor';
 import { examIntelligenceContext } from '@/features/exam-intelligence/server/context';
-
-const actions = [
-  {
-    href: '/app/assessment/start',
-    eyebrow: 'Conhecer seu ponto de partida',
-    title: 'Fazer um diagnóstico',
-    description: 'Descubra onde seu tempo de estudo pode fazer mais diferença.',
-  },
-  {
-    href: '/app/tutor',
-    eyebrow: 'Orientação dos especialistas',
-    title: 'Conversar com um mentor',
-    description: 'Entenda seu plano ou aprofunde um conteúdo com contexto.',
-  },
-  {
-    href: '/app/performance',
-    eyebrow: 'Acompanhar sua preparação',
-    title: 'Ver minha evolução',
-    description:
-      'Veja o que ganhou consistência e os próximos pontos a fortalecer.',
-  },
-] as const;
+import {
+  JourneyTimeline,
+  type JourneyStep,
+} from '@/features/journey/components/journey-timeline';
 
 export default async function AppHomePage() {
-  const authBypass = isAuthBypassEnabled(process.env);
   const { profile } = await getAuthState();
-  let currentPlan: Awaited<ReturnType<typeof studyPlans.current>> = null;
-  let conversations: Awaited<ReturnType<typeof listTutorConversations>> | null =
-    [];
-  let examContext: Awaited<ReturnType<typeof examIntelligenceContext>> = null;
-  try {
-    currentPlan = await studyPlans.current();
-  } catch {
-    currentPlan = null;
-  }
-  if (!authBypass) {
-    try {
-      conversations = await listTutorConversations();
-    } catch {
-      conversations = null;
-    }
-    try {
-      examContext = await examIntelligenceContext();
-    } catch {
-      examContext = null;
-    }
-  }
-  const mentor = dominantMentor(currentPlan?.items ?? []);
-  const firstName =
-    profile?.display_name?.trim().split(/\s+/)[0] ?? 'estudante';
+  const [currentPlan, assessments, examContext] = await Promise.all([
+    studyPlans.current().catch(() => null),
+    assessmentHistory().catch(() => []),
+    examIntelligenceContext().catch(() => null),
+  ]);
   const nextActivity = currentPlan?.items.find((item) =>
     ['planned', 'in_progress'].includes(item.status),
   );
-  const completedCount =
+  const mentor = dominantMentor(nextActivity ? [nextActivity] : []);
+  const hasCompletedDiagnostic = assessments.some(
+    (assessment) => assessment.completedAt !== null,
+  );
+  const hasTargetExam = examContext?.availability === 'available';
+  const targetExam = hasTargetExam
+    ? examContext.profile.program.code
+    : 'Sua prova de residência';
+  const completedActivities =
     currentPlan?.items.filter((item) => item.status === 'completed').length ??
     0;
+  const currentStage = nextActivity
+    ? 'Fundamentos'
+    : currentPlan && completedActivities > 0
+      ? 'Consolidação'
+      : hasCompletedDiagnostic
+        ? 'Fundamentos'
+        : hasTargetExam
+          ? 'Diagnóstico'
+          : 'Banca';
+  const steps: JourneyStep[] = [
+    { label: 'Perfil', status: 'complete' },
+    {
+      label: 'Banca',
+      status: hasTargetExam
+        ? 'complete'
+        : currentStage === 'Banca'
+          ? 'current'
+          : 'upcoming',
+    },
+    {
+      label: 'Diagnóstico',
+      status: hasCompletedDiagnostic
+        ? 'complete'
+        : currentStage === 'Diagnóstico'
+          ? 'current'
+          : 'upcoming',
+    },
+    {
+      label: 'Fundamentos',
+      status:
+        currentStage === 'Fundamentos'
+          ? 'current'
+          : completedActivities > 0
+            ? 'complete'
+            : 'upcoming',
+    },
+    {
+      label: 'Consolidação',
+      status: currentStage === 'Consolidação' ? 'current' : 'upcoming',
+    },
+    { label: 'Simulados', status: 'upcoming' },
+    { label: 'Revisão final', status: 'upcoming' },
+    { label: 'Pronto para a prova', status: 'upcoming' },
+  ];
+  const firstName =
+    profile?.display_name?.trim().split(/\s+/)[0] ?? 'estudante';
+  const nextTitle =
+    nextActivity?.competencyName ??
+    (hasCompletedDiagnostic
+      ? 'Transformar seu diagnóstico em um plano'
+      : 'Conhecer seu ponto de partida');
+  const nextReason = nextActivity
+    ? activityReason(nextActivity.reasons[0]?.code ?? '')
+    : hasCompletedDiagnostic
+      ? 'Seu diagnóstico já mostrou as primeiras prioridades. Agora vamos distribuí-las de acordo com sua rotina.'
+      : 'Um diagnóstico curto mostra o que já está consistente e onde seu tempo de estudo pode fazer mais diferença.';
+  const nextHref = nextActivity
+    ? '/app/plan/today'
+    : hasCompletedDiagnostic
+      ? '/app/plan'
+      : '/app/assessment/start';
+  const nextLabel = nextActivity
+    ? nextActivity.status === 'in_progress'
+      ? 'Retomar atividade'
+      : 'Começar atividade'
+    : hasCompletedDiagnostic
+      ? 'Criar meu plano'
+      : 'Começar diagnóstico';
+  const remainingStages = steps.filter(
+    (step) => step.status !== 'complete',
+  ).length;
+
   return (
     <PageContainer>
-      <section className="page-intro">
-        <p className="eyebrow">Sua preparação</p>
-        <h1>Olá, {firstName}.</h1>
-        <p>
-          Hoje vamos continuar sua preparação com um passo claro e possível para
-          a sua rotina.
-        </p>
-        {examContext?.availability === 'available' && (
-          <TargetExamBadge
-            isSynthetic={examContext.profile.isSynthetic}
-            name={examContext.profile.program.code}
-          />
-        )}
-      </section>
-      <MentorMessage
-        action={
-          <Link className="primary-button inline-flex" href="/app/tutor">
-            Conversar com {mentor.displayName}
-          </Link>
-        }
-        mentor={mentor}
-        title={`Orientação para ${mentor.specialty}`}
-      >
-        <p>
-          {nextActivity
-            ? `Seu plano indica ${nextActivity.competencyName} como um bom próximo passo. Essa atividade foi escolhida para aproximar sua prática das prioridades atuais.`
-            : 'Antes de organizar as próximas atividades, quero conhecer seu ponto de partida. Um diagnóstico curto mostrará onde podemos ajudar mais.'}
-        </p>
-      </MentorMessage>
-      <section aria-labelledby="next-step-title">
-        <div className="section-heading">
+      <main className="journey-home">
+        <header className="journey-hero">
           <div>
-            <p className="eyebrow">Seu próximo passo</p>
-            <h2 id="next-step-title">
-              {nextActivity
-                ? nextActivity.competencyName
-                : 'Vamos conhecer seu momento atual'}
-            </h2>
+            <p className="eyebrow">Sua jornada</p>
+            <h1>Olá, {firstName}. Este é o seu próximo passo.</h1>
           </div>
-          <MentorIdentity compact mentor={mentor} />
-        </div>
-        <div className="next-step-card">
-          <div>
+          <div className="journey-goal" aria-label="Objetivo da preparação">
+            <span>Seu objetivo</span>
+            <strong>{targetExam}</strong>
+            <small>
+              {remainingStages} etapas visíveis até a revisão final da jornada
+            </small>
+          </div>
+        </header>
+
+        <JourneyTimeline steps={steps} />
+
+        <section
+          aria-labelledby="journey-next-title"
+          className="journey-next-step"
+        >
+          <div className="journey-next-copy">
+            <p className="eyebrow">Agora</p>
+            <h2 id="journey-next-title">{nextTitle}</h2>
+            {nextActivity && (
+              <p className="journey-time">
+                Cerca de {nextActivity.estimatedMinutes} minutos
+              </p>
+            )}
+            <div className="journey-why">
+              <strong>Por que este passo?</strong>
+              <p>{nextReason}</p>
+            </div>
+          </div>
+          <div className="journey-mentor">
+            <span>Mentor da área</span>
+            <MentorIdentity mentor={mentor} />
             <p>
-              {nextActivity
-                ? `${nextActivity.estimatedMinutes} minutos reservados no seu plano. Ao concluir, usaremos sua atividade para orientar os estudos seguintes.`
-                : 'Responda algumas questões para receber prioridades e um plano conectado à sua rotina.'}
+              Referência de {mentor.specialty} ao longo desta etapa. As
+              recomendações vêm dos critérios pedagógicos do seu plano.
             </p>
           </div>
           <Link
-            className="primary-button inline-flex"
-            href={nextActivity ? '/app/plan/today' : '/app/assessment/start'}
+            className="primary-button journey-primary-action"
+            href={nextHref}
           >
-            {nextActivity ? 'Continuar meu plano' : 'Começar diagnóstico'}
+            {nextLabel}
           </Link>
-        </div>
-      </section>
-      {currentPlan && (
-        <section aria-labelledby="home-progress-title">
-          <div className="section-heading">
-            <div>
-              <p className="eyebrow">Sua evolução nesta semana</p>
-              <h2 id="home-progress-title">
-                {completedCount > 0
-                  ? `${completedCount} ${completedCount === 1 ? 'atividade concluída' : 'atividades concluídas'}`
-                  : 'Seu plano está pronto para começar'}
-              </h2>
-            </div>
-            <Link href="/app/plan">Ver plano completo</Link>
-          </div>
-          <p>
-            Cada atividade concluída ajuda seus mentores a explicar melhor o que
-            manter, revisar e priorizar a seguir.
-          </p>
         </section>
-      )}
-      <section aria-labelledby="actions-title">
-        <div className="section-heading">
-          <div>
-            <p className="eyebrow">Outros caminhos</p>
-            <h2 id="actions-title">O que você precisa agora?</h2>
-          </div>
-        </div>
-        <div className="action-card-grid">
-          {actions.map((action) => (
-            <Link
-              className="action-card"
-              href={
-                (authBypass && action.href === '/app/tutor'
-                  ? '/app/tutor'
-                  : action.href) as Route
-              }
-              key={action.href}
-            >
-              <span>{action.eyebrow}</span>
-              <h3>{action.title}</h3>
-              <p>{action.description}</p>
-              <strong aria-hidden="true">→</strong>
-            </Link>
-          ))}
-        </div>
-      </section>
-      <section aria-labelledby="recent-home-title" className="home-recents">
-        <div className="section-heading">
-          <div>
-            <p className="eyebrow">Seus mentores</p>
-            <h2 id="recent-home-title">Retome uma orientação</h2>
-          </div>
-          <Link href="/app/tutor">Falar com um mentor</Link>
-        </div>
-        {conversations === null ? (
-          <ErrorState message="Não foi possível carregar suas conversas agora. Você ainda pode iniciar uma nova orientação com seus mentores." />
-        ) : conversations.length === 0 ? (
-          <EmptyState
-            title="Seus mentores estão prontos para começar"
-            description="Inicie uma orientação para entender seu diagnóstico, seu plano ou um conteúdo."
-            action={
-              <Link className="primary-button inline-flex" href="/app/tutor">
-                Conversar com um mentor
-              </Link>
-            }
-          />
-        ) : (
-          <div className="conversation-list">
-            {conversations.slice(0, 4).map((item) => (
-              <Link href={`/app/tutor/${item.id}` as Route} key={item.id}>
-                <span className="conversation-icon" aria-hidden="true">
-                  T
-                </span>
-                <span>
-                  <strong>{item.title}</strong>
-                  <small>Continuar conversa</small>
-                </span>
-                <span aria-hidden="true">›</span>
-              </Link>
-            ))}
-          </div>
-        )}
-      </section>
+
+        <p className="journey-after">
+          Depois desta atividade, sua jornada será atualizada com o próximo
+          passo mais útil para sua preparação.
+        </p>
+      </main>
     </PageContainer>
   );
 }

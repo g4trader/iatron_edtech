@@ -20,7 +20,10 @@ export default async function SessionPage({
         title="Diagnóstico não iniciado"
         description="Comece pela tela inicial para prepararmos as questões certas para você."
       >
-        <Link className="primary-button inline-flex" href="/app/assessment/start">
+        <Link
+          className="primary-button inline-flex"
+          href="/app/assessment/start"
+        >
           Começar diagnóstico
         </Link>
       </AssessmentPage>
@@ -46,6 +49,7 @@ export default async function SessionPage({
     <AssessmentPage
       title={`Questão ${question.number} de ${question.total}`}
       description="Responda com calma. Cada questão ajuda a tornar seu diagnóstico mais confiável."
+      focused
     >
       <section
         aria-label={`Progresso: questão ${question.number} de ${question.total}`}
@@ -59,7 +63,7 @@ export default async function SessionPage({
         </div>
         <progress max={question.total} value={question.number} />
         <p>
-          <strong>Por que esta questão?</strong>{' '}
+          <strong>Área e motivo desta pergunta:</strong>{' '}
           {questionSelectionReason(question.selectionReason)}
         </p>
       </section>
@@ -92,7 +96,10 @@ export default async function SessionPage({
         </fieldset>
         <label className="form-field max-w-xs" htmlFor="stated-confidence">
           Quão seguro você está desta resposta?
-          <small id="confidence-help" className="font-normal text-[var(--foreground-muted)]">
+          <small
+            id="confidence-help"
+            className="font-normal text-[var(--foreground-muted)]"
+          >
             Isso nos ajuda a entender melhor o que você já domina.
           </small>
           <select
