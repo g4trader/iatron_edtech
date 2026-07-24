@@ -4,11 +4,18 @@
 
 Antes de qualquer implementação, leia integralmente:
 
-1. `docs/product/UX_PRINCIPLES.md`;
-2. `docs/product/VOICE_AND_TONE.md`;
-3. `docs/product/ARCHITECTURAL_PRINCIPLES.md`;
-4. `docs/product/DEFINITION_OF_DONE.md`;
-5. `docs/product/AI_DEVELOPMENT_GUIDE.md`.
+1. `docs/product/PRODUCT_VISION.md`;
+2. `docs/product/PRODUCT_PRINCIPLES.md`;
+3. `docs/product/UX_PRINCIPLES.md`;
+4. `docs/product/VOICE_AND_TONE.md`;
+5. `docs/product/ARCHITECTURAL_PRINCIPLES.md`;
+6. `docs/product/DEFINITION_OF_DONE.md`;
+7. `docs/product/AI_DEVELOPMENT_GUIDE.md`.
+
+Mudanças que envolvam conteúdo, mentores, provas, métricas ou IA clínica também
+devem consultar as políticas normativas indicadas no
+`docs/product/EDITORIAL_GOVERNANCE.md` e confirmar as decisões bloqueantes no
+`docs/product/DECISION_REGISTER.md`.
 
 Para mudanças de interface, aplique também
 `docs/product/DESIGN_REVIEW_CHECKLIST.md`. Para revisar entregas, siga

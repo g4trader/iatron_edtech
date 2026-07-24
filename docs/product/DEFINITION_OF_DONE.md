@@ -51,6 +51,15 @@ Antes da aprovação, confirme:
 - nenhuma funcionalidade fictícia ou caminho sem conclusão foi introduzido;
 - métricas e resultados exibidos correspondem a dados reais.
 
+Quando houver conteúdo, prova, mentor ou estatística:
+
+- origem, versão e natureza editorial estão identificadas;
+- licença ou base jurídica aplicável foi verificada;
+- autoria, revisão e homologação não são presumidas;
+- atribuição de mentor possui evidência;
+- métricas informam amostra, período e limitações;
+- decisões pendentes no [registro](DECISION_REGISTER.md) não foram contornadas.
+
 ## 3. UX
 
 Toda interface deve seguir:
@@ -217,6 +226,9 @@ O Pull Request deve informar:
 - [ ] Build aprovado
 - [ ] CI verde
 - [ ] Documentação atualizada
+- [ ] Proveniência, atribuição e licença verificadas ou justificadas como não
+      aplicáveis
+- [ ] Estatísticas possuem amostra, período e limitações
 - [ ] Deploy em staging concluído
 - [ ] Smoke e validação manual em staging aprovados
 

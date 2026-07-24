@@ -70,8 +70,24 @@
 ## Governança
 
 - [ ] Li e preservei os [princípios arquiteturais](../docs/product/ARCHITECTURAL_PRINCIPLES.md)
+- [ ] Consultei a [visão](../docs/product/PRODUCT_VISION.md) e os [princípios de produto](../docs/product/PRODUCT_PRINCIPLES.md)
 - [ ] A Definition of Done foi integralmente atendida
 - [ ] Exceções foram documentadas e aprovadas conforme a governança
+
+## Conteúdo, mentores e estatísticas
+
+Marque cada item ou registre **N/A — justificativa:**.
+
+- [ ] Origem do conteúdo identificada
+- [ ] Licença ou base jurídica verificada
+- [ ] Autoria, revisão e homologação registradas
+- [ ] Mentor corretamente atribuído
+- [ ] Conteúdo gerado por IA claramente identificado
+- [ ] Decisão pedagógica permanece determinística
+- [ ] Estatísticas informam amostra, período e limitações
+- [ ] Termos e afirmações clínicas possuem fonte
+- [ ] Riscos de privacidade avaliados
+- [ ] Decisões pendentes não foram tratadas como aprovadas
 
 ## Itens não aplicáveis e justificativas
 

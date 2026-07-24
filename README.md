@@ -76,6 +76,8 @@ pnpm test:e2e
 Nenhuma entrega é considerada concluída apenas porque funciona. Todo Pull
 Request deve seguir:
 
+- [Visão de produto](docs/product/PRODUCT_VISION.md);
+- [Princípios de produto](docs/product/PRODUCT_PRINCIPLES.md);
 - [Definition of Done](docs/product/DEFINITION_OF_DONE.md);
 - [Diretrizes de Code Review](docs/product/CODE_REVIEW_GUIDELINES.md);
 - [Princípios arquiteturais](docs/product/ARCHITECTURAL_PRINCIPLES.md);
@@ -83,6 +85,17 @@ Request deve seguir:
 - [Princípios de experiência](docs/product/UX_PRINCIPLES.md);
 - [Voz e tom](docs/product/VOICE_AND_TONE.md);
 - [Checklist de revisão de design](docs/product/DESIGN_REVIEW_CHECKLIST.md).
+
+Conteúdo médico, provas, mentores, estatísticas e IA clínica seguem também:
+
+- [Governança editorial](docs/product/EDITORIAL_GOVERNANCE.md);
+- [Governança dos mentores](docs/product/MENTOR_GOVERNANCE.md);
+- [Política de IA clínica](docs/product/AI_CLINICAL_CONTENT_POLICY.md);
+- [Política de proveniência](docs/product/CONTENT_PROVENANCE_POLICY.md);
+- [Checklist jurídico de provas](docs/product/EXAM_CONTENT_LEGAL_CHECKLIST.md);
+- [Governança estatística](docs/product/STATISTICAL_GOVERNANCE.md);
+- [Registro de decisões](docs/product/DECISION_REGISTER.md);
+- [Matriz RACI](docs/product/RACI_MATRIX.md).
 
 O [template padrão de Pull Request](.github/pull_request_template.md) transforma
 esses critérios em uma etapa explícita de autorrevisão. Itens não aplicáveis

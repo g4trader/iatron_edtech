@@ -119,6 +119,23 @@ Verifique:
 Qualquer caminho em que a IA possa alterar estado pedagógico sem validação
 determinística é bloqueante.
 
+## Conteúdo, mentores e estatísticas
+
+Trate como bloqueio:
+
+- conteúdo clínico sem origem, versão ou natureza editorial;
+- licença ou base jurídica ausente para o uso pretendido;
+- revisão, homologação ou atribuição de mentor sem evidência;
+- explicação de IA apresentada como fala do mentor;
+- conteúdo provisório apresentado como homologado;
+- métrica sem fonte, período, amostra, limitações e versão;
+- tendência frágil comunicada como verdade;
+- decisão pendente marcada ou tratada como aprovada.
+
+Consulte as políticas normativas a partir da
+[governança editorial](EDITORIAL_GOVERNANCE.md) e o
+[registro de decisões](DECISION_REGISTER.md).
+
 ## Performance
 
 Investigue:

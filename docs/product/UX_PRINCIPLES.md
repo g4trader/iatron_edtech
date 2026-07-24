@@ -108,6 +108,10 @@ Um estado vazio deve:
 - Recomendações devem mostrar seus motivos.
 - Limites educacionais e fontes devem permanecer claros sem linguagem
   alarmista.
+- A natureza editorial é sempre visível: autoria, revisão por mentor,
+  homologação médica ou explicação gerada por IA não são equivalentes.
+- Selos e nomes de mentores só aparecem quando a atribuição está registrada
+  conforme a [governança dos mentores](MENTOR_GOVERNANCE.md).
 
 ### Mobile e acessibilidade
 

@@ -8,10 +8,17 @@ mais específicas do usuário.
 
 Leia integralmente:
 
-1. [Princípios de UX](UX_PRINCIPLES.md);
-2. [Voz e tom](VOICE_AND_TONE.md);
-3. [Princípios arquiteturais](ARCHITECTURAL_PRINCIPLES.md);
-4. [Definition of Done](DEFINITION_OF_DONE.md).
+1. [Visão de produto](PRODUCT_VISION.md);
+2. [Princípios de produto](PRODUCT_PRINCIPLES.md);
+3. [Princípios de UX](UX_PRINCIPLES.md);
+4. [Voz e tom](VOICE_AND_TONE.md);
+5. [Princípios arquiteturais](ARCHITECTURAL_PRINCIPLES.md);
+6. [Definition of Done](DEFINITION_OF_DONE.md).
+
+Para conteúdo, mentores, provas, estatísticas ou IA clínica, leia também a
+[governança editorial](EDITORIAL_GOVERNANCE.md) e as políticas nela
+referenciadas. Consulte o [registro de decisões](DECISION_REGISTER.md) antes de
+agir; uma recomendação técnica não torna uma decisão aprovada.
 
 Depois:
 
@@ -129,4 +136,3 @@ O relatório final deve:
 - não afirmar validação manual que não ocorreu;
 - não ocultar warning, fallback ou dependência pendente;
 - ser conciso e verificável.
-

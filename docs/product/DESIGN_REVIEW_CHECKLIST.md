@@ -140,6 +140,11 @@ Uma tela só pode ser aprovada quando:
 - [ ] Fontes e limites educacionais estão claros?
 - [ ] A resposta evita diagnóstico ou atendimento médico?
 - [ ] Dados de outros estudantes não podem aparecer?
+- [ ] Autoria, revisão, homologação e geração por IA estão claramente
+      diferenciadas?
+- [ ] Nome, imagem ou fala de mentor possuem atribuição registrada?
+- [ ] Tendências exibem período, amostra e limitações relevantes?
+- [ ] Conteúdo provisório não parece homologado?
 
 ## Validação da entrega
 

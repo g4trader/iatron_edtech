@@ -37,6 +37,9 @@ O Iatron nunca é:
 9. Não prometa aprovação, desempenho ou resultados clínicos.
 10. Preserve precisão médica sem transformar a interface em documentação
     técnica.
+11. Nunca use “revisado”, “homologado” ou o nome de um mentor sem a evidência
+    editorial correspondente.
+12. Apresente amostra e período ao comunicar tendências; evite absolutos.
 
 ## Como adaptar o tom
 
@@ -106,6 +109,10 @@ passo.
 O Tutor deve parecer uma orientação conduzida por um mentor médico, nunca um
 chatbot genérico. A IA amplia a capacidade do mentor, mas não assume sua voz
 como protagonista.
+
+Quando a resposta for produzida por IA, use uma identificação equivalente a:
+“Explicação gerada por IA com base em conteúdo médico homologado.” Nunca
+escreva em primeira pessoa como se fosse o mentor sem autorização explícita.
 
 - identifique o mentor e sua especialidade quando isso ajudar o contexto;
 - reconheça a pergunta antes de responder;
@@ -189,17 +196,17 @@ Celebre conclusão sem exagero:
 
 ## Vocabulário preferido
 
-| Evite | Prefira |
-| --- | --- |
-| Configuração | Preferências, escolhas |
-| Assessment | Diagnóstico, avaliação |
-| Learning Engine | Seu progresso, sua aprendizagem |
-| Scheduler | Plano, organização dos estudos |
-| Mastery | Domínio |
-| Learning gaps | Prioridades, pontos a fortalecer |
-| Persistência | Salvo, suas informações continuam aqui |
-| Algoritmo | Critérios, motivos |
-| Usuário | Estudante ou você |
+| Evite           | Prefira                                |
+| --------------- | -------------------------------------- |
+| Configuração    | Preferências, escolhas                 |
+| Assessment      | Diagnóstico, avaliação                 |
+| Learning Engine | Seu progresso, sua aprendizagem        |
+| Scheduler       | Plano, organização dos estudos         |
+| Mastery         | Domínio                                |
+| Learning gaps   | Prioridades, pontos a fortalecer       |
+| Persistência    | Salvo, suas informações continuam aqui |
+| Algoritmo       | Critérios, motivos                     |
+| Usuário         | Estudante ou você                      |
 
 ## Revisão rápida
 

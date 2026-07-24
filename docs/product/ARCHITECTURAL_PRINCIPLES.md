@@ -99,6 +99,14 @@ Caches e projeções não se tornam fonte de verdade.
 - o produto é educacional e não presta atendimento médico;
 - dados clínicos sensíveis ou desnecessários não são solicitados.
 
+As fontes normativas são a
+[governança editorial](EDITORIAL_GOVERNANCE.md), a
+[política de proveniência](CONTENT_PROVENANCE_POLICY.md), a
+[governança dos mentores](MENTOR_GOVERNANCE.md), o
+[checklist jurídico de provas](EXAM_CONTENT_LEGAL_CHECKLIST.md) e a
+[governança estatística](STATISTICAL_GOVERNANCE.md). Presença de metadados não
+substitui revisão médica, decisão jurídica ou validação estatística.
+
 ## 7. Segurança é server-side e por padrão
 
 - nenhum segredo vai para Git, frontend, logs ou artefatos;
@@ -174,4 +182,3 @@ Alterar essas fronteiras exige ADR.
 - registrar JWT, API key ou prompt sensível;
 - permitir que uma tool de IA faça mutação sem autorização server-side;
 - introduzir uma plataforma ou dependência crítica sem ADR.
-
