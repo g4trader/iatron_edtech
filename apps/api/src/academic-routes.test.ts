@@ -23,6 +23,8 @@ const academicRepository: AcademicRepository = {
   listCompetencies: async () => [],
   listBoards: async () => [],
   listExams: async () => [],
+  listQuestions: async () => [],
+  listContentMetadata: async () => [],
   listGuidelines: async () => [],
 };
 let app: FastifyInstance | undefined;
@@ -89,8 +91,73 @@ describe('academic read API', () => {
         '/academic/competencies',
         '/academic/boards',
         '/academic/exams',
+        '/academic/questions',
+        '/academic/content-metadata',
         '/academic/guidelines',
       ]),
+    );
+  });
+
+  it('exposes only repository-approved question data', async () => {
+    app = await buildApp({
+      environment,
+      logger: false,
+      tokenVerifier: async () => ({ sub: 'user-a' }),
+      repositoryFactory: () => emptyStudentRepository,
+      academicRepositoryFactory: () => ({
+        ...academicRepository,
+        listQuestions: async () => [
+          {
+            id: '55000000-0000-4000-8000-000000000001',
+            versionId: '55000000-0000-4000-8000-000000000002',
+            sourceKey: 'AMRIGS:LICENSED:1',
+            stem: 'Enunciado autorizado',
+            commentary: null,
+            difficulty: 2,
+            editorialStatus: 'published',
+            exam: {
+              id: '64000000-0000-4000-8000-000000000001',
+              year: 2026,
+              edition: 'Ingresso 2026',
+              position: 1,
+              board: {
+                id: '62000000-0000-4000-8000-000000000001',
+                name: 'Associação Médica do Rio Grande do Sul',
+                acronym: 'AMB/AMRIGS',
+              },
+            },
+            area: {
+              id: '51000000-0000-4000-8000-000000000001',
+              code: 'CARDIOLOGIA',
+              name: 'Cardiologia',
+            },
+            competencies: [],
+            provenance: {
+              origin: 'Fonte autorizada',
+              sourceTitle: 'Prova',
+              sourceUrl: null,
+              rightsHolder: 'Titular',
+              legalBasis: 'Licença',
+              externalIdentifier: '1',
+              authorshipKind: 'medical_team_homologated',
+              responsibleParty: 'Editorial',
+              obtainedOn: '2026-07-24',
+            },
+          },
+        ],
+      }),
+    });
+    const response = await app.inject({
+      method: 'GET',
+      url: '/v1/academic/questions',
+      headers: { authorization: 'Bearer valid-test-token' },
+    });
+    expect(response.statusCode).toBe(200);
+    expect(response.json()[0]).toEqual(
+      expect.objectContaining({
+        editorialStatus: 'published',
+        provenance: expect.objectContaining({ legalBasis: 'Licença' }),
+      }),
     );
   });
 });

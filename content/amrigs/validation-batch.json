@@ -1,0 +1,93 @@
+{
+  "importKey": "AMRIGS:MVP.VALIDATION.001",
+  "boardCode": "AMRIGS",
+  "examEditionId": "64000000-0000-4000-8000-000000000001",
+  "sourceKind": "authorial_validation",
+  "createdBy": "Iatron Content Intelligence MVP",
+  "questions": [
+    {
+      "sourceKey": "AMRIGS:MVP:CARD.SCA.001:001",
+      "institutionId": "61000000-0000-4000-8000-000000000001",
+      "position": 901,
+      "stem": "Questão autoral de validação: qual achado integra a avaliação inicial de uma síndrome coronariana aguda?",
+      "commentary": "Conteúdo sintético para validar o pipeline. Não está homologado para estudo.",
+      "difficulty": 1,
+      "cognitiveLevel": "recognition",
+      "areaCode": "CARDIOLOGIA",
+      "competencyCodes": ["CARD.SCA.001"],
+      "editorialStatus": "draft",
+      "options": [
+        {
+          "label": "A",
+          "content": "Eletrocardiograma",
+          "isCorrect": true,
+          "position": 1
+        },
+        {
+          "label": "B",
+          "content": "Densitometria óssea",
+          "isCorrect": false,
+          "position": 2
+        }
+      ],
+      "provenance": {
+        "origin": "Iatron Content Intelligence MVP",
+        "sourceTitle": "Conjunto autoral sintético de validação",
+        "sourceUrl": "",
+        "rightsHolder": "Iatron",
+        "legalBasis": "Conteúdo autoral interno criado exclusivamente para validação técnica",
+        "externalIdentifier": "IATRON-AMRIGS-MVP-001",
+        "obtainedOn": "2026-07-24",
+        "authorshipKind": "editorial_non_homologated",
+        "authorName": "Equipe de engenharia Iatron",
+        "responsibleParty": "Equipe de produto Iatron",
+        "usageRestrictions": [
+          "Não apresentar como questão oficial da AMRIGS",
+          "Não apresentar como conteúdo médico homologado"
+        ]
+      }
+    },
+    {
+      "sourceKey": "AMRIGS:MVP:CARD.SCA.002:001",
+      "institutionId": "61000000-0000-4000-8000-000000000001",
+      "position": 902,
+      "stem": "Questão autoral de validação: qual informação é necessária antes de selecionar uma estratégia de reperfusão?",
+      "commentary": "Conteúdo sintético para validar idempotência e classificação. Não está homologado para estudo.",
+      "difficulty": 1,
+      "cognitiveLevel": "recognition",
+      "areaCode": "CARDIOLOGIA",
+      "competencyCodes": ["CARD.SCA.002"],
+      "editorialStatus": "draft",
+      "options": [
+        {
+          "label": "A",
+          "content": "Tempo desde o início dos sintomas",
+          "isCorrect": true,
+          "position": 1
+        },
+        {
+          "label": "B",
+          "content": "Cor preferida do estudante",
+          "isCorrect": false,
+          "position": 2
+        }
+      ],
+      "provenance": {
+        "origin": "Iatron Content Intelligence MVP",
+        "sourceTitle": "Conjunto autoral sintético de validação",
+        "sourceUrl": "",
+        "rightsHolder": "Iatron",
+        "legalBasis": "Conteúdo autoral interno criado exclusivamente para validação técnica",
+        "externalIdentifier": "IATRON-AMRIGS-MVP-002",
+        "obtainedOn": "2026-07-24",
+        "authorshipKind": "editorial_non_homologated",
+        "authorName": "Equipe de engenharia Iatron",
+        "responsibleParty": "Equipe de produto Iatron",
+        "usageRestrictions": [
+          "Não apresentar como questão oficial da AMRIGS",
+          "Não apresentar como conteúdo médico homologado"
+        ]
+      }
+    }
+  ]
+}

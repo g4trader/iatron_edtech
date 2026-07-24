@@ -3,8 +3,10 @@ import type {
   BoardCatalog,
   CatalogQuery,
   CompetencyCatalog,
+  ContentMetadata,
   ExamCatalog,
   GuidelineCatalog,
+  QuestionCatalog,
   SpecialtyCatalog,
   ThemeCatalog,
 } from '@iatron/contracts';
@@ -31,6 +33,8 @@ export interface AcademicRepository {
   listCompetencies(query: CatalogQuery): Promise<CompetencyCatalog[]>;
   listBoards(query: CatalogQuery): Promise<BoardCatalog[]>;
   listExams(query: CatalogQuery): Promise<ExamCatalog[]>;
+  listQuestions(query: CatalogQuery): Promise<QuestionCatalog[]>;
+  listContentMetadata(query: CatalogQuery): Promise<ContentMetadata[]>;
   listGuidelines(query: CatalogQuery): Promise<GuidelineCatalog[]>;
 }
 
@@ -221,6 +225,124 @@ export function createAcademicRepository(
             : null,
         };
       });
+    },
+    async listQuestions(query) {
+      const url = new URL(
+        '/rest/v1/question_versions',
+        environment.SUPABASE_URL,
+      );
+      url.searchParams.set(
+        'select',
+        'id,stem,commentary,difficulty,status,questions!inner(id,source_key,status),exam_questions!inner(position,exam_editions!inner(id,year,edition,exam_programs!inner(code),exam_boards!inner(id,name,acronym))),question_version_competencies!inner(competencies!inner(id,code,name,subthemes!inner(themes!inner(medical_areas!inner(id,code,name))))),question_version_provenance!inner(origin,source_title,source_url,rights_holder,legal_basis,external_identifier,authorship_kind,responsible_party,obtained_on,editorial_status)',
+      );
+      url.searchParams.set('status', 'eq.published');
+      url.searchParams.set('questions.status', 'eq.published');
+      url.searchParams.set(
+        'exam_questions.exam_editions.exam_programs.code',
+        'eq.AMRIGS',
+      );
+      url.searchParams.set(
+        'question_version_provenance.editorial_status',
+        'eq.published',
+      );
+      url.searchParams.set('order', 'created_at.desc');
+      url.searchParams.set('limit', String(query.limit));
+      url.searchParams.set('offset', String(query.offset));
+      if (query.search) {
+        const escaped = query.search.replaceAll('*', '').replaceAll(',', '');
+        url.searchParams.set('stem', `ilike.*${escaped}*`);
+      }
+      const response = await fetch(url, {
+        headers: {
+          apikey: environment.SUPABASE_PUBLISHABLE_KEY,
+          authorization: `Bearer ${accessToken}`,
+        },
+      });
+      if (!response.ok)
+        throw new RepositoryError(
+          `Question catalog request failed with ${response.status}`,
+          'QUESTION_CATALOG_ERROR',
+        );
+      return rows(await response.json()).map((row) => {
+        const question = object(row.questions);
+        const examLink = object(rows(row.exam_questions)[0]);
+        const exam = object(examLink.exam_editions);
+        const board = object(exam.exam_boards);
+        const competencyLinks = rows(row.question_version_competencies);
+        const competencies = competencyLinks.map((link) =>
+          object(link.competencies),
+        );
+        const firstCompetency = object(competencies[0]);
+        const subtheme = object(firstCompetency.subthemes);
+        const theme = object(subtheme.themes);
+        const area = object(theme.medical_areas);
+        const provenance = object(row.question_version_provenance);
+        return {
+          id: text(question, 'id'),
+          versionId: text(row, 'id'),
+          sourceKey: nullableText(question, 'source_key'),
+          stem: text(row, 'stem'),
+          commentary: nullableText(row, 'commentary'),
+          difficulty: nullableInteger(row, 'difficulty'),
+          editorialStatus: text(
+            row,
+            'status',
+          ) as QuestionCatalog['editorialStatus'],
+          exam: {
+            id: text(exam, 'id'),
+            year: integer(exam, 'year'),
+            edition: nullableText(exam, 'edition'),
+            position: integer(examLink, 'position'),
+            board: {
+              id: text(board, 'id'),
+              name: text(board, 'name'),
+              acronym: nullableText(board, 'acronym'),
+            },
+          },
+          area: {
+            id: text(area, 'id'),
+            code: text(area, 'code'),
+            name: text(area, 'name'),
+          },
+          competencies: competencies.map((competency) => ({
+            id: text(competency, 'id'),
+            code: text(competency, 'code'),
+            name: text(competency, 'name'),
+          })),
+          provenance: {
+            origin: text(provenance, 'origin'),
+            sourceTitle: text(provenance, 'source_title'),
+            sourceUrl: nullableText(provenance, 'source_url'),
+            rightsHolder: text(provenance, 'rights_holder'),
+            legalBasis: text(provenance, 'legal_basis'),
+            externalIdentifier: text(provenance, 'external_identifier'),
+            authorshipKind: text(provenance, 'authorship_kind'),
+            responsibleParty: text(provenance, 'responsible_party'),
+            obtainedOn: text(provenance, 'obtained_on'),
+          },
+        };
+      });
+    },
+    async listContentMetadata(query) {
+      return (
+        await list(
+          'amrigs_content_metadata',
+          'exam_edition_id,year,edition,program_code,question_count,published_count,non_published_count,provenance_count,competency_count',
+          query,
+          ['edition'],
+          'year',
+        )
+      ).map((row) => ({
+        examEditionId: text(row, 'exam_edition_id'),
+        year: integer(row, 'year'),
+        edition: nullableText(row, 'edition'),
+        programCode: 'AMRIGS' as const,
+        questionCount: integer(row, 'question_count'),
+        publishedCount: integer(row, 'published_count'),
+        nonPublishedCount: integer(row, 'non_published_count'),
+        provenanceCount: integer(row, 'provenance_count'),
+        competencyCount: integer(row, 'competency_count'),
+      }));
     },
     async listGuidelines(query) {
       const result = await list(

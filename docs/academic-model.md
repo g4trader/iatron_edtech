@@ -1,5 +1,10 @@
 # Modelo acadêmico
 
+O pipeline mínimo de conteúdo da banca-piloto está documentado em
+[Content Intelligence MVP — AMRIGS](content-intelligence-mvp.md). Ele reutiliza
+este modelo e adiciona apenas lote de importação, proveniência e estados
+editoriais; não cria uma taxonomia paralela.
+
 O catálogo acadêmico separa identidade, classificação, fonte e ocorrência em prova. A unidade de medição é sempre `competencies`; áreas, temas, subtemas e especialidades são dimensões de navegação e agregação, nunca alvos diretos de mastery.
 
 ```mermaid

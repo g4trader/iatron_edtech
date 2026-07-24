@@ -204,6 +204,68 @@ export const examCatalogSchema = z.object({
 });
 export type ExamCatalog = z.infer<typeof examCatalogSchema>;
 
+export const editorialStatusSchema = z.enum([
+  'draft',
+  'editorial_review',
+  'medical_review',
+  'source_validation',
+  'answer_key_validation',
+  'pending_homologation',
+  'homologated',
+  'published',
+  'suspended',
+  'correction_pending',
+  'superseded',
+  'rejected',
+]);
+export type EditorialStatus = z.infer<typeof editorialStatusSchema>;
+
+export const questionCatalogSchema = z.object({
+  id: uuidSchema,
+  versionId: uuidSchema,
+  sourceKey: z.string().nullable(),
+  stem: z.string(),
+  commentary: z.string().nullable(),
+  difficulty: z.int().min(1).max(5).nullable(),
+  editorialStatus: editorialStatusSchema,
+  exam: z.object({
+    id: uuidSchema,
+    year: z.int(),
+    edition: z.string().nullable(),
+    position: z.int().positive(),
+    board: boardCatalogSchema,
+  }),
+  area: academicEntitySchema.pick({ id: true, code: true, name: true }),
+  competencies: z.array(
+    academicEntitySchema.pick({ id: true, code: true, name: true }),
+  ),
+  provenance: z.object({
+    origin: z.string(),
+    sourceTitle: z.string(),
+    sourceUrl: z.url().nullable(),
+    rightsHolder: z.string(),
+    legalBasis: z.string(),
+    externalIdentifier: z.string(),
+    authorshipKind: z.string(),
+    responsibleParty: z.string(),
+    obtainedOn: z.iso.date(),
+  }),
+});
+export type QuestionCatalog = z.infer<typeof questionCatalogSchema>;
+
+export const contentMetadataSchema = z.object({
+  examEditionId: uuidSchema,
+  year: z.int(),
+  edition: z.string().nullable(),
+  programCode: z.literal('AMRIGS'),
+  questionCount: z.int().nonnegative(),
+  publishedCount: z.int().nonnegative(),
+  nonPublishedCount: z.int().nonnegative(),
+  provenanceCount: z.int().nonnegative(),
+  competencyCount: z.int().nonnegative(),
+});
+export type ContentMetadata = z.infer<typeof contentMetadataSchema>;
+
 export const guidelineCatalogSchema = z.object({
   id: uuidSchema,
   stableKey: z.string(),

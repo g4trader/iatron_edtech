@@ -42,6 +42,16 @@ export async function registerAcademicRoutes(
         repository.listExams(input),
     ],
     [
+      'questions',
+      (repository: AcademicRepository, input: ReturnType<typeof query>) =>
+        repository.listQuestions(input),
+    ],
+    [
+      'content-metadata',
+      (repository: AcademicRepository, input: ReturnType<typeof query>) =>
+        repository.listContentMetadata(input),
+    ],
+    [
       'guidelines',
       (repository: AcademicRepository, input: ReturnType<typeof query>) =>
         repository.listGuidelines(input),

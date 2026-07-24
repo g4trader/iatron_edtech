@@ -160,6 +160,10 @@ As rotas `/app`, `/app/chat/[conversationId]`, `/app/assessment/demo`, `/app/pla
 
 O domínio acadêmico implementa programas, especialidades, áreas, temas, subtemas, competências, bancas, provas, guidelines e questões versionadas. A modelagem, regras de versionamento e endpoints de consulta estão em [docs/academic-model.md](docs/academic-model.md). As páginas autenticadas de inspeção começam em `/app/academic`.
 
+O [Content Intelligence MVP — AMRIGS](docs/content-intelligence-mvp.md)
+documenta o pipeline idempotente e o fixture autoral de validação. Nenhuma
+questão oficial da banca foi importada.
+
 ## Motor pedagógico
 
 Eventos imutáveis originam evidências, mastery por competência, gaps, agenda e timeline sem participação de IA. Regras, versionamento dos algoritmos, segurança e endpoints estão em [docs/learning-engine.md](docs/learning-engine.md). As páginas de inspeção começam em `/app/learning`.

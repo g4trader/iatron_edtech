@@ -2,7 +2,9 @@ import { describe, expect, it } from 'vitest';
 import {
   availabilityInputSchema,
   competencyCatalogSchema,
+  contentMetadataSchema,
   guidelineCatalogSchema,
+  questionCatalogSchema,
   learningEvidenceSchema,
   masteryStateSchema,
   onboardingInputSchema,
@@ -58,6 +60,64 @@ describe('academic read contracts', () => {
         id: crypto.randomUUID(),
         stableKey: 'guideline',
         title: 'Guideline sem versão',
+      }),
+    ).toThrow();
+  });
+
+  it('serializes published question content with provenance', () => {
+    expect(
+      questionCatalogSchema.parse({
+        id: crypto.randomUUID(),
+        versionId: crypto.randomUUID(),
+        sourceKey: 'AMRIGS:LICENSED:2025:1',
+        stem: 'Enunciado',
+        commentary: null,
+        difficulty: 2,
+        editorialStatus: 'published',
+        exam: {
+          id: crypto.randomUUID(),
+          year: 2025,
+          edition: '2025',
+          position: 1,
+          board: {
+            id: crypto.randomUUID(),
+            name: 'Associação Médica do Rio Grande do Sul',
+            acronym: 'AMB/AMRIGS',
+          },
+        },
+        area: {
+          id: crypto.randomUUID(),
+          code: 'CARDIOLOGIA',
+          name: 'Cardiologia',
+        },
+        competencies: [],
+        provenance: {
+          origin: 'Fonte autorizada',
+          sourceTitle: 'Prova',
+          sourceUrl: 'https://example.com/prova',
+          rightsHolder: 'Titular',
+          legalBasis: 'Licença registrada',
+          externalIdentifier: 'external-1',
+          authorshipKind: 'medical_team_homologated',
+          responsibleParty: 'Editorial',
+          obtainedOn: '2026-07-24',
+        },
+      }).editorialStatus,
+    ).toBe('published');
+  });
+
+  it('requires AMRIGS for content metadata', () => {
+    expect(() =>
+      contentMetadataSchema.parse({
+        examEditionId: crypto.randomUUID(),
+        year: 2026,
+        edition: 'Ingresso 2026',
+        programCode: 'AMP',
+        questionCount: 0,
+        publishedCount: 0,
+        nonPublishedCount: 0,
+        provenanceCount: 0,
+        competencyCount: 0,
       }),
     ).toThrow();
   });
