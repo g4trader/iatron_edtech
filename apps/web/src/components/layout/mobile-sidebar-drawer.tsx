@@ -64,7 +64,7 @@ export function MobileSidebarDrawer({
       >
         <div className="sidebar-brand-row">
           <Link className="brand" href="/app" onClick={onClose}>
-            <span className="brand-mark">ia</span>Iatron
+            <span className="brand-mark">I</span>Iatron
           </Link>
           <button
             ref={closeButtonRef}
@@ -78,10 +78,10 @@ export function MobileSidebarDrawer({
         </div>
         <Link
           className="new-chat-button"
-          href="/app/chat/new"
+          href="/app/tutor"
           onClick={onClose}
         >
-          ＋ Nova conversa
+          ＋ Falar com um mentor
         </Link>
         <NavigationLinks onNavigate={onClose} />
       </aside>

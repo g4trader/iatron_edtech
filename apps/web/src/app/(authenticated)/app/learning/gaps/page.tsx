@@ -32,7 +32,7 @@ export default async function GapsPage() {
           <p>{learningStage(item.mastery)}</p>
           <p>{measurementClarity(item.confidence)}</p>
           <Link className="secondary-button inline-flex" href={{ pathname: '/app/tutor', query: { mode: 'gap_coaching', originType: 'gap', originId: item.competencyId } }}>
-            Entender esta prioridade com o tutor
+            Entender esta prioridade com um mentor
           </Link>
         </LearningCard>
       ))}

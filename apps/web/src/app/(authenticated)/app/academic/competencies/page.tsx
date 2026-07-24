@@ -26,7 +26,7 @@ export default async function CompetenciesPage() {
             </ol>
           )}
           <Link className="secondary-button inline-flex" href={{ pathname: '/app/tutor', query: { mode: 'competency_explanation', originType: 'competency', originId: item.id } }}>
-            Explicar com o tutor
+            Pedir orientação a um mentor
           </Link>
         </CatalogCard>
       ))}

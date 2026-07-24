@@ -131,6 +131,10 @@ Uma tela só pode ser aprovada quando:
 ## IA e explicabilidade
 
 - [ ] O Tutor fala como orientador, não como chatbot genérico?
+- [ ] O mentor humano responsável aparece antes da tecnologia que apoia a
+      experiência?
+- [ ] A IA deixou de ser apresentada como protagonista quando existe mentor?
+- [ ] A especialidade do mentor corresponde ao contexto mostrado?
 - [ ] Recomendações mostram motivos compreensíveis?
 - [ ] Métricas apresentadas vêm do sistema, não são inventadas pela IA?
 - [ ] Fontes e limites educacionais estão claros?

@@ -43,20 +43,22 @@ export function UserMessage({ message }: { message: ChatMessage }) {
   );
 }
 export function AssistantMessage({
+  assistantIdentity = { initials: 'M', name: 'Mentor do Iatron' },
   message,
   onRetry,
 }: {
+  assistantIdentity?: { initials: string; name: string };
   message: ChatMessage;
   onRetry?: () => void;
 }) {
   return (
     <article
-      aria-label="Resposta do assistente"
+      aria-label={`Resposta de ${assistantIdentity.name}`}
       className="message-item assistant-message"
       data-status={message.status}
     >
       <div className="assistant-avatar" aria-hidden="true">
-        ia
+        {assistantIdentity.initials}
       </div>
       <div className="assistant-content">
         {message.parts.map((part, index) => (
@@ -72,9 +74,11 @@ export function AssistantMessage({
   );
 }
 export function MessageItem({
+  assistantIdentity,
   message,
   onRetry,
 }: {
+  assistantIdentity?: { initials: string; name: string };
   message: ChatMessage;
   onRetry?: () => void;
 }) {
@@ -89,13 +93,19 @@ export function MessageItem({
   return message.role === 'user' ? (
     <UserMessage message={message} />
   ) : (
-    <AssistantMessage message={message} onRetry={onRetry} />
+    <AssistantMessage
+      assistantIdentity={assistantIdentity}
+      message={message}
+      onRetry={onRetry}
+    />
   );
 }
 export function MessageList({
+  assistantIdentity,
   messages,
   onRetry,
 }: {
+  assistantIdentity?: { initials: string; name: string };
   messages: ChatMessage[];
   onRetry?: () => void;
 }) {
@@ -108,6 +118,7 @@ export function MessageList({
     >
       {messages.map((message) => (
         <MessageItem
+          assistantIdentity={assistantIdentity}
           key={message.id}
           message={message}
           onRetry={message.status === 'error' ? onRetry : undefined}

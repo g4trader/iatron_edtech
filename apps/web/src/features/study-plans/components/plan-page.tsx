@@ -3,6 +3,8 @@ import type { ReactNode } from 'react';
 import type { StudyPlanItem } from '@iatron/contracts';
 import { ActionSubmitButton } from '@/components/feedback/action-submit-button';
 import { activityReason, studyPriority } from '@/lib/learning-language';
+import { MentorRecommendation } from '@/features/mentors/components/mentor';
+import { mentorForCompetency } from '@/features/mentors/mentors';
 import { askTutorAboutPlanItem, executePlanItem } from '../actions';
 
 export function PlanPage({
@@ -55,6 +57,7 @@ const statusLabel: Record<StudyPlanItem['status'], string> = {
 };
 
 export function PlanItemCard({ item }: { item: StudyPlanItem }) {
+  const mentor = mentorForCompetency(item);
   return (
     <article className="min-w-0 space-y-3 rounded-xl border border-[var(--border)] bg-[var(--surface)] p-4">
       <div>
@@ -67,18 +70,20 @@ export function PlanItemCard({ item }: { item: StudyPlanItem }) {
           {statusLabel[item.status]}
         </p>
       </div>
-      <ul className="list-disc pl-5 text-sm">
-        {item.reasons.map((reason) => (
-          <li key={reason.code}>{activityReason(reason.code)}</li>
-        ))}
-      </ul>
+      <MentorRecommendation mentor={mentor}>
+        <ul className="list-disc pl-5 text-sm">
+          {item.reasons.map((reason) => (
+            <li key={reason.code}>{activityReason(reason.code)}</li>
+          ))}
+        </ul>
+      </MentorRecommendation>
       <form action={askTutorAboutPlanItem}>
         <input name="itemId" type="hidden" value={item.id} />
         <ActionSubmitButton
           pendingLabel="Abrindo explicação…"
           variant="secondary"
         >
-          Pedir explicação ao tutor
+          Pedir explicação a {mentor.displayName}
         </ActionSubmitButton>
       </form>
       {['planned', 'in_progress'].includes(item.status) && (

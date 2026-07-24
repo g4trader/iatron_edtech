@@ -12,6 +12,7 @@ const primaryRoutes = [
   '/app/learning',
   '/app/assessment/demo',
   '/app/plan',
+  '/app/tutor',
 ] as const;
 
 async function expectNoPageOverflow(page: Page) {
@@ -62,6 +63,26 @@ test.describe('hardening mobile', () => {
       await expectNoPageOverflow(page);
       await page.goto('/app');
       await expectNoPageOverflow(page);
+      await page.goto('/');
+      await expectNoPageOverflow(page);
+      await page.goto('/app/tutor');
+      await expectNoPageOverflow(page);
+    }
+  });
+
+  test('landing e produto apresentam a mesma equipe de mentores', async ({
+    page,
+  }) => {
+    for (const route of ['/', '/app/tutor']) {
+      await page.goto(route);
+      for (const mentor of [
+        'Dr. Aristóteles',
+        'Dr. Lucas',
+        'Dr. Guilherme Peterson',
+        'Dra. Fernanda Grosbelli',
+      ]) {
+        await expect(page.getByText(mentor).first(), route).toBeVisible();
+      }
     }
   });
 

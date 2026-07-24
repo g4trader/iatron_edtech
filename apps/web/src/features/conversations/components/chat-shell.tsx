@@ -33,11 +33,13 @@ function createDevelopmentTransport(): ChatTransport | null {
 }
 
 export function ChatShell({
+  assistantIdentity,
   conversationId = 'new',
   initialMessages,
   initialPrompt,
   transport: suppliedTransport,
 }: {
+  assistantIdentity?: { initials: string; name: string };
   conversationId?: string;
   initialMessages?: ChatMessage[];
   initialPrompt?: string;
@@ -189,9 +191,10 @@ export function ChatShell({
           <ErrorState message="A simulação local de chat está disponível apenas em desenvolvimento e testes." />
         )}
         {messages.length === 0 ? (
-          <EmptyChatState onSelect={send} />
+          <EmptyChatState mentor={assistantIdentity} onSelect={send} />
         ) : (
           <MessageList
+            assistantIdentity={assistantIdentity}
             messages={messages}
             onRetry={() => send('Tentar novamente')}
           />

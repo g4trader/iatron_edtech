@@ -50,6 +50,10 @@ Nunca burocracia.
     um plantão longo, sem depender de memória, exploração ou tentativa e erro.
 17. Momentos de transição devem contar uma história: o que aprendemos, o que
     mudou e qual é o próximo passo.
+18. O Iatron é mentor first: quando houver um médico responsável pelo conteúdo,
+    a pessoa e sua orientação aparecem antes da tecnologia que as amplia.
+19. A IA nunca será apresentada como protagonista quando houver um mentor
+    humano responsável pelo conteúdo.
 
 ## Padrões de aplicação
 
@@ -97,6 +101,10 @@ Um estado vazio deve:
 ### IA e recomendações
 
 - O Tutor explica dados calculados pelo produto; não inventa métricas.
+- A experiência apresenta o mentor responsável; a IA permanece como apoio nos
+  bastidores.
+- Nunca use avatar, título ou microcopy que faça a tecnologia competir com o
+  especialista.
 - Recomendações devem mostrar seus motivos.
 - Limites educacionais e fontes devem permanecer claros sem linguagem
   alarmista.
@@ -164,6 +172,9 @@ Não aprove:
 - jargão interno exposto ao estudante;
 - desktop reduzido para mobile sem reconsiderar hierarquia e toque;
 - interface de Tutor que se comporta como chat genérico.
+- apresentar “Tutor IA” como identidade principal quando um mentor humano puder
+  conduzir a mesma experiência;
+- usar um mentor apenas como decoração sem relacioná-lo ao conteúdo orientado;
 
 ## Checklist para novas entregas
 

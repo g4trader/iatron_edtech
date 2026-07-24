@@ -103,7 +103,7 @@ export default async function ResultPage({
           },
         }}
       >
-        Entender meu resultado com o tutor
+        Entender meu resultado com um mentor
       </Link>
       <section className="space-y-2" aria-label="Resultado por competência">
         {result.competencies.map((item) => (

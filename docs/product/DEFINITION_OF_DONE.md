@@ -128,6 +128,9 @@ merge.
 
 Toda integração com IA deve respeitar estas fronteiras:
 
+- a IA nunca é apresentada como protagonista quando existe um mentor humano
+  responsável pelo conteúdo;
+- a interface identifica com clareza o mentor e mantém a tecnologia como apoio;
 - IA nunca define regras de negócio;
 - IA nunca calcula domínio, nota, confiança ou prioridade pedagógica;
 - IA nunca altera sozinha o plano adaptativo;

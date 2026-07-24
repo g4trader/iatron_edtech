@@ -38,7 +38,7 @@ export class RealTutorTransport implements ChatTransport {
     });
     if (!response.ok || !response.body) {
       const payload = await response.json().catch(() => null) as { error?: { message?: string } } | null;
-      yield { type: 'error', requestId: input.requestId, message: payload?.error?.message ?? 'Tutor indisponível.' };
+      yield { type: 'error', requestId: input.requestId, message: payload?.error?.message ?? 'Não foi possível acessar seu mentor agora.' };
       return;
     }
     const reader = response.body.getReader();

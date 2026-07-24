@@ -2067,3 +2067,212 @@ button:disabled {
     padding-inline: 1rem;
   }
 }
+
+.mentor-landing {
+  width: min(100%, 1180px);
+  margin-inline: auto;
+  padding: clamp(2rem, 6vw, 5rem) clamp(1rem, 4vw, 2rem);
+}
+.mentor-hero {
+  display: grid;
+  grid-template-columns: minmax(0, 1.2fr) minmax(18rem, 0.8fr);
+  align-items: center;
+  gap: clamp(2rem, 6vw, 5rem);
+  min-height: 62vh;
+}
+.mentor-hero h1 {
+  max-width: 13ch;
+  margin-block: 0.5rem 1.25rem;
+  font-family: Georgia, 'Times New Roman', serif;
+  font-size: clamp(2.6rem, 6vw, 5.5rem);
+  font-weight: 500;
+  line-height: 0.98;
+  letter-spacing: -0.04em;
+}
+.mentor-hero > div > p:not(.eyebrow) {
+  max-width: 42rem;
+  color: var(--foreground-muted);
+  font-size: clamp(1.05rem, 2vw, 1.25rem);
+}
+.mentor-hero-panel {
+  padding: clamp(1.5rem, 4vw, 2.5rem);
+  border: 1px solid var(--border);
+  border-radius: 2rem;
+  background:
+    linear-gradient(145deg, rgb(54 95 77 / 0.12), transparent 55%),
+    var(--surface-elevated);
+  box-shadow: var(--shadow-soft);
+}
+.mentor-hero-panel h2 {
+  margin-block: 0.5rem;
+  font-family: Georgia, 'Times New Roman', serif;
+  font-size: clamp(1.8rem, 3vw, 2.6rem);
+  line-height: 1.08;
+}
+.mentor-avatar-stack {
+  display: flex;
+  margin-top: 1.5rem;
+}
+.mentor-avatar-stack .mentor-avatar + .mentor-avatar {
+  margin-left: -0.65rem;
+}
+.mentor-team {
+  padding-block: 3rem 1rem;
+}
+.mentor-team > .section-heading > p {
+  max-width: 35rem;
+  color: var(--foreground-muted);
+}
+.mentor-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 1rem;
+}
+.mentor-card {
+  padding: 1.25rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--surface-elevated);
+}
+.mentor-card > p {
+  margin: 1rem 0 0;
+  color: var(--foreground-muted);
+  font-size: 0.92rem;
+}
+.mentor-avatar {
+  display: inline-grid;
+  flex: 0 0 auto;
+  place-items: center;
+  width: 3.25rem;
+  height: 3.25rem;
+  border: 2px solid var(--surface-elevated);
+  border-radius: 50%;
+  background: #d9e6df;
+  color: #234436;
+  font-family: Georgia, 'Times New Roman', serif;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+}
+.mentor-avatar[data-size='small'] {
+  width: 2.5rem;
+  height: 2.5rem;
+  font-size: 0.82rem;
+}
+.mentor-avatar[data-size='large'] {
+  width: 4.75rem;
+  height: 4.75rem;
+  font-size: 1.15rem;
+}
+.mentor-avatar[data-specialty='pediatrics'] {
+  background: #e5dfca;
+  color: #66541c;
+}
+.mentor-avatar[data-specialty='surgery'] {
+  background: #dce3e8;
+  color: #334d5c;
+}
+.mentor-avatar[data-specialty='gynecology_obstetrics'] {
+  background: #eadde2;
+  color: #673b4b;
+}
+.mentor-identity {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+.mentor-identity > span:last-child {
+  display: grid;
+}
+.mentor-identity small {
+  color: var(--foreground-muted);
+}
+.mentor-message {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 1.25rem;
+  align-items: start;
+  padding: clamp(1.25rem, 3vw, 2rem);
+  border: 1px solid #cbd8d1;
+  border-radius: var(--radius-lg);
+  background:
+    linear-gradient(120deg, rgb(54 95 77 / 0.08), transparent 62%),
+    var(--surface-elevated);
+  box-shadow: var(--shadow-soft);
+}
+.mentor-message h2 {
+  max-width: 35ch;
+  margin-block: 0.25rem 0.5rem;
+  font-family: Georgia, 'Times New Roman', serif;
+  font-size: clamp(1.5rem, 3vw, 2.25rem);
+  font-weight: 500;
+  line-height: 1.12;
+}
+.mentor-message-copy {
+  max-width: 48rem;
+  color: var(--foreground-muted);
+}
+.mentor-message-copy p {
+  margin: 0;
+}
+.mentor-message-action {
+  margin-top: 1.25rem;
+}
+.mentor-recommendation {
+  display: grid;
+  grid-template-columns: minmax(11rem, 0.35fr) minmax(0, 1fr);
+  gap: 1rem;
+  padding: 1rem;
+  border-radius: var(--radius-sm);
+  background: #f1f5f2;
+}
+.mentor-recommendation > div:last-child {
+  display: grid;
+  gap: 0.5rem;
+}
+.next-step-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.5rem;
+  padding: 1.25rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--surface-elevated);
+}
+.next-step-card p {
+  margin: 0;
+  color: var(--foreground-muted);
+}
+
+@media (max-width: 900px) {
+  .mentor-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .mentor-hero {
+    grid-template-columns: 1fr;
+    min-height: auto;
+  }
+}
+
+@media (max-width: 600px) {
+  .mentor-landing {
+    padding-top: 2rem;
+  }
+  .mentor-grid {
+    grid-template-columns: 1fr;
+  }
+  .mentor-message {
+    grid-template-columns: 1fr;
+  }
+  .mentor-message .mentor-avatar[data-size='large'] {
+    width: 3.5rem;
+    height: 3.5rem;
+  }
+  .mentor-recommendation {
+    grid-template-columns: 1fr;
+  }
+  .next-step-card {
+    align-items: stretch;
+    flex-direction: column;
+  }
+}

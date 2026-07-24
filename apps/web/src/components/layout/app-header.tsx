@@ -11,7 +11,7 @@ const titleByPrefix = [
   ['/app/assessment', 'Diagnóstico'],
   ['/app/learning', 'Meu progresso'],
   ['/app/academic', 'Conteúdos'],
-  ['/app/tutor', 'Tutor'],
+  ['/app/tutor', 'Mentores'],
 ] as const;
 
 export function AppHeader({

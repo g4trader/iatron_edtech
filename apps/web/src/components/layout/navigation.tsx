@@ -5,7 +5,7 @@ export const navigationItems = [
   { href: '/app', label: 'Início', icon: 'I' },
   { href: '/app/assessment/start', label: 'Diagnóstico', icon: 'D' },
   { href: '/app/plan', label: 'Meu plano', icon: 'P' },
-  { href: '/app/tutor', label: 'Tutor', icon: 'T' },
+  { href: '/app/tutor', label: 'Mentores', icon: 'M' },
   { href: '/app/simulations', label: 'Simulados', icon: 'S' },
   { href: '/app/learning', label: 'Meu progresso', icon: 'E' },
   { href: '/app/academic', label: 'Conteúdos', icon: 'C' },

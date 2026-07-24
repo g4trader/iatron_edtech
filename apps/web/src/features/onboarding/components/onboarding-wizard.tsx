@@ -661,7 +661,7 @@ export function OnboardingWizard(props: WizardProps) {
               <section className="target-empty-state" role="status">
                 <strong>Não encontrou sua prova?</strong>
                 <p>
-                  Continue o onboarding e envie uma sugestão pelo Tutor. Você
+                  Continue suas escolhas e envie uma sugestão aos mentores. Você
                   poderá alterar esse objetivo depois.
                 </p>
               </section>

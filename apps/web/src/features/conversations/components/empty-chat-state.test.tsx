@@ -8,11 +8,11 @@ describe('EmptyChatState', () => {
     render(<EmptyChatState onSelect={onSelect} />);
     fireEvent.click(
       screen.getByRole('button', {
-        name: /por que esta competência está no meu plano/i,
+        name: /por que este tema está no meu plano/i,
       }),
     );
     expect(onSelect).toHaveBeenCalledWith(
-      'Por que esta competência está no meu plano?',
+      'Por que este tema está no meu plano?',
     );
   });
 });

@@ -3,10 +3,10 @@ import { expect, test } from '@playwright/test';
 test('abre o início autenticado e inicia uma conversa', async ({ page }) => {
   await page.goto('/app');
   await expect(
-    page.getByRole('heading', { name: 'Bom ter você aqui.' }),
+    page.getByRole('heading', { name: 'Olá, Estudante.' }),
   ).toBeVisible();
   await page
-    .getByRole('link', { name: /conversar com meu tutor/i })
+    .getByRole('link', { name: /conversar com um mentor/i })
     .first()
     .click();
   await expect(
@@ -28,10 +28,13 @@ test('envia mensagem e interrompe streaming', async ({ page }) => {
 test('apresenta o tutor antes da primeira conversa', async ({ page }) => {
   await page.goto('/app/tutor');
   await expect(
-    page.getByRole('heading', { name: 'Olá, sou seu tutor de estudos' }),
+    page.getByRole('heading', {
+      name: 'Orientação médica para cada etapa da sua preparação',
+    }),
   ).toBeVisible();
   await page
-    .getByRole('button', { name: 'Fazer minha primeira pergunta' })
+    .getByRole('button', { name: 'Conversar com Dr. Lucas' })
+    .first()
     .click();
   await expect(page).toHaveURL(/\/app\/chat\/new/);
   await expect(

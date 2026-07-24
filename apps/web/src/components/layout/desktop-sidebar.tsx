@@ -31,7 +31,7 @@ export function DesktopSidebar({
       <div className="sidebar-brand-row">
         <Link aria-label="Iatron — início" className="brand" href="/app">
           <span className="brand-mark" aria-hidden="true">
-            ia
+            I
           </span>
           {!collapsed && <span>Iatron</span>}
         </Link>
@@ -49,23 +49,23 @@ export function DesktopSidebar({
       </div>
       <Link
         className="new-chat-button"
-        href="/app/chat/new"
-        title={collapsed ? 'Nova conversa' : undefined}
+        href="/app/tutor"
+        title={collapsed ? 'Falar com um mentor' : undefined}
       >
         <span aria-hidden="true">＋</span>
-        {!collapsed && 'Nova conversa'}
+        {!collapsed && 'Falar com um mentor'}
       </Link>
       <NavigationLinks collapsed={collapsed} />
       {!collapsed && recentConversations.length > 0 && (
         <section className="recent-section" aria-labelledby="recent-title">
-          <h2 id="recent-title">Conversas recentes</h2>
+          <h2 id="recent-title">Orientações recentes</h2>
           {recentConversations.map((conversation) => (
             <Link
               href={`/app/tutor/${conversation.id}` as Route}
               key={conversation.id}
             >
               <span>{conversation.title}</span>
-              <small>Continuar conversa</small>
+              <small>Continuar orientação</small>
             </Link>
           ))}
         </section>

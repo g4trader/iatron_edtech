@@ -1,13 +1,33 @@
 import { startDiagnostic } from '@/features/assessments/actions';
 import { AssessmentPage } from '@/features/assessments/components/adaptive-page';
 import { ActionSubmitButton } from '@/components/feedback/action-submit-button';
+import { studyPlans } from '@/features/study-plans/server/study-plans';
+import { dominantMentor } from '@/features/mentors/mentors';
+import { MentorMessage } from '@/features/mentors/components/mentor';
 
-export default function StartPage() {
+export default async function StartPage() {
+  let plan: Awaited<ReturnType<typeof studyPlans.current>> = null;
+  try {
+    plan = await studyPlans.current();
+  } catch {
+    plan = null;
+  }
+  const mentor = dominantMentor(plan?.items ?? []);
   return (
     <AssessmentPage
       title="Diagnóstico inicial"
       description="Este é o primeiro passo para entendermos o que você já domina e onde seu tempo de estudo pode fazer mais diferença."
     >
+      <MentorMessage
+        mentor={mentor}
+        title="Antes de montarmos seus próximos passos, quero entender seu ponto de partida."
+      >
+        <p>
+          Não se preocupe em acertar tudo. O objetivo é descobrir exatamente
+          onde podemos ajudar e evitar que você perca tempo com o que já está
+          consistente.
+        </p>
+      </MentorMessage>
       <form
         action={startDiagnostic}
         className="experience-callout"
