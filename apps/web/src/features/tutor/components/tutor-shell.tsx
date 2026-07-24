@@ -41,23 +41,26 @@ export function TutorShell({
     <section className="tutor-conversation-page">
       <header className="catalog-card mx-auto mt-4 max-w-3xl">
         <MentorIdentity mentor={mentor} />
-        <p className="eyebrow">Orientação conduzida por {mentor.displayName}</p>
+        <p className="eyebrow">Mentoria em {mentor.specialty}</p>
         <h1>
           {conversation.title === 'Nova conversa'
             ? `Converse com ${mentor.displayName}`
             : conversation.title}
         </h1>
         <p>
-          {mentor.displayName} orienta esta conversa com base no seu diagnóstico,
-          no seu plano e nos conteúdos estudados. A tecnologia apoia a resposta
-          com o contexto da sua preparação. As orientações são educacionais e
-          não substituem atendimento médico.
+          Mentor da área: {mentor.displayName}. As explicações usam seu
+          diagnóstico, seu plano e os conteúdos estudados para manter o contexto
+          da sua preparação.
+        </p>
+        <p className="text-sm text-[var(--foreground-muted)]">
+          Explicação gerada pela IA do Iatron com base no contexto da sua
+          preparação. Não representa uma fala ou revisão individual do mentor.
         </p>
       </header>
       <ChatShell
         assistantIdentity={{
-          initials: mentor.initials,
-          name: mentor.displayName,
+          initials: 'IA',
+          name: 'IA do Iatron',
         }}
         conversationId={conversation.id}
         initialMessages={messages.map(toChatMessage)}

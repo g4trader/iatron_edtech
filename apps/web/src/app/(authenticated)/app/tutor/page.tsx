@@ -2,7 +2,10 @@ import Link from 'next/link';
 import type { Route } from 'next';
 import { redirect } from 'next/navigation';
 import type { TutorMode, TutorOriginType } from '@iatron/contracts';
-import { createTutorConversation, listTutorConversations } from '@/features/tutor/server/tutor';
+import {
+  createTutorConversation,
+  listTutorConversations,
+} from '@/features/tutor/server/tutor';
 import { EmptyState } from '@/components/feedback/states';
 import { ActionSubmitButton } from '@/components/feedback/action-submit-button';
 import { isAuthBypassEnabled } from '@/lib/auth-bypass';
@@ -13,7 +16,11 @@ import {
   MentorMessage,
 } from '@/features/mentors/components/mentor';
 
-export default async function TutorPage({ searchParams }: { searchParams: Promise<Record<string, string | undefined>> }) {
+export default async function TutorPage({
+  searchParams,
+}: {
+  searchParams: Promise<Record<string, string | undefined>>;
+}) {
   const params = await searchParams;
   const authBypass = isAuthBypassEnabled(process.env);
   async function create() {
@@ -21,7 +28,11 @@ export default async function TutorPage({ searchParams }: { searchParams: Promis
     if (isAuthBypassEnabled(process.env)) redirect('/app/chat/new');
     const mode = (params.mode ?? 'general') as TutorMode;
     const originType = (params.originType ?? null) as TutorOriginType | null;
-    const result = await createTutorConversation({ mode, originType, originId: params.originId ?? null });
+    const result = await createTutorConversation({
+      mode,
+      originType,
+      originId: params.originId ?? null,
+    });
     redirect(`/app/tutor/${result.id}` as Route);
   }
   const conversations = authBypass ? [] : await listTutorConversations();
@@ -38,9 +49,9 @@ export default async function TutorPage({ searchParams }: { searchParams: Promis
         <p className="eyebrow">Mentores do Iatron</p>
         <h1>Orientação médica para cada etapa da sua preparação</h1>
         <p>
-          Nossos especialistas ajudam você a entender seu diagnóstico, seu
-          plano e os conteúdos mais difíceis. A tecnologia amplia essa
-          orientação usando apenas informações reais da sua preparação.
+          Nossos especialistas ajudam você a entender seu diagnóstico, seu plano
+          e os conteúdos mais difíceis. A tecnologia amplia essa orientação
+          usando apenas informações reais da sua preparação.
         </p>
       </header>
       <MentorMessage
@@ -52,11 +63,11 @@ export default async function TutorPage({ searchParams }: { searchParams: Promis
           </form>
         }
         mentor={mentor}
-        title={`${mentor.displayName} está acompanhando seu momento atual`}
+        title={`Mentoria para seu momento atual em ${mentor.specialty}`}
       >
         <p>
           {plan
-            ? `Seu plano tem maior presença de ${mentor.specialty}. Você pode pedir uma explicação sobre uma atividade, revisar um resultado ou aprofundar um conteúdo.`
+            ? `Seu plano tem maior presença de ${mentor.specialty}. ${mentor.displayName} é o mentor de referência da área. As explicações são geradas pela IA do Iatron sem atribuir falas ao mentor.`
             : 'Quando você concluir seu diagnóstico, o especialista mais próximo das suas prioridades assumirá a condução da experiência.'}
         </p>
       </MentorMessage>
@@ -94,7 +105,11 @@ export default async function TutorPage({ searchParams }: { searchParams: Promis
           />
         )}
         {conversations.map((conversation) => (
-          <Link className="catalog-card" href={`/app/tutor/${conversation.id}` as Route} key={conversation.id}>
+          <Link
+            className="catalog-card"
+            href={`/app/tutor/${conversation.id}` as Route}
+            key={conversation.id}
+          >
             <strong>{conversation.title}</strong>
             <span>Continuar orientação</span>
           </Link>

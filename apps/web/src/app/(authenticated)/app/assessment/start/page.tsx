@@ -2,8 +2,13 @@ import { startDiagnostic } from '@/features/assessments/actions';
 import { AssessmentPage } from '@/features/assessments/components/adaptive-page';
 import { ActionSubmitButton } from '@/components/feedback/action-submit-button';
 import { studyPlans } from '@/features/study-plans/server/study-plans';
-import { dominantMentor } from '@/features/mentors/mentors';
-import { MentorMessage } from '@/features/mentors/components/mentor';
+import { dominantMentor, mentors } from '@/features/mentors/mentors';
+import {
+  MentorCard,
+  MentorMessage,
+  TargetExamBadge,
+} from '@/features/mentors/components/mentor';
+import { examIntelligenceContext } from '@/features/exam-intelligence/server/context';
 
 export default async function StartPage() {
   let plan: Awaited<ReturnType<typeof studyPlans.current>> = null;
@@ -13,14 +18,26 @@ export default async function StartPage() {
     plan = null;
   }
   const mentor = dominantMentor(plan?.items ?? []);
+  let examContext: Awaited<ReturnType<typeof examIntelligenceContext>> = null;
+  try {
+    examContext = await examIntelligenceContext();
+  } catch {
+    examContext = null;
+  }
   return (
     <AssessmentPage
       title="Diagnóstico inicial"
       description="Este é o primeiro passo para entendermos o que você já domina e onde seu tempo de estudo pode fazer mais diferença."
     >
+      {examContext?.availability === 'available' && (
+        <TargetExamBadge
+          isSynthetic={examContext.profile.isSynthetic}
+          name={examContext.profile.program.code}
+        />
+      )}
       <MentorMessage
         mentor={mentor}
-        title="Antes de montarmos seus próximos passos, quero entender seu ponto de partida."
+        title="Vamos entender seu ponto de partida nas grandes áreas."
       >
         <p>
           Não se preocupe em acertar tudo. O objetivo é descobrir exatamente
@@ -28,10 +45,7 @@ export default async function StartPage() {
           consistente.
         </p>
       </MentorMessage>
-      <form
-        action={startDiagnostic}
-        className="experience-callout"
-      >
+      <form action={startDiagnostic} className="experience-callout">
         <div>
           <p className="eyebrow">Como funciona</p>
           <h2>Uma avaliação guiada, no seu ritmo</h2>
@@ -43,6 +57,11 @@ export default async function StartPage() {
           <p className="experience-reassurance">
             Não é uma prova. É o ponto de partida para personalizar seu plano.
           </p>
+          <p>
+            Em cada resposta, informe também o quanto você se sente seguro. Isso
+            ajuda a diferenciar conhecimento consistente de uma resposta
+            incerta.
+          </p>
         </div>
         <ActionSubmitButton
           className="mt-4"
@@ -51,6 +70,15 @@ export default async function StartPage() {
           Iniciar diagnóstico
         </ActionSubmitButton>
       </form>
+      <section aria-labelledby="diagnostic-mentors-title">
+        <p className="eyebrow">Mentores por grande área</p>
+        <h2 id="diagnostic-mentors-title">Quem acompanha esta experiência</h2>
+        <div className="mentor-grid">
+          {mentors.map((item) => (
+            <MentorCard key={item.id} mentor={item} />
+          ))}
+        </div>
+      </section>
     </AssessmentPage>
   );
 }

@@ -10,7 +10,9 @@ import { dominantMentor } from '@/features/mentors/mentors';
 import {
   MentorIdentity,
   MentorMessage,
+  TargetExamBadge,
 } from '@/features/mentors/components/mentor';
+import { examIntelligenceContext } from '@/features/exam-intelligence/server/context';
 
 const actions = [
   {
@@ -29,7 +31,8 @@ const actions = [
     href: '/app/performance',
     eyebrow: 'Acompanhar sua preparação',
     title: 'Ver minha evolução',
-    description: 'Veja o que ganhou consistência e os próximos pontos a fortalecer.',
+    description:
+      'Veja o que ganhou consistência e os próximos pontos a fortalecer.',
   },
 ] as const;
 
@@ -39,6 +42,7 @@ export default async function AppHomePage() {
   let currentPlan: Awaited<ReturnType<typeof studyPlans.current>> = null;
   let conversations: Awaited<ReturnType<typeof listTutorConversations>> | null =
     [];
+  let examContext: Awaited<ReturnType<typeof examIntelligenceContext>> = null;
   try {
     currentPlan = await studyPlans.current();
   } catch {
@@ -50,6 +54,11 @@ export default async function AppHomePage() {
     } catch {
       conversations = null;
     }
+    try {
+      examContext = await examIntelligenceContext();
+    } catch {
+      examContext = null;
+    }
   }
   const mentor = dominantMentor(currentPlan?.items ?? []);
   const firstName =
@@ -58,16 +67,23 @@ export default async function AppHomePage() {
     ['planned', 'in_progress'].includes(item.status),
   );
   const completedCount =
-    currentPlan?.items.filter((item) => item.status === 'completed').length ?? 0;
+    currentPlan?.items.filter((item) => item.status === 'completed').length ??
+    0;
   return (
     <PageContainer>
       <section className="page-intro">
         <p className="eyebrow">Sua preparação</p>
         <h1>Olá, {firstName}.</h1>
         <p>
-          Hoje vamos continuar sua preparação com um passo claro e possível
-          para a sua rotina.
+          Hoje vamos continuar sua preparação com um passo claro e possível para
+          a sua rotina.
         </p>
+        {examContext?.availability === 'available' && (
+          <TargetExamBadge
+            isSynthetic={examContext.profile.isSynthetic}
+            name={examContext.profile.program.code}
+          />
+        )}
       </section>
       <MentorMessage
         action={
@@ -76,7 +92,7 @@ export default async function AppHomePage() {
           </Link>
         }
         mentor={mentor}
-        title={mentor.greeting}
+        title={`Orientação para ${mentor.specialty}`}
       >
         <p>
           {nextActivity
@@ -126,8 +142,8 @@ export default async function AppHomePage() {
             <Link href="/app/plan">Ver plano completo</Link>
           </div>
           <p>
-            Cada atividade concluída ajuda seus mentores a explicar melhor o
-            que manter, revisar e priorizar a seguir.
+            Cada atividade concluída ajuda seus mentores a explicar melhor o que
+            manter, revisar e priorizar a seguir.
           </p>
         </section>
       )}
@@ -180,10 +196,7 @@ export default async function AppHomePage() {
         ) : (
           <div className="conversation-list">
             {conversations.slice(0, 4).map((item) => (
-              <Link
-                href={`/app/tutor/${item.id}` as Route}
-                key={item.id}
-              >
+              <Link href={`/app/tutor/${item.id}` as Route} key={item.id}>
                 <span className="conversation-icon" aria-hidden="true">
                   T
                 </span>

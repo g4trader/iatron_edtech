@@ -10,7 +10,7 @@ export interface Mentor {
   displayName: string;
   specialty: string;
   initials: string;
-  greeting: string;
+  description: string;
 }
 
 export const mentors: readonly Mentor[] = [
@@ -20,8 +20,7 @@ export const mentors: readonly Mentor[] = [
     displayName: 'Dr. Aristóteles',
     specialty: 'Pediatria',
     initials: 'AR',
-    greeting:
-      'Vamos construir seu raciocínio em Pediatria com segurança e constância.',
+    description: 'Referência da experiência de Pediatria no Iatron.',
   },
   {
     id: 'internal_medicine',
@@ -29,8 +28,7 @@ export const mentors: readonly Mentor[] = [
     displayName: 'Dr. Lucas',
     specialty: 'Clínica Médica',
     initials: 'LU',
-    greeting:
-      'Vamos transformar seus pontos de atenção em decisões de estudo claras.',
+    description: 'Referência da experiência de Clínica Médica no Iatron.',
   },
   {
     id: 'surgery',
@@ -38,8 +36,7 @@ export const mentors: readonly Mentor[] = [
     displayName: 'Dr. Guilherme Peterson',
     specialty: 'Cirurgia Geral',
     initials: 'GP',
-    greeting:
-      'Vamos organizar os fundamentos cirúrgicos que mais ajudam na sua prova.',
+    description: 'Referência da experiência de Cirurgia Geral no Iatron.',
   },
   {
     id: 'gynecology_obstetrics',
@@ -47,20 +44,18 @@ export const mentors: readonly Mentor[] = [
     displayName: 'Dra. Fernanda Grosbelli',
     specialty: 'Ginecologia e Obstetrícia',
     initials: 'FG',
-    greeting:
-      'Vamos fortalecer seu raciocínio em Ginecologia e Obstetrícia passo a passo.',
+    description:
+      'Referência da experiência de Ginecologia e Obstetrícia no Iatron.',
   },
 ] as const;
 
 export const defaultMentor: Mentor = mentors[1]!;
 
 const specialtyPatterns: Record<MentorSpecialty, RegExp> = {
-  pediatrics:
-    /\b(PED|PEDI|NEON|PUER|CRIAN|ADOLESC|PEDIATR|NEONAT)\w*/i,
+  pediatrics: /\b(PED|PEDI|NEON|PUER|CRIAN|ADOLESC|PEDIATR|NEONAT)\w*/i,
   internal_medicine:
     /\b(CL[IÍ]N|CARD|PNEU|NEFR|ENDO|GASTR|HEMAT|INFECT|REUM|NEURO|DERM|EMERG|CHOQUE|SEPSE|MEDICINA INTERNA)\w*/i,
-  surgery:
-    /\b(CIR|SURG|TRAUMA|OPERAT|PR[EÉ]-?OPERAT|P[OÓ]S-?OPERAT)\w*/i,
+  surgery: /\b(CIR|SURG|TRAUMA|OPERAT|PR[EÉ]-?OPERAT|P[OÓ]S-?OPERAT)\w*/i,
   gynecology_obstetrics:
     /\b(GO|GINE|GINECO|OBST|GESTA|PARTO|PUERP[EÉ]R|MATERNO)\w*/i,
 };

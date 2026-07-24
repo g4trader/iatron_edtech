@@ -5,10 +5,13 @@ import {
   Metric,
 } from '@/features/assessments/components/adaptive-page';
 import { assessmentResult } from '@/features/assessments/server/adaptive-assessment';
+import { learningStage, measurementClarity } from '@/lib/learning-language';
 import {
-  learningStage,
-  measurementClarity,
-} from '@/lib/learning-language';
+  MentorIdentity,
+  TargetExamBadge,
+} from '@/features/mentors/components/mentor';
+import { mentorForCompetency } from '@/features/mentors/mentors';
+import { examIntelligenceContext } from '@/features/exam-intelligence/server/context';
 
 const classificationLabel = {
   strong: 'ponto forte',
@@ -43,6 +46,12 @@ export default async function ResultPage({
       </AssessmentPage>
     );
   const result = await assessmentResult(id);
+  let examContext: Awaited<ReturnType<typeof examIntelligenceContext>> = null;
+  try {
+    examContext = await examIntelligenceContext();
+  } catch {
+    examContext = null;
+  }
   const strongCount = result.competencies.filter(
     ({ classification }) => classification === 'strong',
   ).length;
@@ -54,7 +63,16 @@ export default async function ResultPage({
       title="Agora já conhecemos seu ponto de partida"
       description="Seu resultado mostra o que já está consistente e onde seu tempo de estudo pode gerar mais avanço."
     >
-      <section className="experience-callout" aria-label="Resumo do diagnóstico">
+      {examContext?.availability === 'available' && (
+        <TargetExamBadge
+          isSynthetic={examContext.profile.isSynthetic}
+          name={examContext.profile.program.code}
+        />
+      )}
+      <section
+        className="experience-callout"
+        aria-label="Resumo do diagnóstico"
+      >
         <div>
           <p className="eyebrow">Seu retrato de hoje</p>
           <h2>
@@ -111,6 +129,12 @@ export default async function ResultPage({
             key={item.competencyId}
             className="rounded-xl border border-[var(--color-border)] p-4"
           >
+            <MentorIdentity
+              compact
+              mentor={mentorForCompetency({
+                competencyName: item.competencyName,
+              })}
+            />
             <strong>{item.competencyName}</strong>
             <p>{classificationLabel[item.classification]}.</p>
             <p>{learningStage(item.mastery)}</p>

@@ -2186,6 +2186,27 @@ button:disabled {
 .mentor-identity small {
   color: var(--foreground-muted);
 }
+.target-exam-badge {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.35rem 0.6rem;
+  width: fit-content;
+  margin-top: 1rem;
+  padding: 0.65rem 0.85rem;
+  border: 1px solid #cbd8d1;
+  border-radius: 999px;
+  background: #f1f5f2;
+  color: #234436;
+}
+.target-exam-badge span,
+.target-exam-badge small {
+  color: var(--foreground-muted);
+  font-size: 0.82rem;
+}
+.target-exam-badge small {
+  flex-basis: 100%;
+}
 .mentor-message {
   display: grid;
   grid-template-columns: auto minmax(0, 1fr);

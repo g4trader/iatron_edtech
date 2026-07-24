@@ -51,12 +51,12 @@ export function MentorMessage({
 }) {
   return (
     <section
-      aria-label={`Orientação de ${mentor.displayName}`}
+      aria-label={`Contexto de ${mentor.specialty}`}
       className="mentor-message"
     >
       <MentorAvatar mentor={mentor} size="large" />
       <div>
-        <p className="eyebrow">Orientação de {mentor.displayName}</p>
+        <p className="eyebrow">Mentor da área: {mentor.displayName}</p>
         <h2>{title}</h2>
         <div className="mentor-message-copy">{children}</div>
         {action && <div className="mentor-message-action">{action}</div>}
@@ -69,8 +69,26 @@ export function MentorCard({ mentor }: { mentor: Mentor }) {
   return (
     <article className="mentor-card">
       <MentorIdentity mentor={mentor} />
-      <p>{mentor.greeting}</p>
+      <p>{mentor.description}</p>
     </article>
+  );
+}
+
+export function TargetExamBadge({
+  name,
+  isSynthetic = false,
+}: {
+  name: string;
+  isSynthetic?: boolean;
+}) {
+  return (
+    <div className="target-exam-badge">
+      <span>Preparação para</span>
+      <strong>{name}</strong>
+      {isSynthetic && (
+        <small>Perfil demonstrativo, sem dados de provas oficiais.</small>
+      )}
+    </div>
   );
 }
 
