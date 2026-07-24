@@ -532,6 +532,65 @@ export const learningTimelineItemSchema = z.object({
 });
 export type LearningTimelineItem = z.infer<typeof learningTimelineItemSchema>;
 
+export const learningDnaIndicatorSchema = z.object({
+  type: z.enum([
+    'consistency',
+    'observed_speed',
+    'calibrated_safety',
+    'recurring_error',
+    'retention',
+    'review_response',
+    'knowledge_stability',
+  ]),
+  state: z.string(),
+  eventCount: z.int().nonnegative(),
+  periodStart: z.iso.datetime({ offset: true }).nullable(),
+  periodEnd: z.iso.datetime({ offset: true }).nullable(),
+  competencyIds: z.array(uuidSchema),
+  areaIds: z.array(uuidSchema),
+  sufficient: z.boolean(),
+  rule: z.string(),
+  limitations: z.array(z.string()),
+  algorithmVersion: z.string(),
+  message: z.string(),
+});
+export type LearningDnaIndicator = z.infer<typeof learningDnaIndicatorSchema>;
+
+export const learningDnaSnapshotSchema = z.object({
+  id: uuidSchema.nullable(),
+  studentId: uuidSchema,
+  scopeType: z.enum(['global', 'area', 'competency']),
+  scopeId: uuidSchema.nullable(),
+  windowStart: z.iso.datetime({ offset: true }).nullable(),
+  windowEnd: z.iso.datetime({ offset: true }).nullable(),
+  calculatedAt: z.iso.datetime({ offset: true }),
+  algorithmVersion: z.string(),
+  policyVersion: z.string(),
+  evidenceCount: z.int().nonnegative(),
+  coverage: z.number().min(0).max(1),
+  indicators: z.array(learningDnaIndicatorSchema),
+  limitations: z.array(z.string()),
+  sufficiency: z.enum(['sufficient', 'partial', 'insufficient']),
+  eventOrigins: z.array(z.string()),
+  sourceHash: z.string().min(16),
+});
+export type LearningDnaSnapshot = z.infer<typeof learningDnaSnapshotSchema>;
+
+export const learningDnaQuerySchema = z
+  .object({
+    windowStart: z.iso.datetime({ offset: true }).optional(),
+    windowEnd: z.iso.datetime({ offset: true }).optional(),
+    policyVersion: z.literal('learning-dna-policy-v1-synthetic').optional(),
+  })
+  .refine(
+    (value) =>
+      !value.windowStart ||
+      !value.windowEnd ||
+      value.windowEnd >= value.windowStart,
+    { message: 'windowEnd must not precede windowStart' },
+  );
+export type LearningDnaQuery = z.infer<typeof learningDnaQuerySchema>;
+
 export const startAssessmentInputSchema = z.object({
   objective: z.string().min(3).max(300),
   examProgramId: uuidSchema.nullable().default(null),

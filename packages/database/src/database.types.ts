@@ -914,6 +914,108 @@ export type Database = {
         }
         Relationships: []
       }
+      learning_dna_policies: {
+        Row: {
+          algorithm_version: string
+          created_at: string
+          is_active: boolean
+          is_synthetic: boolean
+          limitations: string[]
+          parameters: Json
+          version: string
+        }
+        Insert: {
+          algorithm_version: string
+          created_at?: string
+          is_active?: boolean
+          is_synthetic?: boolean
+          limitations?: string[]
+          parameters: Json
+          version: string
+        }
+        Update: {
+          algorithm_version?: string
+          created_at?: string
+          is_active?: boolean
+          is_synthetic?: boolean
+          limitations?: string[]
+          parameters?: Json
+          version?: string
+        }
+        Relationships: []
+      }
+      learning_dna_snapshots: {
+        Row: {
+          algorithm_version: string
+          calculated_at: string
+          coverage: number
+          event_origins: string[]
+          evidence_count: number
+          id: string
+          indicators: Json
+          limitations: string[]
+          policy_version: string
+          scope_id: string | null
+          scope_type: string
+          source_hash: string
+          student_id: string
+          sufficiency: string
+          window_end: string | null
+          window_start: string | null
+        }
+        Insert: {
+          algorithm_version: string
+          calculated_at?: string
+          coverage: number
+          event_origins?: string[]
+          evidence_count: number
+          id?: string
+          indicators: Json
+          limitations?: string[]
+          policy_version: string
+          scope_id?: string | null
+          scope_type: string
+          source_hash: string
+          student_id: string
+          sufficiency: string
+          window_end?: string | null
+          window_start?: string | null
+        }
+        Update: {
+          algorithm_version?: string
+          calculated_at?: string
+          coverage?: number
+          event_origins?: string[]
+          evidence_count?: number
+          id?: string
+          indicators?: Json
+          limitations?: string[]
+          policy_version?: string
+          scope_id?: string | null
+          scope_type?: string
+          source_hash?: string
+          student_id?: string
+          sufficiency?: string
+          window_end?: string | null
+          window_start?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "learning_dna_snapshots_policy_version_fkey"
+            columns: ["policy_version"]
+            isOneToOne: false
+            referencedRelation: "learning_dna_policies"
+            referencedColumns: ["version"]
+          },
+          {
+            foreignKeyName: "learning_dna_snapshots_student_id_fkey"
+            columns: ["student_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       learning_event_types: {
         Row: {
           code: string

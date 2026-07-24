@@ -26,6 +26,11 @@ import {
 } from './learning-repository.js';
 import { registerLearningRoutes } from './learning-routes.js';
 import {
+  createLearningDnaRepository,
+  type LearningDnaRepository,
+} from './learning-dna-repository.js';
+import { registerLearningDnaRoutes } from './learning-dna-routes.js';
+import {
   createAssessmentRepository,
   type AssessmentRepository,
 } from './assessment-repository.js';
@@ -54,6 +59,8 @@ export interface BuildAppOptions {
   repositoryFactory?: (userId: string, token: string) => StudentRepository;
   academicRepositoryFactory?: (token: string) => AcademicRepository;
   learningRepositoryFactory?: (token: string) => LearningRepository;
+  learningDnaRepositoryFactory?: (token: string) => LearningDnaRepository;
+  learningDnaClock?: () => Date;
   assessmentRepositoryFactory?: (token: string) => AssessmentRepository;
   studyPlanRepositoryFactory?: (token: string) => StudyPlanRepository;
   studyPlanClock?: () => Date;
@@ -175,6 +182,13 @@ export async function buildApp(
           options.learningRepositoryFactory ??
             ((token) => createLearningRepository(options.environment, token)),
           options.learningClock,
+        );
+        await registerLearningDnaRoutes(
+          protectedApi,
+          options.learningDnaRepositoryFactory ??
+            ((token) =>
+              createLearningDnaRepository(options.environment, token)),
+          options.learningDnaClock,
         );
         await registerAssessmentRoutes(
           protectedApi,

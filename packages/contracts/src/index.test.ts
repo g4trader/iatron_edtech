@@ -10,6 +10,8 @@ import {
   examIntelligenceExplanationSchema,
   examRelevanceQuerySchema,
   learningEvidenceSchema,
+  learningDnaQuerySchema,
+  learningDnaSnapshotSchema,
   masteryStateSchema,
   onboardingInputSchema,
   profileUpdateSchema,
@@ -345,6 +347,43 @@ describe('public write contracts', () => {
       targetExamsInputSchema.parse({
         examEditionIds: Array.from({ length: 21 }, () => crypto.randomUUID()),
       }),
+    ).toThrow();
+  });
+});
+
+describe('learning DNA contracts', () => {
+  it('serializes a versioned insufficient snapshot without personal labels', () => {
+    const id = crypto.randomUUID();
+    const snapshot = learningDnaSnapshotSchema.parse({
+      id: null,
+      studentId: id,
+      scopeType: 'global',
+      scopeId: null,
+      windowStart: null,
+      windowEnd: null,
+      calculatedAt: '2026-07-24T12:00:00.000Z',
+      algorithmVersion: 'learning-dna-v1',
+      policyVersion: 'learning-dna-policy-v1-synthetic',
+      evidenceCount: 0,
+      coverage: 0,
+      indicators: [],
+      limitations: ['Amostra insuficiente.'],
+      sufficiency: 'insufficient',
+      eventOrigins: [],
+      sourceHash: '0'.repeat(64),
+    });
+    expect(snapshot.sufficiency).toBe('insufficient');
+  });
+
+  it('validates windows and the supported policy version', () => {
+    expect(() =>
+      learningDnaQuerySchema.parse({
+        windowStart: '2026-07-24T12:00:00.000Z',
+        windowEnd: '2026-07-23T12:00:00.000Z',
+      }),
+    ).toThrow();
+    expect(() =>
+      learningDnaQuerySchema.parse({ policyVersion: 'unknown' }),
     ).toThrow();
   });
 });
