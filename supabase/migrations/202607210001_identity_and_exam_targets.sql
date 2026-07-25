@@ -160,3 +160,4 @@ revoke all on all tables in schema public from anon;
 grant select, update on public.profiles to authenticated;
 grant select, insert, update, delete on public.student_profiles, public.student_availability, public.student_target_exams to authenticated;
 grant select on public.institutions, public.exam_boards, public.exam_programs, public.exam_editions to authenticated;
+grant all on public.profiles, public.student_profiles, public.student_availability, public.student_target_exams to service_role;

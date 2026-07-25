@@ -158,4 +158,5 @@ grant execute on function public.begin_tutor_generation(uuid,uuid,text,text,text
 grant execute on function public.finish_tutor_generation(uuid,text,text,text,integer,integer,integer,integer,text,jsonb) to authenticated;
 grant execute on function public.archive_tutor_conversation(uuid) to authenticated;
 
+grant select on public.tutor_conversations, public.tutor_messages, public.tutor_generations, public.tutor_context_references to authenticated;
 revoke insert, update, delete on public.tutor_conversations, public.tutor_messages, public.tutor_generations, public.tutor_context_references from authenticated;
