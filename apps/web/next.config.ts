@@ -29,6 +29,20 @@ const nextConfig: NextConfig = {
   transpilePackages: ['@iatron/ui'],
   turbopack: { root: path.resolve(appDirectory, '../..') },
   typedRoutes: true,
+  async headers() {
+    return [
+      {
+        source: '/:path*',
+        headers: [
+          {
+            key: 'x-iatron-build-sha',
+            value: process.env.VERCEL_GIT_COMMIT_SHA ?? 'local',
+          },
+          { key: 'x-iatron-contract-version', value: 'journey-v1' },
+        ],
+      },
+    ];
+  },
 };
 
 export default nextConfig;

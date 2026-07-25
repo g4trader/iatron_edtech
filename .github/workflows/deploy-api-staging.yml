@@ -46,6 +46,8 @@ jobs:
             NODE_ENV=production
             APP_ENV=staging
             LOG_LEVEL=info
+            BUILD_SHA=${{ github.event.workflow_run.head_sha || github.sha }}
+            MIGRATION_BASELINE=202607250001
             SUPABASE_URL=${{ vars.SUPABASE_STAGING_URL }}
             SUPABASE_JWT_ISSUER=${{ vars.SUPABASE_STAGING_URL }}/auth/v1
             SUPABASE_JWT_AUDIENCE=authenticated

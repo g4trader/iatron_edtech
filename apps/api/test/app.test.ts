@@ -26,6 +26,9 @@ describe('operational routes', () => {
     expect(response.json()).toMatchObject({
       status: 'ok',
       service: 'iatron-api',
+      buildSha: 'local',
+      contractVersion: 'journey-v1',
+      migrationBaseline: '202607250001',
     });
   });
 

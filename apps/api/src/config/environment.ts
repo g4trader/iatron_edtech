@@ -9,6 +9,8 @@ const apiEnvironmentSchema = z.object({
   LOG_LEVEL: z
     .enum(['fatal', 'error', 'warn', 'info', 'debug', 'trace', 'silent'])
     .default('info'),
+  BUILD_SHA: z.string().min(1).default('local'),
+  MIGRATION_BASELINE: z.string().regex(/^\d{12}$/).default('202607250001'),
   ENABLE_API_DOCS: z.enum(['0', '1']).default('0'),
   SUPABASE_URL: z.url().default('http://127.0.0.1:54321'),
   SUPABASE_PUBLISHABLE_KEY: z.string().min(1).default('local-development-key'),

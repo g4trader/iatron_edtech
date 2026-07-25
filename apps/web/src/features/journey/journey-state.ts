@@ -26,6 +26,14 @@ export interface JourneyState {
   mission: JourneyMission;
   activeAssessment: AssessmentSummary | null;
   hasCompletedDiagnostic: boolean;
+  completedSteps: string[];
+  currentStep: string;
+  nextAction: string;
+  nextActionReason: string;
+  targetExamState: 'missing' | 'selected';
+  assessmentState: 'not_started' | 'in_progress' | 'completed';
+  planState: 'missing' | 'available' | 'completed';
+  dataFreshness: 'fresh';
 }
 
 const byNewest = (left: AssessmentSummary, right: AssessmentSummary) =>
@@ -179,5 +187,24 @@ export function resolveJourneyState({
     mission,
     activeAssessment,
     hasCompletedDiagnostic,
+    completedSteps: steps
+      .filter(({ status }) => status === 'complete')
+      .map(({ label }) => label),
+    currentStep:
+      steps.find(({ status }) => status === 'current')?.label ?? 'Concluído',
+    nextAction: mission.label,
+    nextActionReason: mission.reason,
+    targetExamState: hasTargetExam ? 'selected' : 'missing',
+    assessmentState: activeAssessment
+      ? 'in_progress'
+      : hasCompletedDiagnostic
+        ? 'completed'
+        : 'not_started',
+    planState: !currentPlan
+      ? 'missing'
+      : nextActivity
+        ? 'available'
+        : 'completed',
+    dataFreshness: 'fresh',
   };
 }

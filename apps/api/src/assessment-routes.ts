@@ -12,6 +12,7 @@ import type { AssessmentRepository } from './assessment-repository.js';
 import type { ExamIntelligenceRepository } from './exam-intelligence-repository.js';
 import { selectActiveExamProfile } from './exam-intelligence-service.js';
 import type { LearningRepository } from './learning-repository.js';
+import { safeUserIdentifier } from './auth.js';
 
 const params = (request: FastifyRequest) =>
   (request.params as { id: string }).id;
@@ -34,6 +35,17 @@ export async function registerAssessmentRoutes(
       const repository = assessmentFactory(request.auth.accessToken);
       const competencyIds = await repository.targetCompetencies(input);
       const id = await repository.start(input, competencyIds);
+      request.log.info(
+        {
+          event: 'critical_journey',
+          student: safeUserIdentifier(request.auth.userId),
+          assessmentId: id,
+          journeyStage: 'diagnostic',
+          action: 'start',
+          status: 'completed',
+        },
+        'assessment_started',
+      );
       return reply.status(201).send({ id });
     },
   );
@@ -176,6 +188,17 @@ export async function registerAssessmentRoutes(
         params(request),
         answerAssessmentInputSchema.parse(request.body),
       );
+      request.log.info(
+        {
+          event: 'critical_journey',
+          student: safeUserIdentifier(request.auth.userId),
+          assessmentId: params(request),
+          journeyStage: 'diagnostic',
+          action: 'answer',
+          status: 'completed',
+        },
+        'assessment_answered',
+      );
       return reply.status(201).send({ attemptId });
     },
   );
@@ -219,12 +242,22 @@ export async function registerAssessmentRoutes(
             requestId: request.id,
           },
         });
-      return {
-        resultId: await repository.finish(params(request), {
+      const resultId = await repository.finish(params(request), {
           reason: stopping.reason ?? 'insufficient_evidence',
           evidenceSufficient: stopping.evidenceSufficient,
-        }),
-      };
+        });
+      request.log.info(
+        {
+          event: 'critical_journey',
+          student: safeUserIdentifier(request.auth.userId),
+          assessmentId: params(request),
+          journeyStage: 'diagnostic',
+          action: 'finish',
+          status: 'completed',
+        },
+        'assessment_finished',
+      );
+      return { resultId };
     },
   );
   app.get(

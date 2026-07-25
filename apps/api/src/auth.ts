@@ -6,6 +6,7 @@ import {
 } from 'jose';
 import type { FastifyReply, FastifyRequest } from 'fastify';
 import type { ApiEnvironment } from './config/environment.js';
+import { createHash } from 'node:crypto';
 
 export interface AuthContext {
   userId: string;
@@ -13,6 +14,9 @@ export interface AuthContext {
   accessToken: string;
 }
 export type TokenVerifier = (token: string) => Promise<JWTPayload>;
+
+export const safeUserIdentifier = (userId: string) =>
+  createHash('sha256').update(userId).digest('hex').slice(0, 12);
 
 declare module 'fastify' {
   interface FastifyRequest {

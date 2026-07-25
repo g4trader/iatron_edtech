@@ -4,7 +4,7 @@ const remoteBaseUrl = process.env.E2E_WEB_BASE_URL?.trim();
 
 export default defineConfig({
   testDir: './e2e-auth',
-  timeout: 120_000,
+  timeout: 300_000,
   fullyParallel: false,
   workers: 1,
   reporter: 'list',

@@ -61,6 +61,8 @@ describe('resolveJourneyState', () => {
     expect(state.steps.find(({ label }) => label === 'Banca')?.status).toBe(
       'complete',
     );
+    expect(state.targetExamState).toBe('selected');
+    expect(state.completedSteps).toContain('Banca');
   });
 
   it('mantém Banca atual enquanto não há prova-alvo', () => {
@@ -83,6 +85,7 @@ describe('resolveJourneyState', () => {
       currentPlan: null,
     });
     expect(state.mission.title).toBe('Continuar seu diagnóstico');
+    expect(state.assessmentState).toBe('in_progress');
     expect(
       state.steps.find(({ label }) => label === 'Diagnóstico')?.status,
     ).toBe('current');
@@ -104,6 +107,7 @@ describe('resolveJourneyState', () => {
     expect(state.steps.find(({ label }) => label === 'Diagnóstico')?.status).toBe(
       'complete',
     );
+    expect(state.assessmentState).toBe('completed');
   });
 
   it('mostra atividade real quando o diagnóstico tem plano disponível', () => {
@@ -116,6 +120,7 @@ describe('resolveJourneyState', () => {
     });
     expect(state.mission.title).toBe('Reconhecer choque séptico');
     expect(state.mission.href).toBe('/app/plan/today');
+    expect(state.planState).toBe('available');
   });
 
   it('produz no máximo uma etapa atual e nunca reabre diagnóstico concluído', () => {

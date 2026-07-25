@@ -31,6 +31,8 @@ jobs:
       SUPABASE_PRODUCTION_PROJECT_ID: ${{ vars.SUPABASE_PRODUCTION_PROJECT_ID }}
       NEXT_PUBLIC_SUPABASE_URL: ${{ vars.SUPABASE_STAGING_URL }}
       NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: ${{ secrets.SUPABASE_STAGING_PUBLISHABLE_KEY }}
+      EXPECTED_BUILD_SHA: ${{ github.event.workflow_run.head_sha || github.sha }}
+      EXPECTED_MIGRATION_BASELINE: '202607250001'
     steps:
       - uses: actions/checkout@v4
         with:
@@ -44,4 +46,5 @@ jobs:
           cache: pnpm
       - run: pnpm install --frozen-lockfile
       - run: pnpm exec playwright install --with-deps chromium
+      - run: node scripts/assert-staging-alignment.mjs
       - run: pnpm test:e2e:auth

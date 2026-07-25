@@ -1,7 +1,14 @@
 import { createLocalJWKSet, exportJWK, generateKeyPair, SignJWT } from 'jose';
 import { beforeAll, describe, expect, it } from 'vitest';
 import { readEnvironment } from './config/environment.js';
-import { verifyToken } from './auth.js';
+import { safeUserIdentifier, verifyToken } from './auth.js';
+
+it('gera identificador seguro e estável sem expor o user id', () => {
+  const identifier = safeUserIdentifier('student-sensitive-id');
+  expect(identifier).toHaveLength(12);
+  expect(identifier).not.toContain('student');
+  expect(identifier).toBe(safeUserIdentifier('student-sensitive-id'));
+});
 
 const environment = readEnvironment({ NODE_ENV: 'test' });
 let privateKey: CryptoKey;

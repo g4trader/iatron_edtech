@@ -124,11 +124,21 @@ export async function buildApp(
 
   const statusSchema = {
     type: 'object',
-    required: ['status', 'service', 'timestamp'],
+    required: [
+      'status',
+      'service',
+      'timestamp',
+      'buildSha',
+      'contractVersion',
+      'migrationBaseline',
+    ],
     properties: {
       status: { type: 'string', enum: ['ok', 'ready'] },
       service: { type: 'string' },
       timestamp: { type: 'string', format: 'date-time' },
+      buildSha: { type: 'string' },
+      contractVersion: { type: 'string', const: 'journey-v1' },
+      migrationBaseline: { type: 'string' },
     },
   } as const;
 
@@ -139,6 +149,9 @@ export async function buildApp(
       status: 'ok' as const,
       service: 'iatron-api',
       timestamp: new Date().toISOString(),
+      buildSha: options.environment.BUILD_SHA,
+      contractVersion: 'journey-v1',
+      migrationBaseline: options.environment.MIGRATION_BASELINE,
     }),
   );
 
@@ -149,6 +162,9 @@ export async function buildApp(
       status: 'ready' as const,
       service: 'iatron-api',
       timestamp: new Date().toISOString(),
+      buildSha: options.environment.BUILD_SHA,
+      contractVersion: 'journey-v1',
+      migrationBaseline: options.environment.MIGRATION_BASELINE,
     }),
   );
 

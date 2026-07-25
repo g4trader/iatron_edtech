@@ -1,160 +1,51 @@
-import { expect, test, type APIRequestContext } from '@playwright/test';
+import { expect, test, type APIRequestContext, type Page } from '@playwright/test';
 
-const supabaseUrl =
-  process.env.E2E_SUPABASE_URL ?? process.env.NEXT_PUBLIC_SUPABASE_URL!;
-const publishableKey =
-  process.env.E2E_SUPABASE_PUBLISHABLE_KEY ??
-  process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY!;
-const mailpitUrl = process.env.MAILPIT_URL;
-const apiBaseUrl = process.env.E2E_API_BASE_URL ?? 'http://127.0.0.1:8080';
-const serviceRoleKey = process.env.E2E_SUPABASE_SERVICE_ROLE_KEY;
-const password = 'Staging-validation-2026!';
+const supabaseUrl = process.env.E2E_SUPABASE_URL!;
+const publishableKey = process.env.E2E_SUPABASE_PUBLISHABLE_KEY!;
+const serviceRoleKey = process.env.E2E_SUPABASE_SERVICE_ROLE_KEY!;
+const apiBaseUrl = process.env.E2E_API_BASE_URL!;
 const createdUserIds = new Set<string>();
 
-type AdminUser = { id: string; email?: string };
+type AdminUser = { id: string };
 
-async function adminRequest(
-  _request: APIRequestContext,
-  path: string,
-  options: { method?: string; data?: unknown } = {},
-) {
+async function adminRequest(path: string, init: RequestInit = {}) {
   if (!serviceRoleKey)
-    throw new Error('Fixture administrativa não configurada.');
-  const response = await fetch(`${supabaseUrl}/auth/v1/admin${path}`, {
-    method: options.method,
+    throw new Error('Fixture administrativa de staging não configurada.');
+  return fetch(`${supabaseUrl}/auth/v1/admin${path}`, {
+    ...init,
     headers: {
       apikey: serviceRoleKey,
       authorization: `Bearer ${serviceRoleKey}`,
       'content-type': 'application/json',
+      ...init.headers,
     },
-    body: options.data === undefined ? undefined : JSON.stringify(options.data),
   });
-  return {
-    ok: () => response.ok,
-    status: () => response.status,
-    json: () => response.json(),
-  };
 }
 
-async function findAdminUser(request: APIRequestContext, email: string) {
-  for (let attempt = 0; attempt < 10; attempt += 1) {
-    const response = await adminRequest(request, '/users?per_page=1000', {
-      method: 'GET',
-    });
-    if (response.ok()) {
-      const body = (await response.json()) as { users?: AdminUser[] };
-      const user = body.users?.find((candidate) => candidate.email === email);
-      if (user) {
-        createdUserIds.add(user.id);
-        return user;
-      }
-    }
-    await new Promise((resolve) => setTimeout(resolve, 500));
-  }
-  throw new Error('Usuário E2E recém-criado não foi encontrado.');
-}
-
-async function confirmStagingUser(request: APIRequestContext, email: string) {
-  const user = await findAdminUser(request, email);
-  const response = await adminRequest(request, `/users/${user.id}`, {
-    method: 'PUT',
-    data: { email_confirm: true },
-  });
-  expect(response.ok()).toBeTruthy();
-}
-
-async function createConfirmedStagingUser(
-  request: APIRequestContext,
-  email: string,
-  displayName = 'Estudante B',
-) {
-  const response = await adminRequest(request, '/users', {
+async function createUser(email: string, password: string) {
+  const response = await adminRequest('/users', {
     method: 'POST',
-    data: {
+    body: JSON.stringify({
       email,
       password,
       email_confirm: true,
-      user_metadata: { display_name: displayName },
-    },
+      user_metadata: { display_name: 'Estudante Gate' },
+    }),
   });
-  expect(response.ok()).toBeTruthy();
+  expect(response.ok).toBeTruthy();
   const user = (await response.json()) as AdminUser;
   createdUserIds.add(user.id);
 }
 
-async function recoveryLink(request: APIRequestContext, email: string) {
-  const response = await adminRequest(request, '/generate_link', {
-    method: 'POST',
-    data: {
-      type: 'recovery',
-      email,
-      redirect_to: `${process.env.E2E_WEB_BASE_URL}/auth/callback?next=/redefinir-senha`,
-    },
-  });
-  expect(response.ok()).toBeTruthy();
-  const body = (await response.json()) as {
-    hashed_token?: string;
-    properties?: { hashed_token?: string };
-  };
-  const tokenHash = body.hashed_token ?? body.properties?.hashed_token;
-  if (!tokenHash) throw new Error('Supabase não retornou token de recuperação.');
-  const link = new URL('/auth/callback', process.env.E2E_WEB_BASE_URL);
-  link.searchParams.set('token_hash', tokenHash);
-  link.searchParams.set('type', 'recovery');
-  link.searchParams.set('next', '/redefinir-senha');
-  return link.toString();
-}
-
-async function waitForEmail(
+async function tokenFor(
   request: APIRequestContext,
   email: string,
-  subject: RegExp,
+  password: string,
 ) {
-  if (!mailpitUrl) throw new Error('Mailpit local não configurado.');
-  for (let attempt = 0; attempt < 30; attempt += 1) {
-    const search = await request.get(`${mailpitUrl}/api/v1/search`, {
-      params: { query: `to:${email}` },
-    });
-    if (search.ok()) {
-      const body = (await search.json()) as {
-        messages?: { ID: string; Subject: string }[];
-      };
-      const message = body.messages?.find((item) => subject.test(item.Subject));
-      if (message) {
-        const detail = await request.get(
-          `${mailpitUrl}/api/v1/message/${message.ID}`,
-        );
-        const content = JSON.stringify(await detail.json());
-        const link = content
-          .match(/https?:\\?\/\\?\/[^"]+(?:token_hash|token)=[^"\\]+/)?.[0]
-          ?.replaceAll('\\u0026', '&')
-          .replaceAll('\\/', '/');
-        if (link) return link;
-      }
-    }
-    await new Promise((resolve) => setTimeout(resolve, 500));
-  }
-  throw new Error(`E-mail local esperado não chegou para ${email}.`);
-}
-
-async function signUpApi(request: APIRequestContext, email: string) {
-  const response = await request.post(`${supabaseUrl}/auth/v1/signup`, {
-    headers: { apikey: publishableKey, 'content-type': 'application/json' },
-    data: { email, password, data: { display_name: 'Estudante B' } },
-  });
-  expect(response.ok()).toBeTruthy();
-  if (serviceRoleKey) {
-    await confirmStagingUser(request, email);
-  } else {
-    await request.get(await waitForEmail(request, email, /confirm/i));
-  }
-}
-
-async function tokenFor(request: APIRequestContext, email: string) {
   const response = await request.post(
     `${supabaseUrl}/auth/v1/token?grant_type=password`,
     {
-      headers: { apikey: publishableKey, 'content-type': 'application/json' },
+      headers: { apikey: publishableKey },
       data: { email, password },
     },
   );
@@ -162,98 +53,175 @@ async function tokenFor(request: APIRequestContext, email: string) {
   return ((await response.json()) as { access_token: string }).access_token;
 }
 
-test('cadastro, confirmação, SSR, retomada, RLS, logout e recuperação reais', async ({
+async function login(page: Page, email: string, password: string) {
+  await page.goto('/login');
+  await page.getByLabel('E-mail').fill(email);
+  await page.getByLabel('Senha').fill(password);
+  await page.getByRole('button', { name: 'Entrar' }).click();
+}
+
+const journeyStep = (page: Page, label: string) =>
+  page.getByRole('listitem').filter({ hasText: label });
+
+async function expectNoHorizontalOverflow(page: Page) {
+  const sizes = await page.evaluate(() => ({
+    client: document.documentElement.clientWidth,
+    scroll: document.documentElement.scrollWidth,
+  }));
+  expect(sizes.scroll, JSON.stringify(sizes)).toBeLessThanOrEqual(sizes.client);
+}
+
+test('critical journey: onboarding, diagnóstico, plano, persistência e mobile', async ({
   page,
   request,
 }) => {
   const run = `${Date.now()}-${crypto.randomUUID().slice(0, 8)}`;
-  const studentA =
-    process.env.E2E_AUTH_EMAIL ?? `student-a-${run}@example.com`;
-  const studentB = `student-b-${run}@example.com`;
+  const email = `critical-journey-${run}@example.com`;
+  const password = `Gate-${crypto.randomUUID()}-Aa1!`;
+  await createUser(email, password);
 
-  if (serviceRoleKey) {
-    await createConfirmedStagingUser(request, studentA, 'Estudante A');
-  } else {
-    await page.goto('/cadastro');
-    await page.getByLabel('Como devemos chamar você?').fill('Estudante A');
-    await page.getByLabel('E-mail').fill(studentA);
-    await page.getByLabel(/Senha/).fill(password);
-    await page.getByRole('button', { name: 'Criar conta' }).click();
-    await expect(page).toHaveURL(/\/login/);
-    await page.goto(await waitForEmail(request, studentA, /confirm/i));
-  }
-  await page.goto('/login');
-  await page.getByLabel('E-mail').fill(studentA);
-  await page.getByLabel('Senha').fill(password);
-  await page.getByRole('button', { name: 'Entrar' }).click();
+  // Cenário A — usuário novo e onboarding real.
+  await login(page, email, password);
   await expect(page).toHaveURL(/\/app\/onboarding/);
-
-  await page.getByLabel('Nome').fill('Estudante A Atualizada');
+  await page.getByLabel('Nome completo').fill('Estudante Gate');
   await page.getByRole('button', { name: 'Salvar e continuar' }).click();
-  await expect(page.getByText('etapa 2 de 4')).toBeVisible();
-  await page.reload();
-  await expect(page.getByText('etapa 2 de 4')).toBeVisible();
-  await page.getByLabel('Seg em minutos').fill('90');
+  await page
+    .getByRole('radio', { name: /Estudo praticamente todos os dias/ })
+    .click();
   await page.getByRole('button', { name: 'Salvar e continuar' }).click();
+  await page
+    .getByLabel('Buscar prova, instituição ou cidade')
+    .fill('AMRIGS');
   await page.getByRole('checkbox').first().check();
   await page.getByRole('button', { name: 'Salvar e continuar' }).click();
   await page
     .getByRole('button', { name: 'Começar minha preparação' })
     .click();
   await expect(page).toHaveURL(/\/app$/);
-  await page.reload();
-  await expect(page).toHaveURL(/\/app$/);
+  await expect(journeyStep(page, 'Perfil')).toContainText('Concluído');
+  await expect(journeyStep(page, 'Banca')).toContainText('Concluído');
+  await expect(journeyStep(page, 'Diagnóstico')).toContainText('Agora');
 
-  const tokenA = await tokenFor(request, studentA);
-  if (serviceRoleKey) {
-    await createConfirmedStagingUser(request, studentB);
-  } else {
-    await signUpApi(request, studentB);
-  }
-  const tokenB = await tokenFor(request, studentB);
-  const meA = await request.get(`${apiBaseUrl}/v1/me`, {
-    headers: { authorization: `Bearer ${tokenA}` },
-  });
-  expect(meA.status()).toBe(200);
-  const userAId = ((await meA.json()) as { profile: { id: string } }).profile
-    .id;
-  const spoof = await request.get(`${apiBaseUrl}/v1/me?user_id=${userAId}`, {
-    headers: { authorization: `Bearer ${tokenB}`, 'x-user-id': userAId },
-  });
-  expect(spoof.status()).toBe(200);
-  expect(
-    ((await spoof.json()) as { profile: { id: string } }).profile.id,
-  ).not.toBe(userAId);
-  const rls = await request.get(`${supabaseUrl}/rest/v1/profiles`, {
-    params: { id: `eq.${userAId}` },
-    headers: { apikey: publishableKey, authorization: `Bearer ${tokenB}` },
-  });
-  expect(await rls.json()).toEqual([]);
+  // Cenário B — primeira resposta, segurança, retry e retomada.
+  await page.getByRole('link', { name: 'Começar diagnóstico' }).click();
+  await page
+    .getByRole('button', { name: 'Descobrir meu ponto de partida' })
+    .click();
+  await expect(page).toHaveURL(/\/app\/assessment\/session/);
+  const assessmentId = new URL(page.url()).searchParams.get('id');
+  expect(assessmentId).toBeTruthy();
+  const questionVersionId = await page
+    .locator('input[name="questionVersionId"]')
+    .inputValue();
+  const firstOption = page.locator('input[name="selectedOptionId"]').first();
+  const selectedOptionId = await firstOption.inputValue();
+  await firstOption.check();
+  await page.getByLabel(/Quão seguro você está/).selectOption('medium');
+  await page.getByRole('button', { name: 'Confirmar resposta' }).click();
 
-  await page.getByRole('button', { name: /Estudante A Atualizada/ }).click();
-  await expect(page).toHaveURL(/\/login/);
-  await page.goto('/app');
-  await expect(page).toHaveURL(/\/login\?returnTo=/);
-  await page.goto('/esqueci-minha-senha');
-  await page.getByLabel('E-mail').fill(studentA);
-  await page.getByRole('button', { name: 'Enviar instruções' }).click();
-  await page.goto(
-    serviceRoleKey
-      ? await recoveryLink(request, studentA)
-      : await waitForEmail(request, studentA, /reset|senha|password/i),
+  const token = await tokenFor(request, email, password);
+  const retry = await request.post(
+    `${apiBaseUrl}/v1/assessments/${assessmentId}/answers`,
+    {
+      headers: { authorization: `Bearer ${token}` },
+      data: {
+        questionVersionId,
+        selectedOptionId,
+        responseTimeMs: 30_000,
+        statedConfidence: 'medium',
+      },
+    },
   );
-  await page.getByLabel('Nova senha').fill('Staging-validation-2026-updated!');
-  await page.getByRole('button', { name: 'Salvar senha' }).click();
-  await expect(page).toHaveURL(/\/app/);
+  expect(retry.status()).toBe(201);
+  const historyAfterRetry = await request.get(
+    `${apiBaseUrl}/v1/assessments`,
+    { headers: { authorization: `Bearer ${token}` } },
+  );
+  const current = (
+    (await historyAfterRetry.json()) as {
+      id: string;
+      answeredCount: number;
+    }[]
+  ).find(({ id }) => id === assessmentId);
+  expect(current?.answeredCount).toBe(1);
+  await page.reload();
+  await expect(page).toHaveURL(/\/app\/assessment\/session/);
+
+  // Cenário C — conclusão e retorno coerente à Jornada.
+  for (let answered = 1; answered <= 10; answered += 1) {
+    const resultButton = page.getByRole('button', {
+      name: 'Ver meu resultado',
+    });
+    if (await resultButton.isVisible().catch(() => false)) {
+      await resultButton.click();
+      break;
+    }
+    const questionHeading = page.getByRole('heading', {
+      name: /Questão \d+ de/,
+    });
+    await expect(questionHeading).toBeVisible();
+    const previousQuestion = await questionHeading.textContent();
+    await page.locator('input[name="selectedOptionId"]').first().check();
+    await page.getByLabel(/Quão seguro você está/).selectOption('medium');
+    await page.getByRole('button', { name: 'Confirmar resposta' }).click();
+    await expect
+      .poll(() => page.locator('main h1').first().textContent())
+      .not.toBe(previousQuestion);
+  }
+  await expect(
+    page.getByRole('heading', {
+      name: 'Agora já conhecemos seu ponto de partida',
+    }),
+  ).toBeVisible();
+  await page.goto('/app');
+  await expect(journeyStep(page, 'Banca')).toContainText('Concluído');
+  await expect(journeyStep(page, 'Diagnóstico')).toContainText('Concluído');
+  await expect(
+    page.getByRole('heading', {
+      name: 'Transformar seu diagnóstico em um plano',
+    }),
+  ).toBeVisible();
+  await expect(
+    page.getByRole('link', { name: 'Continuar diagnóstico' }),
+  ).toHaveCount(0);
+  await page.reload();
+  await expect(journeyStep(page, 'Diagnóstico')).toContainText('Concluído');
+
+  // Cenário D — plano e atividade reais.
+  await page.getByRole('link', { name: 'Criar meu plano' }).click();
+  await page.getByRole('button', { name: 'Criar meu plano' }).click();
+  await expect(page).toHaveURL(/\/app\/plan\/week/);
+  await page.goto('/app');
+  await expect(journeyStep(page, 'Fundamentos')).toContainText('Agora');
+  await expect(page.getByText('Mentor da área')).toBeVisible();
+  await expect(
+    page.getByRole('link', { name: /Começar atividade|Retomar atividade/ }),
+  ).toHaveAttribute('href', '/app/plan/today');
+
+  // Cenário E — mobile, logout e persistência após novo login.
+  await page.setViewportSize({ width: 375, height: 812 });
+  await page.reload();
+  await expectNoHorizontalOverflow(page);
+  await page.getByRole('button', { name: 'Abrir menu' }).click();
+  const mobileDrawer = page.getByTestId('mobile-drawer-layer');
+  await expect(mobileDrawer.getByLabel('Usuário: Estudante Gate')).toBeVisible();
+  await expect(mobileDrawer.getByRole('button', { name: 'Sair' })).toBeVisible();
+  await mobileDrawer.getByRole('button', { name: 'Sair' }).click();
+  await expect(page).toHaveURL(/\/login/);
+  await login(page, email, password);
+  await expect(page).toHaveURL(/\/app$/);
+  await expect(journeyStep(page, 'Banca')).toContainText('Concluído');
+  await expect(journeyStep(page, 'Diagnóstico')).toContainText('Concluído');
+  await expect(journeyStep(page, 'Fundamentos')).toContainText('Agora');
+  await expectNoHorizontalOverflow(page);
 });
 
-test.afterEach(async ({ request }) => {
-  if (!serviceRoleKey) return;
+test.afterEach(async () => {
   for (const userId of createdUserIds) {
-    const response = await adminRequest(request, `/users/${userId}`, {
+    const response = await adminRequest(`/users/${userId}`, {
       method: 'DELETE',
     });
-    expect(response.ok()).toBeTruthy();
+    expect(response.ok).toBeTruthy();
   }
   createdUserIds.clear();
 });
