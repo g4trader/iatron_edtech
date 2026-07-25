@@ -3,7 +3,28 @@ import { NextResponse, type NextRequest } from 'next/server';
 import { getSupabaseConfig } from '@/lib/supabase/config';
 import { isAuthBypassEnabled } from '@/lib/auth-bypass';
 
+const STAGING_ALIAS = 'iatron-web-staging.vercel.app';
+const STAGING_CANONICAL_HOST = 'go.iatron.com.br';
+
+export function canonicalStagingUrl(request: NextRequest) {
+  const forwardedHost = request.headers.get('x-forwarded-host');
+  const host = (
+    forwardedHost ??
+    request.headers.get('host') ??
+    request.nextUrl.host
+  )
+    .split(':')[0]
+    ?.toLowerCase();
+  if (host !== STAGING_ALIAS) return null;
+  const canonical = request.nextUrl.clone();
+  canonical.protocol = 'https';
+  canonical.host = STAGING_CANONICAL_HOST;
+  return canonical;
+}
+
 export async function proxy(request: NextRequest) {
+  const canonical = canonicalStagingUrl(request);
+  if (canonical) return NextResponse.redirect(canonical, 308);
   if (isAuthBypassEnabled(process.env)) return NextResponse.next();
   let response = NextResponse.next({ request });
   const config = getSupabaseConfig();
