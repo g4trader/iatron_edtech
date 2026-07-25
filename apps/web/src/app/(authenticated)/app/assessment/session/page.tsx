@@ -137,9 +137,9 @@ export default async function SessionPage({
             id="stated-confidence"
             name="statedConfidence"
           >
-            <option value="low">Baixa</option>
-            <option value="medium">Média</option>
-            <option value="high">Alta</option>
+            <option value="low">Pouco seguro</option>
+            <option value="medium">Em dúvida</option>
+            <option value="high">Muito seguro</option>
           </select>
         </label>
         <ActionSubmitButton pendingLabel="Salvando sua resposta…">

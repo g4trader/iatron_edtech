@@ -66,7 +66,7 @@ export default async function ResultPage({
       {examContext?.availability === 'available' && (
         <TargetExamBadge
           isSynthetic={examContext.profile.isSynthetic}
-          name={examContext.profile.program.code}
+          name={examContext.profile.displayName}
         />
       )}
       <section

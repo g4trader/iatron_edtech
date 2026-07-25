@@ -32,7 +32,7 @@ export default async function StartPage() {
       {examContext?.availability === 'available' && (
         <TargetExamBadge
           isSynthetic={examContext.profile.isSynthetic}
-          name={examContext.profile.program.code}
+          name={examContext.profile.displayName}
         />
       )}
       <MentorMessage
@@ -67,7 +67,7 @@ export default async function StartPage() {
           className="mt-4"
           pendingLabel="Preparando seu diagnóstico…"
         >
-          Iniciar diagnóstico
+          Descobrir meu ponto de partida
         </ActionSubmitButton>
       </form>
       <section aria-labelledby="diagnostic-mentors-title">

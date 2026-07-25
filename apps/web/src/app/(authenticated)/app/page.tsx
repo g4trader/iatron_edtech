@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import type { Route } from 'next';
 import { PageContainer } from '@/components/layout/page-container';
 import { getAuthState } from '@/lib/auth';
 import { studyPlans } from '@/features/study-plans/server/study-plans';
@@ -28,20 +29,25 @@ export default async function AppHomePage() {
   );
   const hasTargetExam = examContext?.availability === 'available';
   const targetExam = hasTargetExam
-    ? examContext.profile.program.code
+    ? examContext.profile.displayName
     : 'Sua prova de residência';
+  const activeAssessment = assessments.find(
+    (assessment) => assessment.completedAt === null,
+  );
   const completedActivities =
     currentPlan?.items.filter((item) => item.status === 'completed').length ??
     0;
-  const currentStage = nextActivity
-    ? 'Fundamentos'
-    : currentPlan && completedActivities > 0
-      ? 'Consolidação'
-      : hasCompletedDiagnostic
-        ? 'Fundamentos'
-        : hasTargetExam
-          ? 'Diagnóstico'
-          : 'Banca';
+  const currentStage = activeAssessment
+    ? 'Diagnóstico'
+    : nextActivity
+      ? 'Fundamentos'
+      : currentPlan && completedActivities > 0
+        ? 'Consolidação'
+        : hasCompletedDiagnostic
+          ? 'Fundamentos'
+          : hasTargetExam
+            ? 'Diagnóstico'
+            : 'Banca';
   const steps: JourneyStep[] = [
     { label: 'Perfil', status: 'complete' },
     {
@@ -79,28 +85,37 @@ export default async function AppHomePage() {
   ];
   const firstName =
     profile?.display_name?.trim().split(/\s+/)[0] ?? 'estudante';
-  const nextTitle =
-    nextActivity?.competencyName ??
-    (hasCompletedDiagnostic
-      ? 'Transformar seu diagnóstico em um plano'
-      : 'Conhecer seu ponto de partida');
-  const nextReason = nextActivity
-    ? activityReason(nextActivity.reasons[0]?.code ?? '')
-    : hasCompletedDiagnostic
-      ? 'Seu diagnóstico já mostrou as primeiras prioridades. Agora vamos distribuí-las de acordo com sua rotina.'
-      : 'Um diagnóstico curto mostra o que já está consistente e onde seu tempo de estudo pode fazer mais diferença.';
-  const nextHref = nextActivity
-    ? '/app/plan/today'
-    : hasCompletedDiagnostic
-      ? '/app/plan'
-      : '/app/assessment/start';
-  const nextLabel = nextActivity
-    ? nextActivity.status === 'in_progress'
-      ? 'Retomar atividade'
-      : 'Começar atividade'
-    : hasCompletedDiagnostic
-      ? 'Criar meu plano'
-      : 'Começar diagnóstico';
+  const nextTitle = activeAssessment
+    ? 'Continuar seu diagnóstico'
+    : (nextActivity?.competencyName ??
+      (hasCompletedDiagnostic
+        ? 'Transformar seu diagnóstico em um plano'
+        : 'Conhecer seu ponto de partida'));
+  const nextReason = activeAssessment
+    ? 'Suas respostas anteriores estão salvas. Continue de onde parou para concluirmos seu retrato inicial e indicarmos o próximo passo.'
+    : nextActivity
+      ? activityReason(nextActivity.reasons[0]?.code ?? '')
+      : hasCompletedDiagnostic
+        ? 'Seu diagnóstico já mostrou as primeiras prioridades. Agora vamos distribuí-las de acordo com sua rotina.'
+        : 'Um diagnóstico curto mostra o que já está consistente e onde seu tempo de estudo pode fazer mais diferença.';
+  const nextHref = (
+    activeAssessment
+      ? `/app/assessment/session?id=${activeAssessment.id}`
+      : nextActivity
+        ? '/app/plan/today'
+        : hasCompletedDiagnostic
+          ? '/app/plan'
+          : '/app/assessment/start'
+  ) as Route;
+  const nextLabel = activeAssessment
+    ? 'Continuar diagnóstico'
+    : nextActivity
+      ? nextActivity.status === 'in_progress'
+        ? 'Retomar atividade'
+        : 'Começar atividade'
+      : hasCompletedDiagnostic
+        ? 'Criar meu plano'
+        : 'Começar diagnóstico';
   const remainingStages = steps.filter(
     (step) => step.status !== 'complete',
   ).length;
