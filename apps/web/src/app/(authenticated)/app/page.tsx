@@ -1,122 +1,48 @@
 import Link from 'next/link';
-import type { Route } from 'next';
 import { PageContainer } from '@/components/layout/page-container';
 import { getAuthState } from '@/lib/auth';
 import { studyPlans } from '@/features/study-plans/server/study-plans';
 import { assessmentHistory } from '@/features/assessments/server/adaptive-assessment';
-import { activityReason } from '@/lib/learning-language';
 import { dominantMentor } from '@/features/mentors/mentors';
 import { MentorIdentity } from '@/features/mentors/components/mentor';
 import { examIntelligenceContext } from '@/features/exam-intelligence/server/context';
-import {
-  JourneyTimeline,
-  type JourneyStep,
-} from '@/features/journey/components/journey-timeline';
+import { JourneyTimeline } from '@/features/journey/components/journey-timeline';
+import { resolveJourneyState } from '@/features/journey/journey-state';
+import { createClient } from '@/lib/supabase/server';
 
 export default async function AppHomePage() {
-  const { profile } = await getAuthState();
-  const [currentPlan, assessments, examContext] = await Promise.all([
+  const { user, profile } = await getAuthState();
+  const client = await createClient();
+  const [currentPlan, assessments, examContext, targetResult] =
+    await Promise.all([
     studyPlans.current().catch(() => null),
     assessmentHistory().catch(() => []),
     examIntelligenceContext().catch(() => null),
-  ]);
-  const nextActivity = currentPlan?.items.find((item) =>
-    ['planned', 'in_progress'].includes(item.status),
-  );
+      user
+        ? client
+            .from('student_target_exams')
+            .select('exam_edition_id')
+            .eq('user_id', user.id)
+            .limit(1)
+            .maybeSingle()
+        : Promise.resolve({ data: null }),
+    ]);
+  const hasTargetExam = Boolean(targetResult.data?.exam_edition_id);
+  const journey = resolveJourneyState({
+    hasTargetExam,
+    assessments,
+    currentPlan,
+  });
+  const nextActivity = journey.mission.activity;
   const mentor = dominantMentor(nextActivity ? [nextActivity] : []);
-  const hasCompletedDiagnostic = assessments.some(
-    (assessment) => assessment.completedAt !== null,
-  );
-  const hasTargetExam = examContext?.availability === 'available';
-  const targetExam = hasTargetExam
+  const targetExam = examContext?.availability === 'available'
     ? examContext.profile.displayName
-    : 'Sua prova de residência';
-  const activeAssessment = assessments.find(
-    (assessment) => assessment.completedAt === null,
-  );
-  const completedActivities =
-    currentPlan?.items.filter((item) => item.status === 'completed').length ??
-    0;
-  const currentStage = activeAssessment
-    ? 'Diagnóstico'
-    : nextActivity
-      ? 'Fundamentos'
-      : currentPlan && completedActivities > 0
-        ? 'Consolidação'
-        : hasCompletedDiagnostic
-          ? 'Fundamentos'
-          : hasTargetExam
-            ? 'Diagnóstico'
-            : 'Banca';
-  const steps: JourneyStep[] = [
-    { label: 'Perfil', status: 'complete' },
-    {
-      label: 'Banca',
-      status: hasTargetExam
-        ? 'complete'
-        : currentStage === 'Banca'
-          ? 'current'
-          : 'upcoming',
-    },
-    {
-      label: 'Diagnóstico',
-      status: hasCompletedDiagnostic
-        ? 'complete'
-        : currentStage === 'Diagnóstico'
-          ? 'current'
-          : 'upcoming',
-    },
-    {
-      label: 'Fundamentos',
-      status:
-        currentStage === 'Fundamentos'
-          ? 'current'
-          : completedActivities > 0
-            ? 'complete'
-            : 'upcoming',
-    },
-    {
-      label: 'Consolidação',
-      status: currentStage === 'Consolidação' ? 'current' : 'upcoming',
-    },
-    { label: 'Simulados', status: 'upcoming' },
-    { label: 'Revisão final', status: 'upcoming' },
-    { label: 'Pronto para a prova', status: 'upcoming' },
-  ];
+    : hasTargetExam
+      ? 'Sua prova escolhida'
+      : 'Sua prova de residência';
   const firstName =
     profile?.display_name?.trim().split(/\s+/)[0] ?? 'estudante';
-  const nextTitle = activeAssessment
-    ? 'Continuar seu diagnóstico'
-    : (nextActivity?.competencyName ??
-      (hasCompletedDiagnostic
-        ? 'Transformar seu diagnóstico em um plano'
-        : 'Conhecer seu ponto de partida'));
-  const nextReason = activeAssessment
-    ? 'Suas respostas anteriores estão salvas. Continue de onde parou para concluirmos seu retrato inicial e indicarmos o próximo passo.'
-    : nextActivity
-      ? activityReason(nextActivity.reasons[0]?.code ?? '')
-      : hasCompletedDiagnostic
-        ? 'Seu diagnóstico já mostrou as primeiras prioridades. Agora vamos distribuí-las de acordo com sua rotina.'
-        : 'Um diagnóstico curto mostra o que já está consistente e onde seu tempo de estudo pode fazer mais diferença.';
-  const nextHref = (
-    activeAssessment
-      ? `/app/assessment/session?id=${activeAssessment.id}`
-      : nextActivity
-        ? '/app/plan/today'
-        : hasCompletedDiagnostic
-          ? '/app/plan'
-          : '/app/assessment/start'
-  ) as Route;
-  const nextLabel = activeAssessment
-    ? 'Continuar diagnóstico'
-    : nextActivity
-      ? nextActivity.status === 'in_progress'
-        ? 'Retomar atividade'
-        : 'Começar atividade'
-      : hasCompletedDiagnostic
-        ? 'Criar meu plano'
-        : 'Começar diagnóstico';
-  const remainingStages = steps.filter(
+  const remainingStages = journey.steps.filter(
     (step) => step.status !== 'complete',
   ).length;
 
@@ -137,7 +63,7 @@ export default async function AppHomePage() {
           </div>
         </header>
 
-        <JourneyTimeline steps={steps} />
+        <JourneyTimeline steps={journey.steps} />
 
         <section
           aria-labelledby="journey-next-title"
@@ -145,7 +71,7 @@ export default async function AppHomePage() {
         >
           <div className="journey-next-copy">
             <p className="eyebrow">Agora</p>
-            <h2 id="journey-next-title">{nextTitle}</h2>
+            <h2 id="journey-next-title">{journey.mission.title}</h2>
             {nextActivity && (
               <p className="journey-time">
                 Cerca de {nextActivity.estimatedMinutes} minutos
@@ -153,7 +79,7 @@ export default async function AppHomePage() {
             )}
             <div className="journey-why">
               <strong>Por que este passo?</strong>
-              <p>{nextReason}</p>
+              <p>{journey.mission.reason}</p>
             </div>
           </div>
           <div className="journey-mentor">
@@ -166,9 +92,9 @@ export default async function AppHomePage() {
           </div>
           <Link
             className="primary-button journey-primary-action"
-            href={nextHref}
+            href={journey.mission.href}
           >
-            {nextLabel}
+            {journey.mission.label}
           </Link>
         </section>
 
