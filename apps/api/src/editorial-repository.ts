@@ -79,7 +79,7 @@ export function createEditorialRepository(
   const rpc = (name: string, body: object) =>
     request(`rpc/${name}`, { method: 'POST', body: JSON.stringify(body) });
   const select =
-    'id,content_id,version_number,schema_version,language,title,subtitle,estimated_minutes,objectives,summary,sections,key_points,clinical_reasoning,exam_application,common_mistakes,quick_review,conclusion,video,editorial_status,ai_assisted,ai_model,prompt_version,is_synthetic,content_hash,published_at,reviewed_at,learning_contents!inner(canonical_key,slug,specialty_id,competency_id,assigned_mentor_id,mentor_profiles(professional_name,specialties(name))),content_reviews(id,decision),learning_content_version_references(is_required,content_references(*)),content_review_requests(id,active)';
+    'id,content_id,version_number,schema_version,language,title,subtitle,estimated_minutes,objectives,summary,sections,key_points,clinical_reasoning,exam_application,common_mistakes,quick_review,conclusion,video,editorial_status,ai_assisted,ai_model,prompt_version,is_synthetic,content_hash,published_at,reviewed_at,learning_contents!learning_content_versions_content_id_fkey!inner(canonical_key,slug,specialty_id,competency_id,assigned_mentor_id,mentor_profiles(professional_name,specialties(name))),content_reviews(id,decision),learning_content_version_references(is_required,content_references(*)),content_review_requests(id,active)';
 
   const serialize = (row: Row): LearningContentVersion => {
     const content = object(row.learning_contents);

@@ -90,6 +90,7 @@ async function login(page: Page, persona: Persona, password: string) {
   await page.getByLabel('E-mail').fill(personas[persona].email);
   await page.getByLabel('Senha').fill(password);
   await page.getByRole('button', { name: 'Entrar' }).click();
+  await expect(page).not.toHaveURL(/\/login/);
 }
 
 async function logout(page: Page) {
@@ -127,14 +128,27 @@ test('editor → mentor → admin → estudante: conteúdo versionado e revisão
     authorization_status: 'authorized',
     mfa_required: true,
   });
-  await upsert(
-    'student_availability',
-    Array.from({ length: 7 }, (_, weekday) => ({
-      user_id: studentId,
-      weekday,
-      minutes_available: 45,
-    })),
+  await service(
+    `/rest/v1/profiles?id=in.(${editorId},${mentorId},${adminId},${studentId})`,
+    {
+      method: 'PATCH',
+      body: JSON.stringify({
+        onboarding_status: 'completed',
+        onboarding_step: 4,
+      }),
+    },
   );
+  await service('/rest/v1/student_availability?on_conflict=user_id,weekday', {
+    method: 'POST',
+    headers: { prefer: 'resolution=merge-duplicates,return=minimal' },
+    body: JSON.stringify(
+      Array.from({ length: 7 }, (_, weekday) => ({
+        user_id: studentId,
+        weekday,
+        minutes_available: 45,
+      })),
+    ),
+  });
 
   const runKey = crypto.randomUUID();
   const runCanonicalKey = `${canonicalKey}.${runKey}`;
@@ -150,7 +164,7 @@ test('editor → mentor → admin → estudante: conteúdo versionado e revisão
     .getByLabel('Slug')
     .fill(`ressuscitacao-inicial-choque-septico-${runKey}`);
   await page
-    .getByLabel('Título')
+    .getByLabel('Título', { exact: true })
     .fill('Ressuscitação inicial do choque séptico');
   await page
     .getByLabel('Resumo')
@@ -184,7 +198,7 @@ test('editor → mentor → admin → estudante: conteúdo versionado e revisão
   await expect(page).toHaveURL(/\/admin$/);
 
   const versions = (await service(
-    `/rest/v1/learning_content_versions?select=id,content_id,content_hash&learning_contents!inner(canonical_key)&learning_contents.canonical_key=eq.${runCanonicalKey}`,
+    `/rest/v1/learning_content_versions?select=id,content_id,content_hash,learning_contents!learning_content_versions_content_id_fkey!inner(canonical_key)&learning_contents.canonical_key=eq.${runCanonicalKey}`,
   )) as { id: string; content_id: string; content_hash: string }[];
   const version = versions[0]!;
   const referenceId = crypto.randomUUID();
