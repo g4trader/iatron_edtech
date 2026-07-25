@@ -21,6 +21,11 @@ const summary = () => ({
   answeredCount,
   startedAt: '2026-07-23T00:00:00Z',
   completedAt: null,
+  mode: 'quick_screening' as const,
+  policyVersion: 'diagnostic-policy-v3-quick-synthetic',
+  blueprintVersion: null,
+  currentBlock: 1,
+  pausedAt: null,
 });
 const result = {
   id: '72000000-0000-4000-8000-000000000001',
@@ -97,6 +102,8 @@ const assessment: AssessmentRepository = {
     answeredCount = 1;
     return '74000000-0000-4000-8000-000000000001';
   },
+  pause: async () => undefined,
+  resume: async () => undefined,
   finish: async () => result.id,
   result: async () => result,
 };

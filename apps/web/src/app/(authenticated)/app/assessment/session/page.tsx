@@ -1,5 +1,6 @@
 import {
   completeDiagnostic,
+  pauseDiagnostic,
   submitDiagnosticAnswer,
 } from '@/features/assessments/actions';
 import Link from 'next/link';
@@ -85,7 +86,7 @@ export default async function SessionPage({
         className="guided-progress"
       >
         <div>
-          <span>Seu progresso</span>
+          <span>Bloco {Math.ceil(question.number / 10)} · Seu progresso</span>
           <strong>
             {question.number} de {question.total}
           </strong>
@@ -146,6 +147,20 @@ export default async function SessionPage({
           Confirmar resposta
         </ActionSubmitButton>
       </form>
+      {question.total > 10 && (
+        <form action={pauseDiagnostic}>
+          <input type="hidden" name="assessmentId" value={id} />
+          <ActionSubmitButton
+            pendingLabel="Pausando com segurança…"
+            className="secondary-button"
+          >
+            Pausar e continuar depois
+          </ActionSubmitButton>
+          <p className="mt-2 text-sm text-[var(--foreground-muted)]">
+            Suas respostas ficam salvas. Você poderá retomar deste ponto.
+          </p>
+        </form>
+      )}
     </AssessmentPage>
   );
 }

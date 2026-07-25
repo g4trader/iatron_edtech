@@ -48,9 +48,33 @@ export default async function StartPage() {
       <form action={startDiagnostic} className="experience-callout">
         <div>
           <p className="eyebrow">Como funciona</p>
-          <h2>Uma avaliação guiada, no seu ritmo</h2>
+          <h2>Escolha quanto deseja aprofundar agora</h2>
+          <fieldset className="mt-4 space-y-3">
+            <legend className="sr-only">Tipo de avaliação</legend>
+            <label className="block rounded-xl border border-[var(--border)] p-4">
+              <input
+                type="radio"
+                name="mode"
+                value="quick_screening"
+                defaultChecked
+              />{' '}
+              <strong>Triagem rápida</strong>
+              <span className="block text-sm text-[var(--foreground-muted)]">
+                Até 10 questões, cerca de 30 minutos. Oferece uma orientação
+                inicial, com confiança limitada.
+              </span>
+            </label>
+            <label className="block rounded-xl border border-[var(--border)] p-4">
+              <input type="radio" name="mode" value="full_diagnostic" />{' '}
+              <strong>Diagnóstico completo</strong>
+              <span className="block text-sm text-[var(--foreground-muted)]">
+                Até 40 questões em blocos, cerca de 120 minutos. Busca
+                evidências em todas as grandes áreas e pode ser retomado.
+              </span>
+            </label>
+          </fieldset>
           <ol className="experience-steps">
-            <li>Você responde até 10 questões em cerca de 30 minutos.</li>
+            <li>Você responde questões compatíveis com o modo escolhido.</li>
             <li>As próximas questões se ajustam às suas respostas.</li>
             <li>Ao final, mostramos seus pontos fortes e prioridades.</li>
           </ol>

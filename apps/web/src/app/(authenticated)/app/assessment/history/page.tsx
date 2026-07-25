@@ -2,6 +2,7 @@ import Link from 'next/link';
 import { EmptyState } from '@/components/feedback/states';
 import { AssessmentPage } from '@/features/assessments/components/adaptive-page';
 import { assessmentHistory } from '@/features/assessments/server/adaptive-assessment';
+import { resumeDiagnostic } from '@/features/assessments/actions';
 
 export default async function HistoryPage() {
   const items = await assessmentHistory();
@@ -38,6 +39,14 @@ export default async function HistoryPage() {
               <Link href={`/app/assessment/result?id=${item.id}`}>
                 Rever resultado
               </Link>
+            )}
+            {item.status === 'paused' && (
+              <form action={resumeDiagnostic}>
+                <input type="hidden" name="assessmentId" value={item.id} />
+                <button className="primary-button mt-3" type="submit">
+                  Retomar de onde parei
+                </button>
+              </form>
             )}
           </article>
         ))

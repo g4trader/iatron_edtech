@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
   DIAGNOSTIC_POLICY_V2,
+  FULL_DIAGNOSTIC_POLICY,
   combineDiagnosticEvidence,
   confidenceLevel,
   coverageState,
@@ -123,6 +124,35 @@ describe('adaptive assessment engine', () => {
       coverageState(observations, DIAGNOSTIC_POLICY_V2).every(
         (area) => area.complete,
       ),
+    ).toBe(true);
+  });
+  it('requires multiple items, competencies and difficulty levels in full mode', () => {
+    const areaId = FULL_DIAGNOSTIC_POLICY.areaIds[0]!;
+    const partial = [observation(areaId)];
+    expect(
+      coverageState(partial, {
+        ...FULL_DIAGNOSTIC_POLICY,
+        areaIds: [areaId],
+      })[0]?.complete,
+    ).toBe(false);
+    const complete = [
+      observation(areaId, {
+        questionVersionId: 'q1',
+        competencyIds: ['c1'],
+        difficulty: 2,
+      }),
+      observation(areaId, {
+        questionVersionId: 'q2',
+        competencyIds: ['c2'],
+        difficulty: 3,
+      }),
+    ];
+    expect(
+      coverageState(complete, {
+        ...FULL_DIAGNOSTIC_POLICY,
+        areaIds: [areaId],
+        minimumTotalEvidence: 2,
+      })[0]?.complete,
     ).toBe(true);
   });
   it('prioritizes uncovered area before AMRIGS complementary relevance', () => {

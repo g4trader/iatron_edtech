@@ -4,8 +4,8 @@ import {
 } from '@iatron/contracts';
 import type { FastifyInstance, FastifyRequest } from 'fastify';
 import {
-  DIAGNOSTIC_POLICY_V2,
   evaluateDiagnosticStop,
+  policyForMode,
   selectNextQuestion,
 } from './assessment-engine.js';
 import type { AssessmentRepository } from './assessment-repository.js';
@@ -31,7 +31,14 @@ export async function registerAssessmentRoutes(
     '/assessments',
     { schema: { tags: ['assessments'] } },
     async (request, reply) => {
-      const input = startAssessmentInputSchema.parse(request.body);
+      const parsed = startAssessmentInputSchema.parse(request.body);
+      const targetExam = await examIntelligenceFactory(
+        request.auth.accessToken,
+      ).getTargetExam();
+      const input = {
+        ...parsed,
+        examProgramId: parsed.examProgramId ?? targetExam?.programId ?? null,
+      };
       const repository = assessmentFactory(request.auth.accessToken);
       const competencyIds = await repository.targetCompetencies(input);
       const id = await repository.start(input, competencyIds);
@@ -129,14 +136,14 @@ export async function registerAssessmentRoutes(
       const stopping = evaluateDiagnosticStop({
         observations,
         policy: {
-          ...DIAGNOSTIC_POLICY_V2,
+          ...policyForMode(state.mode),
           maximumQuestions: Math.min(
             state.questionCount,
-            DIAGNOSTIC_POLICY_V2.maximumQuestions,
+            policyForMode(state.mode).maximumQuestions,
           ),
           maximumDurationMinutes: Math.min(
             state.durationMinutes,
-            DIAGNOSTIC_POLICY_V2.maximumDurationMinutes,
+            policyForMode(state.mode).maximumDurationMinutes,
           ),
         },
       });
@@ -147,7 +154,7 @@ export async function registerAssessmentRoutes(
         attemptedQuestionIds: attempted.questionIds,
         usedThemeIds: attempted.themeIds,
         observations,
-        policy: DIAGNOSTIC_POLICY_V2,
+        policy: policyForMode(state.mode),
       });
       if (!selection) return reply.status(204).send();
       await assessment.recordSelection(
@@ -157,8 +164,8 @@ export async function registerAssessmentRoutes(
         {
           score: selection.score,
           reason: selection.reason,
-          algorithmVersion: 'assessment-v2',
-          policyVersion: DIAGNOSTIC_POLICY_V2.version,
+          algorithmVersion: 'assessment-v3',
+          policyVersion: policyForMode(state.mode).version,
         },
       );
       const question = candidatesWithExamContext.find(
@@ -220,14 +227,14 @@ export async function registerAssessmentRoutes(
       const stopping = evaluateDiagnosticStop({
         observations,
         policy: {
-          ...DIAGNOSTIC_POLICY_V2,
+          ...policyForMode(state.mode),
           maximumQuestions: Math.min(
             state.questionCount,
-            DIAGNOSTIC_POLICY_V2.maximumQuestions,
+            policyForMode(state.mode).maximumQuestions,
           ),
           maximumDurationMinutes: Math.min(
             state.durationMinutes,
-            DIAGNOSTIC_POLICY_V2.maximumDurationMinutes,
+            policyForMode(state.mode).maximumDurationMinutes,
           ),
         },
         contentAvailable:
@@ -243,9 +250,9 @@ export async function registerAssessmentRoutes(
           },
         });
       const resultId = await repository.finish(params(request), {
-          reason: stopping.reason ?? 'insufficient_evidence',
-          evidenceSufficient: stopping.evidenceSufficient,
-        });
+        reason: stopping.reason ?? 'insufficient_evidence',
+        evidenceSufficient: stopping.evidenceSufficient,
+      });
       request.log.info(
         {
           event: 'critical_journey',
@@ -258,6 +265,22 @@ export async function registerAssessmentRoutes(
         'assessment_finished',
       );
       return { resultId };
+    },
+  );
+  app.post(
+    '/assessments/:id/pause',
+    { schema: { tags: ['assessments'] } },
+    async (request, reply) => {
+      await assessmentFactory(request.auth.accessToken).pause(params(request));
+      return reply.status(204).send();
+    },
+  );
+  app.post(
+    '/assessments/:id/resume',
+    { schema: { tags: ['assessments'] } },
+    async (request, reply) => {
+      await assessmentFactory(request.auth.accessToken).resume(params(request));
+      return reply.status(204).send();
     },
   );
   app.get(

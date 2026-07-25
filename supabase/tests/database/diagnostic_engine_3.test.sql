@@ -1,0 +1,16 @@
+begin;
+select plan(12);
+select has_column('public','diagnostic_assessments','mode','assessment mode exists');
+select has_column('public','diagnostic_assessments','blueprint_version','blueprint version exists');
+select has_table('public','diagnostic_coverage_policies','coverage policy is versioned');
+select has_table('public','diagnostic_blueprint_competencies','blueprint competencies exist');
+select has_table('public','diagnostic_question_eligibility','question eligibility exists');
+select has_table('public','diagnostic_editorial_gaps','editorial gaps exist');
+select is((select minimum_questions_per_area from public.diagnostic_coverage_policies where mode='full_diagnostic'),2::smallint,'full mode never measures area once');
+select is((select minimum_difficulty_levels_per_area from public.diagnostic_coverage_policies where mode='full_diagnostic'),2::smallint,'full mode varies difficulty');
+select is((select maximum_questions_per_session from public.diagnostic_coverage_policies where mode='full_diagnostic'),10::smallint,'full mode uses blocks');
+select ok((select pause_allowed from public.diagnostic_coverage_policies where mode='full_diagnostic'),'full mode can pause');
+select ok((select bool_and(answer_key_validated) from public.diagnostic_question_eligibility where diagnostic_eligible),'eligible questions have validated answer');
+select ok((select bool_and(provenance_kind in ('authorized','synthetic')) from public.diagnostic_question_eligibility),'eligible questions have governed provenance');
+select * from finish();
+rollback;

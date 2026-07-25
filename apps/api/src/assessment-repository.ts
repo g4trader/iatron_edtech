@@ -64,6 +64,8 @@ export interface AssessmentRepository {
       statedConfidence?: string;
     },
   ): Promise<string>;
+  pause(id: string): Promise<void>;
+  resume(id: string): Promise<void>;
   finish(
     id: string,
     outcome?: { reason: string; evidenceSufficient: boolean },
@@ -116,6 +118,14 @@ export function createAssessmentRepository(
     answeredCount: rows(row.question_attempts).length,
     startedAt: text(row, 'started_at'),
     completedAt: row.completed_at === null ? null : text(row, 'completed_at'),
+    mode: (text(row, 'mode') || 'legacy') as AssessmentSummary['mode'],
+    policyVersion:
+      text(row, 'policy_version') || 'diagnostic-policy-v2-synthetic',
+    blueprintVersion: row.blueprint_version
+      ? text(row, 'blueprint_version')
+      : null,
+    currentBlock: number(row, 'current_block') || 1,
+    pausedAt: row.paused_at ? text(row, 'paused_at') : null,
   });
   return {
     async targetCompetencies() {
@@ -129,13 +139,14 @@ export function createAssessmentRepository(
     },
     async start(input, competencyIds) {
       return String(
-        await rpc('start_diagnostic_assessment', {
+        await rpc('start_diagnostic_assessment_v3', {
           p_objective: input.objective,
           p_exam_program_id: input.examProgramId,
           p_specialty_id: input.specialtyId,
           p_duration_minutes: input.durationMinutes,
           p_question_count: input.questionCount,
           p_competency_ids: competencyIds,
+          p_mode: input.mode,
         }),
       );
     },
@@ -155,12 +166,18 @@ export function createAssessmentRepository(
       ).map(summary);
     },
     async listCandidates() {
-      const result = rows(
-        await get(
+      const [candidateRows, eligibilityRows] = await Promise.all([
+        get(
           'question_versions?select=id,stem,difficulty,question_options(id,label,content),question_version_competencies(competencies(id,code,name)),question_version_themes(theme_id),question_version_specialties(specialty_id)&status=eq.published&order=id.asc&limit=1000',
         ),
+        get(
+          'diagnostic_question_eligibility?select=question_version_id&diagnostic_eligible=eq.true&answer_key_validated=eq.true',
+        ),
+      ]);
+      const eligible = new Set(
+        rows(eligibilityRows).map((row) => text(row, 'question_version_id')),
       );
-      return result
+      return rows(candidateRows)
         .map((row) => {
           const competencies = rows(row.question_version_competencies)
             .map((link) => object(link.competencies))
@@ -192,7 +209,9 @@ export function createAssessmentRepository(
         })
         .filter(
           (candidate) =>
-            candidate.competencies.length > 0 && candidate.options.length >= 2,
+            eligible.has(candidate.questionVersionId) &&
+            candidate.competencies.length > 0 &&
+            candidate.options.length >= 2,
         );
     },
     async attempted(id) {
@@ -287,6 +306,12 @@ export function createAssessmentRepository(
           p_stated_confidence: input.statedConfidence ?? null,
         }),
       );
+    },
+    async pause(id) {
+      await rpc('pause_diagnostic_assessment', { p_assessment_id: id });
+    },
+    async resume(id) {
+      await rpc('resume_diagnostic_assessment', { p_assessment_id: id });
     },
     async finish(id, outcome) {
       return String(

@@ -16,6 +16,11 @@ const assessment = (
   answeredCount: status === 'completed' ? 10 : 2,
   startedAt,
   completedAt: status === 'completed' ? startedAt : null,
+  mode: 'quick_screening',
+  policyVersion: 'diagnostic-policy-v3-quick-synthetic',
+  blueprintVersion: null,
+  currentBlock: 1,
+  pausedAt: null,
 });
 
 const plan = (withActivity: boolean): StudyPlan => ({
@@ -80,7 +85,11 @@ describe('resolveJourneyState', () => {
     const state = resolveJourneyState({
       hasTargetExam: true,
       assessments: [
-        assessment('10000000-0000-4000-8000-000000000005', 'active', '2026-07-25T12:00:00Z'),
+        assessment(
+          '10000000-0000-4000-8000-000000000005',
+          'active',
+          '2026-07-25T12:00:00Z',
+        ),
       ],
       currentPlan: null,
     });
@@ -95,18 +104,24 @@ describe('resolveJourneyState', () => {
     const state = resolveJourneyState({
       hasTargetExam: true,
       assessments: [
-        assessment('10000000-0000-4000-8000-000000000005', 'active', '2026-07-24T12:00:00Z'),
-        assessment('10000000-0000-4000-8000-000000000006', 'completed', '2026-07-25T12:00:00Z'),
+        assessment(
+          '10000000-0000-4000-8000-000000000005',
+          'active',
+          '2026-07-24T12:00:00Z',
+        ),
+        assessment(
+          '10000000-0000-4000-8000-000000000006',
+          'completed',
+          '2026-07-25T12:00:00Z',
+        ),
       ],
       currentPlan: null,
     });
-    expect(state.mission.title).toBe(
-      'Transformar seu diagnóstico em um plano',
-    );
+    expect(state.mission.title).toBe('Transformar seu diagnóstico em um plano');
     expect(state.activeAssessment).toBeNull();
-    expect(state.steps.find(({ label }) => label === 'Diagnóstico')?.status).toBe(
-      'complete',
-    );
+    expect(
+      state.steps.find(({ label }) => label === 'Diagnóstico')?.status,
+    ).toBe('complete');
     expect(state.assessmentState).toBe('completed');
   });
 
@@ -114,7 +129,11 @@ describe('resolveJourneyState', () => {
     const state = resolveJourneyState({
       hasTargetExam: true,
       assessments: [
-        assessment('10000000-0000-4000-8000-000000000006', 'completed', '2026-07-25T12:00:00Z'),
+        assessment(
+          '10000000-0000-4000-8000-000000000006',
+          'completed',
+          '2026-07-25T12:00:00Z',
+        ),
       ],
       currentPlan: plan(true),
     });
@@ -127,13 +146,17 @@ describe('resolveJourneyState', () => {
     const state = resolveJourneyState({
       hasTargetExam: true,
       assessments: [
-        assessment('10000000-0000-4000-8000-000000000006', 'completed', '2026-07-25T12:00:00Z'),
+        assessment(
+          '10000000-0000-4000-8000-000000000006',
+          'completed',
+          '2026-07-25T12:00:00Z',
+        ),
       ],
       currentPlan: plan(false),
     });
-    expect(state.steps.filter(({ status }) => status === 'current')).toHaveLength(
-      1,
-    );
+    expect(
+      state.steps.filter(({ status }) => status === 'current'),
+    ).toHaveLength(1);
     expect(state.mission.title).not.toMatch(/continuar.*diagnóstico/i);
   });
 });

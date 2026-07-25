@@ -47,6 +47,7 @@ export interface DiagnosticPolicy {
   areaIds: string[];
   minimumEvidencePerArea: number;
   minimumCompetenciesPerArea: number;
+  minimumDifficultyLevelsPerArea: number;
   desiredDifficulties: number[];
   minimumTotalEvidence: number;
   maximumQuestions: number;
@@ -64,11 +65,34 @@ export const DIAGNOSTIC_POLICY_V2: DiagnosticPolicy = {
   ],
   minimumEvidencePerArea: 1,
   minimumCompetenciesPerArea: 1,
+  minimumDifficultyLevelsPerArea: 1,
   desiredDifficulties: [2, 3, 4],
   minimumTotalEvidence: 5,
   maximumQuestions: 10,
   maximumDurationMinutes: 30,
 };
+
+export const QUICK_SCREENING_POLICY: DiagnosticPolicy = {
+  ...DIAGNOSTIC_POLICY_V2,
+  version: 'diagnostic-policy-v3-quick-synthetic',
+};
+
+export const FULL_DIAGNOSTIC_POLICY: DiagnosticPolicy = {
+  ...DIAGNOSTIC_POLICY_V2,
+  version: 'diagnostic-policy-v3-full-amrigs-synthetic',
+  minimumEvidencePerArea: 2,
+  minimumCompetenciesPerArea: 2,
+  minimumDifficultyLevelsPerArea: 2,
+  minimumTotalEvidence: 20,
+  maximumQuestions: 40,
+  maximumDurationMinutes: 120,
+};
+
+export function policyForMode(mode: string): DiagnosticPolicy {
+  return mode === 'full_diagnostic'
+    ? FULL_DIAGNOSTIC_POLICY
+    : QUICK_SCREENING_POLICY;
+}
 
 const normalizedSafety = (value: DeclaredSafety) =>
   value === 'high'
@@ -147,7 +171,9 @@ export function coverageState(
       complete:
         area.length >= policy.minimumEvidencePerArea &&
         new Set(area.flatMap((item) => item.competencyIds)).size >=
-          policy.minimumCompetenciesPerArea,
+          policy.minimumCompetenciesPerArea &&
+        new Set(area.map((item) => item.difficulty)).size >=
+          policy.minimumDifficultyLevelsPerArea,
     };
   });
 }

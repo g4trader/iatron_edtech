@@ -592,6 +592,9 @@ export const learningDnaQuerySchema = z
 export type LearningDnaQuery = z.infer<typeof learningDnaQuerySchema>;
 
 export const startAssessmentInputSchema = z.object({
+  mode: z
+    .enum(['quick_screening', 'full_diagnostic'])
+    .default('quick_screening'),
   objective: z.string().min(3).max(300),
   examProgramId: uuidSchema.nullable().default(null),
   specialtyId: uuidSchema.nullable().default(null),
@@ -637,6 +640,13 @@ export const assessmentSummarySchema = z.object({
   answeredCount: z.int(),
   startedAt: z.iso.datetime({ offset: true }),
   completedAt: z.iso.datetime({ offset: true }).nullable(),
+  mode: z
+    .enum(['legacy', 'quick_screening', 'full_diagnostic'])
+    .default('legacy'),
+  policyVersion: z.string().default('diagnostic-policy-v2-synthetic'),
+  blueprintVersion: z.string().nullable().default(null),
+  currentBlock: z.int().positive().default(1),
+  pausedAt: z.iso.datetime({ offset: true }).nullable().default(null),
 });
 export type AssessmentSummary = z.infer<typeof assessmentSummarySchema>;
 
