@@ -10,7 +10,10 @@ const apiEnvironmentSchema = z.object({
     .enum(['fatal', 'error', 'warn', 'info', 'debug', 'trace', 'silent'])
     .default('info'),
   BUILD_SHA: z.string().min(1).default('local'),
-  MIGRATION_BASELINE: z.string().regex(/^\d{12}$/).default('202607250001'),
+  MIGRATION_BASELINE: z
+    .string()
+    .regex(/^\d{12}$/)
+    .default('202607250002'),
   ENABLE_API_DOCS: z.enum(['0', '1']).default('0'),
   SUPABASE_URL: z.url().default('http://127.0.0.1:54321'),
   SUPABASE_PUBLISHABLE_KEY: z.string().min(1).default('local-development-key'),
@@ -19,8 +22,20 @@ const apiEnvironmentSchema = z.object({
   SUPABASE_JWT_ALGORITHMS: z.string().default('ES256,RS256'),
   OPENAI_API_KEY: z.string().min(1).default('local-openai-key'),
   OPENAI_MODEL: z.string().min(1).default('gpt-5.6-sol'),
-  OPENAI_MAX_OUTPUT_TOKENS: z.coerce.number().int().min(128).max(4096).default(1200),
-  OPENAI_REQUEST_TIMEOUT_MS: z.coerce.number().int().min(1000).max(120000).default(45000),
+  OPENAI_MAX_OUTPUT_TOKENS: z.coerce
+    .number()
+    .int()
+    .min(128)
+    .max(4096)
+    .default(1200),
+  OPENAI_REQUEST_TIMEOUT_MS: z.coerce
+    .number()
+    .int()
+    .min(1000)
+    .max(120000)
+    .default(45000),
+  RESEND_API_KEY: z.string().min(1).optional(),
+  REVIEW_EMAIL_FROM: z.string().email().default('no-reply@iatron.com.br'),
   CORS_ALLOWED_ORIGINS: z
     .string()
     .refine(

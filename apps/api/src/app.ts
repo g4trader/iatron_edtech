@@ -1,7 +1,12 @@
 import cors from '@fastify/cors';
 import swagger from '@fastify/swagger';
 import swaggerUi from '@fastify/swagger-ui';
-import Fastify, { type FastifyInstance } from 'fastify';
+import Fastify, {
+  type FastifyError,
+  type FastifyInstance,
+  type FastifyReply,
+  type FastifyRequest,
+} from 'fastify';
 import { ZodError } from 'zod';
 import type { ApiEnvironment } from './config/environment.js';
 import {
@@ -51,6 +56,15 @@ import {
   type ExamIntelligenceRepository,
 } from './exam-intelligence-repository.js';
 import { registerExamIntelligenceRoutes } from './exam-intelligence-routes.js';
+import {
+  createEditorialRepository,
+  type EditorialRepository,
+} from './editorial-repository.js';
+import { registerEditorialRoutes } from './editorial-routes.js';
+import {
+  createResendEditorialEmailGateway,
+  type EditorialEmailGateway,
+} from './editorial-email.js';
 
 export interface BuildAppOptions {
   environment: ApiEnvironment;
@@ -72,6 +86,8 @@ export interface BuildAppOptions {
     token: string,
   ) => ExamIntelligenceRepository;
   examIntelligenceClock?: () => Date;
+  editorialRepositoryFactory?: (token: string) => EditorialRepository;
+  editorialEmailGateway?: EditorialEmailGateway;
 }
 
 function isFastifyValidationError(error: unknown): boolean {
@@ -142,6 +158,35 @@ export async function buildApp(
     },
   } as const;
 
+  const handleError = (
+    error: FastifyError,
+    request: FastifyRequest,
+    reply: FastifyReply,
+  ) => {
+    request.log.error({ err: error }, 'request_failed');
+    if (error instanceof RepositoryError) {
+      return reply.status(502).send({
+        error: {
+          code: 'UPSTREAM_DATABASE_ERROR',
+          message: 'Não foi possível acessar os dados.',
+          requestId: request.id,
+        },
+      });
+    }
+    const isValidationError =
+      isFastifyValidationError(error) || error instanceof ZodError;
+    return reply.status(isValidationError ? 400 : 500).send({
+      error: {
+        code: isValidationError ? 'VALIDATION_ERROR' : 'INTERNAL_ERROR',
+        message: isValidationError
+          ? 'Dados de entrada inválidos.'
+          : 'Erro interno do servidor.',
+        requestId: request.id,
+      },
+    });
+  };
+  app.setErrorHandler(handleError);
+
   app.get(
     '/health',
     { schema: { tags: ['operations'], response: { 200: statusSchema } } },
@@ -175,6 +220,7 @@ export async function buildApp(
         version: 'v1',
       }));
       await versionedApi.register(async (protectedApi) => {
+        protectedApi.setErrorHandler(handleError);
         protectedApi.addHook(
           'preHandler',
           createAuthenticate(
@@ -245,6 +291,13 @@ export async function buildApp(
               createExamIntelligenceRepository(options.environment, token)),
           options.examIntelligenceClock,
         );
+        await registerEditorialRoutes(
+          protectedApi,
+          options.editorialRepositoryFactory ??
+            ((token) => createEditorialRepository(options.environment, token)),
+          options.editorialEmailGateway ??
+            createResendEditorialEmailGateway(options.environment),
+        );
       });
     },
     { prefix: '/v1' },
@@ -259,30 +312,6 @@ export async function buildApp(
       },
     }),
   );
-
-  app.setErrorHandler((error, request, reply) => {
-    request.log.error({ err: error }, 'request_failed');
-    if (error instanceof RepositoryError) {
-      return reply.status(502).send({
-        error: {
-          code: 'UPSTREAM_DATABASE_ERROR',
-          message: 'Não foi possível acessar os dados.',
-          requestId: request.id,
-        },
-      });
-    }
-    const isValidationError =
-      isFastifyValidationError(error) || error instanceof ZodError;
-    return reply.status(isValidationError ? 400 : 500).send({
-      error: {
-        code: isValidationError ? 'VALIDATION_ERROR' : 'INTERNAL_ERROR',
-        message: isValidationError
-          ? 'Dados de entrada inválidos.'
-          : 'Erro interno do servidor.',
-        requestId: request.id,
-      },
-    });
-  });
 
   return app;
 }

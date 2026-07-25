@@ -12,12 +12,14 @@ import {
   learningEvidenceSchema,
   learningDnaQuerySchema,
   learningDnaSnapshotSchema,
+  learningContentVersionSchema,
   masteryStateSchema,
   onboardingInputSchema,
   profileUpdateSchema,
   serviceStatusSchema,
   studyPlanSchema,
   targetExamsInputSchema,
+  reviewLearningContentSchema,
 } from './index.js';
 
 describe('serviceStatusSchema', () => {
@@ -384,6 +386,36 @@ describe('learning DNA contracts', () => {
     ).toThrow();
     expect(() =>
       learningDnaQuerySchema.parse({ policyVersion: 'unknown' }),
+    ).toThrow();
+  });
+});
+
+describe('editorial intelligence contracts', () => {
+  it('requires an explicit mentor declaration tied to an approval', () => {
+    expect(() =>
+      reviewLearningContentSchema.parse({
+        decision: 'approved',
+        declaration: 'Confirmo.',
+        requestId: crypto.randomUUID(),
+      }),
+    ).toThrow();
+    expect(
+      reviewLearningContentSchema.parse({
+        decision: 'approved',
+        declaration:
+          'Confirmo que revisei esta versão para fins educacionais dentro da minha área de atuação.',
+        requestId: crypto.randomUUID(),
+      }).decision,
+    ).toBe('approved');
+  });
+
+  it('does not silently accept an incomplete published material', () => {
+    expect(() =>
+      learningContentVersionSchema.parse({
+        id: crypto.randomUUID(),
+        contentId: crypto.randomUUID(),
+        editorialStatus: 'published',
+      }),
     ).toThrow();
   });
 });

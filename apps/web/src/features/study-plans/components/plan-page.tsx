@@ -1,11 +1,12 @@
 import Link from 'next/link';
+import type { Route } from 'next';
 import type { ReactNode } from 'react';
 import type { StudyPlanItem } from '@iatron/contracts';
 import { ActionSubmitButton } from '@/components/feedback/action-submit-button';
 import { activityReason, studyPriority } from '@/lib/learning-language';
 import { MentorRecommendation } from '@/features/mentors/components/mentor';
 import { mentorForCompetency } from '@/features/mentors/mentors';
-import { askTutorAboutPlanItem, executePlanItem } from '../actions';
+import { askTutorAboutPlanItem } from '../actions';
 
 export function PlanPage({
   title,
@@ -88,62 +89,14 @@ export function PlanItemCard({ item }: { item: StudyPlanItem }) {
         </ActionSubmitButton>
       </form>
       {['planned', 'in_progress'].includes(item.status) && (
-        <div className="flex flex-wrap gap-2">
-          {item.status === 'planned' && (
-            <form action={executePlanItem}>
-              <input name="itemId" type="hidden" value={item.id} />
-              <input name="action" type="hidden" value="start" />
-              <ActionSubmitButton pendingLabel="Iniciando…" variant="primary">
-                Iniciar atividade
-              </ActionSubmitButton>
-            </form>
-          )}
-          <form action={executePlanItem}>
-            <input name="itemId" type="hidden" value={item.id} />
-            <input name="action" type="hidden" value="complete" />
-            <input
-              name="actualMinutes"
-              type="hidden"
-              value={item.estimatedMinutes}
-            />
-            <ActionSubmitButton
-              pendingLabel="Salvando conclusão…"
-              variant={item.status === 'in_progress' ? 'primary' : 'secondary'}
-            >
-              Concluir atividade
-            </ActionSubmitButton>
-          </form>
-          <form action={executePlanItem}>
-            <input name="itemId" type="hidden" value={item.id} />
-            <input name="action" type="hidden" value="defer" />
-            <input
-              name="reason"
-              type="hidden"
-              value="Reagendado pelo estudante"
-            />
-            <ActionSubmitButton
-              pendingLabel="Reorganizando…"
-              variant="secondary"
-            >
-              Fazer depois
-            </ActionSubmitButton>
-          </form>
-          <form action={executePlanItem}>
-            <input name="itemId" type="hidden" value={item.id} />
-            <input name="action" type="hidden" value="skip" />
-            <input
-              name="reason"
-              type="hidden"
-              value="Item pulado pelo estudante"
-            />
-            <ActionSubmitButton
-              pendingLabel="Atualizando plano…"
-              variant="secondary"
-            >
-              Remover de hoje
-            </ActionSubmitButton>
-          </form>
-        </div>
+        <Link
+          className="primary-button inline-flex"
+          href={`/app/plan/items/${item.id}` as Route}
+        >
+          {item.status === 'planned'
+            ? 'Iniciar atividade'
+            : 'Continuar atividade'}
+        </Link>
       )}
     </article>
   );

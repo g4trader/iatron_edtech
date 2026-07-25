@@ -974,3 +974,200 @@ export const tutorReferenceSchema = z.object({
   snapshot: z.record(z.string(), z.unknown()),
 });
 export type TutorReference = z.infer<typeof tutorReferenceSchema>;
+
+export const appRoleSchema = z.enum([
+  'student',
+  'mentor',
+  'editor',
+  'admin',
+  'medical_reviewer',
+  'legal_reviewer',
+  'super_admin',
+]);
+export type AppRole = z.infer<typeof appRoleSchema>;
+
+export const learningContentStatusSchema = z.enum([
+  'draft',
+  'ai_draft',
+  'editorial_review',
+  'awaiting_mentor_assignment',
+  'awaiting_mentor_review',
+  'mentor_changes_requested',
+  'mentor_rejected',
+  'mentor_approved',
+  'ready_to_publish',
+  'published',
+  'archived',
+  'superseded',
+]);
+export type LearningContentStatus = z.infer<typeof learningContentStatusSchema>;
+
+export const learningContentVideoSchema = z
+  .object({
+    url: z.url().nullable().default(null),
+    provider: z.string().nullable().default(null),
+    assetId: z.string().nullable().default(null),
+    thumbnail: z.url().nullable().default(null),
+    durationSeconds: z.number().int().positive().nullable().default(null),
+    caption: z.string().nullable().default(null),
+    transcript: z.string().nullable().default(null),
+    mentorId: uuidSchema.nullable().default(null),
+    version: z.number().int().positive().default(1),
+    editorialStatus: learningContentStatusSchema.default('draft'),
+    authorization: z.string().nullable().default(null),
+    recordedAt: z.iso.datetime({ offset: true }).nullable().default(null),
+    reviewedAt: z.iso.datetime({ offset: true }).nullable().default(null),
+  })
+  .nullable();
+export type LearningContentVideo = z.infer<typeof learningContentVideoSchema>;
+
+export const learningContentReferenceSchema = z.object({
+  id: uuidSchema,
+  title: z.string(),
+  authorsOrOrganization: z.string().nullable(),
+  referenceType: z.enum([
+    'book',
+    'guideline',
+    'consensus',
+    'article',
+    'protocol',
+    'official_site',
+    'other',
+  ]),
+  publicationYear: z.number().int().nullable(),
+  edition: z.string().nullable(),
+  publisher: z.string().nullable(),
+  isbn: z.string().nullable(),
+  doi: z.string().nullable(),
+  pmid: z.string().nullable(),
+  url: z.url().nullable(),
+  accessedOn: z.string().nullable(),
+  origin: z.string(),
+  verificationStatus: z.enum([
+    'suggested_by_ai',
+    'pending_verification',
+    'verified',
+    'rejected',
+    'outdated',
+  ]),
+  notes: z.string().nullable(),
+  required: z.boolean(),
+});
+export type LearningContentReference = z.infer<
+  typeof learningContentReferenceSchema
+>;
+
+export const learningContentVersionSchema = z.object({
+  id: uuidSchema,
+  contentId: uuidSchema,
+  canonicalKey: z.string(),
+  slug: z.string(),
+  versionNumber: z.number().int().positive(),
+  schemaVersion: z.number().int().positive(),
+  language: z.string(),
+  title: z.string(),
+  subtitle: z.string().nullable(),
+  estimatedMinutes: z.number().int().positive(),
+  objectives: z.array(z.string()),
+  summary: z.string(),
+  sections: z.array(
+    z.object({
+      heading: z.string(),
+      body: z.string(),
+    }),
+  ),
+  keyPoints: z.array(z.string()),
+  clinicalReasoning: z.string().nullable(),
+  examApplication: z.string().nullable(),
+  commonMistakes: z.array(z.string()),
+  quickReview: z.array(z.string()),
+  conclusion: z.string().nullable(),
+  video: learningContentVideoSchema,
+  editorialStatus: learningContentStatusSchema,
+  aiAssisted: z.boolean(),
+  aiModel: z.string().nullable(),
+  promptVersion: z.string().nullable(),
+  isSynthetic: z.boolean(),
+  contentHash: z.string().length(64),
+  publishedAt: z.iso.datetime({ offset: true }).nullable(),
+  reviewedAt: z.iso.datetime({ offset: true }).nullable(),
+  specialtyId: uuidSchema.nullable(),
+  competencyId: uuidSchema.nullable(),
+  assignedMentorId: uuidSchema.nullable(),
+  mentorName: z.string().nullable(),
+  mentorSpecialty: z.string().nullable(),
+  reviewId: uuidSchema.nullable(),
+  reviewDecision: z
+    .enum(['approved', 'changes_requested', 'rejected'])
+    .nullable(),
+  reviewRequested: z.boolean(),
+  requestCount: z.number().int().nonnegative(),
+  references: z.array(learningContentReferenceSchema),
+});
+export type LearningContentVersion = z.infer<
+  typeof learningContentVersionSchema
+>;
+
+export const createLearningContentDraftSchema = z.object({
+  canonicalKey: z.string().regex(/^[a-z0-9][a-z0-9._-]+$/),
+  slug: z.string().regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/),
+  title: z.string().min(3).max(180),
+  summary: z.string().min(20),
+  estimatedMinutes: z.number().int().min(1).max(240),
+  objectives: z.array(z.string().min(3)).min(1),
+  sections: z
+    .array(z.object({ heading: z.string().min(2), body: z.string().min(20) }))
+    .min(1),
+  keyPoints: z.array(z.string()).default([]),
+  examApplication: z.string().nullable().default(null),
+  commonMistakes: z.array(z.string()).default([]),
+  quickReview: z.array(z.string()).default([]),
+  conclusion: z.string().nullable().default(null),
+  specialtyId: uuidSchema.nullable().default(null),
+  competencyId: uuidSchema.nullable().default(null),
+  aiAssisted: z.boolean().default(false),
+  aiModel: z.string().nullable().default(null),
+  promptVersion: z.string().nullable().default(null),
+  isSynthetic: z.boolean().default(false),
+  requestId: uuidSchema,
+});
+
+export const reviewLearningContentSchema = z
+  .object({
+    decision: z.enum(['approved', 'changes_requested', 'rejected']),
+    declaration: z.string().nullable().default(null),
+    comment: z.string().nullable().default(null),
+    issueCategory: z
+      .enum([
+        'content',
+        'reference',
+        'clarity',
+        'currency',
+        'safety',
+        'structure',
+        'other',
+      ])
+      .nullable()
+      .default(null),
+    requestId: uuidSchema,
+  })
+  .superRefine((value, context) => {
+    if (
+      value.decision === 'approved' &&
+      (value.declaration?.trim().length ?? 0) < 30
+    )
+      context.addIssue({
+        code: 'custom',
+        message: 'A declaração explícita é obrigatória para aprovação.',
+        path: ['declaration'],
+      });
+    if (
+      value.decision !== 'approved' &&
+      (value.comment?.trim().length ?? 0) < 10
+    )
+      context.addIssue({
+        code: 'custom',
+        message: 'O comentário é obrigatório para esta decisão.',
+        path: ['comment'],
+      });
+  });
