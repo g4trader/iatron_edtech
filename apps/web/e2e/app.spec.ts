@@ -1,16 +1,14 @@
 import { expect, test } from '@playwright/test';
 
-test('abre o início autenticado e inicia uma conversa', async ({ page }) => {
+test('abre a jornada e apresenta o próximo passo real', async ({ page }) => {
   await page.goto('/app');
   await expect(
-    page.getByRole('heading', { name: 'Olá, Estudante.' }),
+    page.getByRole('heading', { name: /Olá, Estudante\./ }),
   ).toBeVisible();
-  await page
-    .getByRole('link', { name: /conversar com um mentor/i })
-    .first()
-    .click();
   await expect(
-    page.getByRole('heading', { name: 'Por onde vamos começar?' }),
+    page.getByRole('link', {
+      name: /Escolher minha prova|Começar diagnóstico|Continuar diagnóstico|Criar meu plano|Começar atividade|Retomar atividade/,
+    }),
   ).toBeVisible();
 });
 
@@ -56,17 +54,25 @@ test('navega pelo drawer mobile', async ({ page, isMobile }) => {
   test.skip(!isMobile, 'Cenário específico para viewport móvel');
   await page.goto('/app');
   await page.getByRole('button', { name: 'Abrir menu' }).click();
-  await page.getByRole('link', { name: /meu plano/i }).click();
-  await expect(page).toHaveURL(/\/app\/plan/);
+  await page.getByRole('link', { name: 'Mentores' }).click();
+  await expect(page).toHaveURL(/\/app\/tutor/);
 });
 
-test('direciona a antiga demonstração para o diagnóstico real', async ({ page }) => {
+test('direciona a antiga demonstração para o diagnóstico real', async ({
+  page,
+}) => {
   await page.goto('/app/assessment/demo');
   await expect(
     page.getByRole('heading', { name: 'Diagnóstico inicial' }),
   ).toBeVisible();
   await expect(
-    page.getByRole('button', { name: 'Iniciar diagnóstico' }),
+    page.getByRole('button', { name: 'Descobrir meu ponto de partida' }),
+  ).toBeVisible();
+  await expect(
+    page.getByRole('radio', { name: /Triagem rápida/ }),
+  ).toBeChecked();
+  await expect(
+    page.getByRole('radio', { name: /Diagnóstico completo/ }),
   ).toBeVisible();
 });
 

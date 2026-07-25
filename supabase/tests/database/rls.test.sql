@@ -31,8 +31,8 @@ select extensions.ok((select updated_at > '2000-01-02'::timestamptz from public.
 select extensions.lives_ok($$update public.student_profiles set residency_year = 2, graduation_year = 2026 where user_id = 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa'$$, 'student updates own academic profile');
 select extensions.results_eq($$select residency_year, graduation_year from public.student_profiles$$, $$values (2::smallint, 2026::smallint)$$, 'own academic values persist');
 select extensions.throws_ok($$insert into public.student_profiles (user_id, residency_year) values ('bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb', 3)$$, '42501', null, 'student cannot create academic data for another user');
-select extensions.is((select count(*) from public.institutions), 3::bigint, 'authenticated student sees active institutions');
-select extensions.is((select count(*) from public.exam_editions), 3::bigint, 'inactive edition is hidden');
+select extensions.is((select count(*) from public.institutions where id in ('10000000-0000-4000-8000-000000000001','10000000-0000-4000-8000-000000000002','10000000-0000-4000-8000-000000000003')), 3::bigint, 'authenticated student sees active seed institutions');
+select extensions.is((select count(*) from public.exam_editions where id in ('40000000-0000-4000-8000-000000000001','40000000-0000-4000-8000-000000000002','40000000-0000-4000-8000-000000000003')), 3::bigint, 'inactive seed edition is hidden');
 select extensions.throws_ok($$insert into public.institutions (name, acronym, state_code) values ('Invasora', 'INV', 'SP')$$, '42501', null, 'student cannot create catalogue records');
 select extensions.throws_ok($$insert into public.student_availability (user_id, weekday, minutes_available) values ('bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb', 1, 60)$$, '42501', null, 'student cannot spoof another user id');
 select extensions.lives_ok($$insert into public.student_availability (user_id, weekday, minutes_available) values ('aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa', 1, 60)$$, 'student inserts own availability');

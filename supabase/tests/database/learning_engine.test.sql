@@ -8,7 +8,7 @@ values
   ('dddddddd-dddd-4ddd-8ddd-dddddddddddd', '00000000-0000-0000-0000-000000000000', 'authenticated', 'authenticated', 'learning-a@example.test', '', now(), now(), now(), '{}', '{"display_name":"Learning A"}'),
   ('eeeeeeee-eeee-4eee-8eee-eeeeeeeeeeee', '00000000-0000-0000-0000-000000000000', 'authenticated', 'authenticated', 'learning-b@example.test', '', now(), now(), now(), '{}', '{"display_name":"Learning B"}');
 
-select extensions.is((select count(*) from public.learning_event_types), 6::bigint, 'seed defines extensible event types');
+select extensions.is((select count(*) from public.learning_event_types where code in ('QuestionAnswered','AssessmentFinished','StudySessionCompleted','ReviewCompleted','FlashcardReviewed','SimulationFinished')), 6::bigint, 'seed defines extensible event types');
 
 select public.record_learning_event(
   'dddddddd-dddd-4ddd-8ddd-dddddddddddd',

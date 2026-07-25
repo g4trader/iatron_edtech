@@ -1,5 +1,7 @@
 begin;
-select plan(12);
+set local role postgres;
+set local search_path = public, extensions;
+select extensions.plan(12);
 select has_column('public','diagnostic_assessments','mode','assessment mode exists');
 select has_column('public','diagnostic_assessments','blueprint_version','blueprint version exists');
 select has_table('public','diagnostic_coverage_policies','coverage policy is versioned');
@@ -12,5 +14,5 @@ select is((select maximum_questions_per_session from public.diagnostic_coverage_
 select ok((select pause_allowed from public.diagnostic_coverage_policies where mode='full_diagnostic'),'full mode can pause');
 select ok((select bool_and(answer_key_validated) from public.diagnostic_question_eligibility where diagnostic_eligible),'eligible questions have validated answer');
 select ok((select bool_and(provenance_kind in ('authorized','synthetic')) from public.diagnostic_question_eligibility),'eligible questions have governed provenance');
-select * from finish();
+select * from extensions.finish();
 rollback;

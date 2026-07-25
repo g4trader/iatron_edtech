@@ -1,4 +1,9 @@
-import { expect, test, type APIRequestContext, type Page } from '@playwright/test';
+import {
+  expect,
+  test,
+  type APIRequestContext,
+  type Page,
+} from '@playwright/test';
 
 const supabaseUrl = process.env.E2E_SUPABASE_URL!;
 const publishableKey = process.env.E2E_SUPABASE_PUBLISHABLE_KEY!;
@@ -89,14 +94,10 @@ test('critical journey: onboarding, diagnóstico, plano, persistência e mobile'
     .getByRole('radio', { name: /Estudo praticamente todos os dias/ })
     .click();
   await page.getByRole('button', { name: 'Salvar e continuar' }).click();
-  await page
-    .getByLabel('Buscar prova, instituição ou cidade')
-    .fill('AMRIGS');
+  await page.getByLabel('Buscar prova, instituição ou cidade').fill('AMRIGS');
   await page.getByRole('checkbox').first().check();
   await page.getByRole('button', { name: 'Salvar e continuar' }).click();
-  await page
-    .getByRole('button', { name: 'Começar minha preparação' })
-    .click();
+  await page.getByRole('button', { name: 'Começar minha preparação' }).click();
   await expect(page).toHaveURL(/\/app$/);
   await expect(journeyStep(page, 'Perfil')).toContainText('Concluído');
   await expect(journeyStep(page, 'Banca')).toContainText('Concluído');
@@ -104,6 +105,12 @@ test('critical journey: onboarding, diagnóstico, plano, persistência e mobile'
 
   // Cenário B — primeira resposta, segurança, retry e retomada.
   await page.getByRole('link', { name: 'Começar diagnóstico' }).click();
+  await expect(
+    page.getByRole('radio', { name: /Triagem rápida/ }),
+  ).toBeChecked();
+  await expect(
+    page.getByRole('radio', { name: /Diagnóstico completo/ }),
+  ).toBeVisible();
   await page
     .getByRole('button', { name: 'Descobrir meu ponto de partida' })
     .click();
@@ -133,10 +140,9 @@ test('critical journey: onboarding, diagnóstico, plano, persistência e mobile'
     },
   );
   expect(retry.status()).toBe(201);
-  const historyAfterRetry = await request.get(
-    `${apiBaseUrl}/v1/assessments`,
-    { headers: { authorization: `Bearer ${token}` } },
-  );
+  const historyAfterRetry = await request.get(`${apiBaseUrl}/v1/assessments`, {
+    headers: { authorization: `Bearer ${token}` },
+  });
   const current = (
     (await historyAfterRetry.json()) as {
       id: string;
@@ -198,14 +204,36 @@ test('critical journey: onboarding, diagnóstico, plano, persistência e mobile'
     page.getByRole('link', { name: /Começar atividade|Retomar atividade/ }),
   ).toHaveAttribute('href', '/app/plan/today');
 
-  // Cenário E — mobile, logout e persistência após novo login.
+  // Cenário E — Tutor real responde dentro do limite operacional.
+  await page.goto('/app/tutor');
+  await page
+    .getByRole('button', { name: /Conversar com/ })
+    .first()
+    .click();
+  await expect(page).toHaveURL(/\/app\/tutor\/[0-9a-f-]+/);
+  await page
+    .getByRole('textbox', { name: 'Mensagem' })
+    .fill('Por que devo seguir este plano de estudos?');
+  await page.getByLabel('Enviar mensagem').click();
+  const tutorAnswer = page.getByLabel('Resposta de IA do Iatron').last();
+  await expect(tutorAnswer).toHaveAttribute('data-status', 'streaming');
+  await expect(tutorAnswer).toHaveAttribute('data-status', 'complete', {
+    timeout: 50_000,
+  });
+  await expect(tutorAnswer).not.toContainText('Resposta interrompida');
+
+  // Cenário F — mobile, logout e persistência após novo login.
   await page.setViewportSize({ width: 375, height: 812 });
   await page.reload();
   await expectNoHorizontalOverflow(page);
   await page.getByRole('button', { name: 'Abrir menu' }).click();
   const mobileDrawer = page.getByTestId('mobile-drawer-layer');
-  await expect(mobileDrawer.getByLabel('Usuário: Estudante Gate')).toBeVisible();
-  await expect(mobileDrawer.getByRole('button', { name: 'Sair' })).toBeVisible();
+  await expect(
+    mobileDrawer.getByLabel('Usuário: Estudante Gate'),
+  ).toBeVisible();
+  await expect(
+    mobileDrawer.getByRole('button', { name: 'Sair' }),
+  ).toBeVisible();
   await mobileDrawer.getByRole('button', { name: 'Sair' }).click();
   await expect(page).toHaveURL(/\/login/);
   await login(page, email, password);

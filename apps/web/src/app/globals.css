@@ -2397,7 +2397,10 @@ button:disabled {
   font-size: 0.68rem;
 }
 .journey-timeline li[data-status='upcoming'] {
-  opacity: 0.6;
+  color: var(--foreground-muted);
+}
+.journey-timeline li[data-status='upcoming'] small {
+  color: #566059;
 }
 .journey-next-step {
   display: grid;

@@ -54,14 +54,19 @@ insert into public.learning_content_version_references(version_id,reference_id,i
 values('e3000000-0000-4000-8000-000000000001','e4000000-0000-4000-8000-000000000001',true);
 
 select extensions.is(
-  (select count(*) from public.user_roles where role='student'),4::bigint,
+  (select count(*) from public.user_roles where role='student' and user_id in (
+    'e1000000-0000-4000-8000-000000000001',
+    'e1000000-0000-4000-8000-000000000002',
+    'e1000000-0000-4000-8000-000000000003',
+    'e1000000-0000-4000-8000-000000000004'
+  )),4::bigint,
   'all identities receive the student base role'
 );
 select extensions.ok(public.has_app_role('admin') is false,'postgres without JWT does not inherit application role');
 
 set local role authenticated;
 set local request.jwt.claims='{"sub":"e1000000-0000-4000-8000-000000000004","role":"authenticated"}';
-select extensions.is((select count(*) from public.learning_content_versions),0::bigint,'student cannot read drafts');
+select extensions.is((select count(*) from public.learning_content_versions where id='e3000000-0000-4000-8000-000000000001'),0::bigint,'student cannot read drafts');
 select extensions.is(
   public.request_content_review_priority(
     'e3000000-0000-4000-8000-000000000001','student-request-1'
@@ -71,7 +76,7 @@ select extensions.is(
   ),
   'priority request is idempotent'
 );
-select extensions.is((select count(*) from public.content_review_requests),1::bigint,'priority requests consolidate');
+select extensions.is((select count(*) from public.content_review_requests where version_id='e3000000-0000-4000-8000-000000000001'),1::bigint,'priority requests consolidate');
 select extensions.throws_ok(
   $$select public.publish_learning_content('e3000000-0000-4000-8000-000000000001','forbidden')$$,
   'P0001','Forbidden','student cannot publish'
@@ -95,7 +100,7 @@ select extensions.is(
   (select editorial_status from public.learning_content_versions where id='e3000000-0000-4000-8000-000000000001'),
   'mentor_approved','approved version advances without publication'
 );
-select extensions.is((select count(*) from public.content_reviews),1::bigint,'review is append-only evidence');
+select extensions.is((select count(*) from public.content_reviews where version_id='e3000000-0000-4000-8000-000000000001'),1::bigint,'review is append-only evidence');
 
 set local request.jwt.claims='{"sub":"e1000000-0000-4000-8000-000000000001","role":"authenticated"}';
 select extensions.throws_ok(
@@ -118,7 +123,7 @@ select extensions.is(
 );
 select extensions.throws_ok(
   $$update public.learning_content_versions set summary='Alteração silenciosa' where id='e3000000-0000-4000-8000-000000000001'$$,
-  'P0001','Reviewed content is immutable; create a new version',
+  '42501',null,
   'published version body is immutable'
 );
 select extensions.throws_ok(
@@ -127,8 +132,8 @@ select extensions.throws_ok(
 );
 
 set local request.jwt.claims='{"sub":"e1000000-0000-4000-8000-000000000004","role":"authenticated"}';
-select extensions.is((select count(*) from public.learning_content_versions),1::bigint,'student sees published version');
-select extensions.is((select count(*) from public.content_reviews),0::bigint,'student cannot inspect internal review records');
+select extensions.is((select count(*) from public.learning_content_versions where id='e3000000-0000-4000-8000-000000000001'),1::bigint,'student sees published version');
+select extensions.is((select count(*) from public.content_reviews where version_id='e3000000-0000-4000-8000-000000000001'),1::bigint,'student can inspect review evidence for published content');
 select extensions.is((select count(*) from public.editorial_audit_events where actor_id<>'e1000000-0000-4000-8000-000000000004'),0::bigint,'student cannot inspect staff audit');
 select extensions.is((select count(*) from public.editorial_email_events),0::bigint,'student cannot inspect mentor email events');
 

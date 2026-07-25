@@ -47,7 +47,8 @@ const delay = (milliseconds: number) =>
   new Promise((resolve) => setTimeout(resolve, milliseconds));
 
 async function* parseSse(response: Response): AsyncIterable<AiStreamEvent> {
-  if (!response.body) throw new AiGatewayError('Resposta sem stream.', 502, false);
+  if (!response.body)
+    throw new AiGatewayError('Resposta sem stream.', 502, false);
   const reader = response.body.getReader();
   const decoder = new TextDecoder();
   let buffer = '';
@@ -98,30 +99,37 @@ export function createOpenAiGateway(config: {
   return {
     async *stream(input) {
       let lastError: unknown;
+      const timeout = AbortSignal.timeout(config.timeoutMs);
       for (let attempt = 0; attempt < 2; attempt += 1) {
-        const timeout = AbortSignal.timeout(config.timeoutMs);
         const signal = AbortSignal.any([input.signal, timeout]);
         try {
-          const response = await request('https://api.openai.com/v1/responses', {
-            method: 'POST',
-            headers: {
-              authorization: `Bearer ${config.apiKey}`,
-              'content-type': 'application/json',
+          const response = await request(
+            'https://api.openai.com/v1/responses',
+            {
+              method: 'POST',
+              headers: {
+                authorization: `Bearer ${config.apiKey}`,
+                'content-type': 'application/json',
+              },
+              body: JSON.stringify({
+                model: config.model,
+                instructions: input.instructions,
+                input: input.messages,
+                max_output_tokens: input.maxOutputTokens,
+                safety_identifier: input.safetyIdentifier,
+                store: false,
+                stream: true,
+              }),
+              signal,
             },
-            body: JSON.stringify({
-              model: config.model,
-              instructions: input.instructions,
-              input: input.messages,
-              max_output_tokens: input.maxOutputTokens,
-              safety_identifier: input.safetyIdentifier,
-              store: false,
-              stream: true,
-            }),
-            signal,
-          });
+          );
           if (!response.ok) {
             const retryable = response.status === 429 || response.status >= 500;
-            throw new AiGatewayError('OpenAI indisponível.', response.status, retryable);
+            throw new AiGatewayError(
+              'OpenAI indisponível.',
+              response.status,
+              retryable,
+            );
           }
           yield* parseSse(response);
           return;
@@ -150,7 +158,11 @@ export function tutorSafetyIdentifier(studentId: string): string {
 
 export type GuardrailResult =
   | { allowed: true }
-  | { allowed: false; code: 'PROMPT_INJECTION' | 'CLINICAL_MISUSE'; message: string };
+  | {
+      allowed: false;
+      code: 'PROMPT_INJECTION' | 'CLINICAL_MISUSE';
+      message: string;
+    };
 
 export function evaluateTutorInput(input: string): GuardrailResult {
   const normalized = input.normalize('NFKC').toLocaleLowerCase('pt-BR');
@@ -162,7 +174,8 @@ export function evaluateTutorInput(input: string): GuardrailResult {
     return {
       allowed: false,
       code: 'PROMPT_INJECTION',
-      message: 'Não posso atender pedidos para revelar ou substituir instruções internas.',
+      message:
+        'Não posso atender pedidos para revelar ou substituir instruções internas.',
     };
   const clinical =
     /\b(meu paciente|estou com|qual dose|prescreva|diagnostique|devo tomar|posso tomar)\b/.test(

@@ -1,5 +1,7 @@
 begin;
-select plan(16);
+set local role postgres;
+set local search_path = public, extensions;
+select extensions.plan(16);
 
 select has_table('public', 'learning_dna_policies', 'versioned policies exist');
 select has_table('public', 'learning_dna_snapshots', 'snapshots exist');
@@ -54,5 +56,5 @@ select is(
   'one synthetic versioned policy is active'
 );
 
-select * from finish();
+select * from extensions.finish();
 rollback;

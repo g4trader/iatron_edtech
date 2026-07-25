@@ -8,7 +8,7 @@ insert into auth.users(id,instance_id,aud,role,email,encrypted_password,email_co
 
 set local role authenticated;
 set local request.jwt.claims='{"sub":"abababab-abab-4aba-8aba-abababababab","role":"authenticated"}';
-select public.start_diagnostic_assessment('Diagnóstico inicial',null,null,30::smallint,2::smallint,array['54000000-0000-4000-8000-000000000001'::uuid,'54000000-0000-4000-8000-000000000002'::uuid]) as assessment_id \gset
+select public.start_diagnostic_assessment('Diagnóstico inicial',null,null,30::smallint,1::smallint,array['54000000-0000-4000-8000-000000000001'::uuid,'54000000-0000-4000-8000-000000000002'::uuid]) as assessment_id \gset
 select extensions.is((select status from public.diagnostic_assessments where id=:'assessment_id'),'active','assessment starts active');
 select extensions.is((select count(*) from public.assessment_competencies where assessment_id=:'assessment_id'),2::bigint,'target competencies are persisted');
 select extensions.throws_ok($$insert into public.diagnostic_assessments(student_id,objective,duration_minutes,question_count) values(auth.uid(),'Bypass',30,2)$$,'42501',null,'browser cannot bypass start function');

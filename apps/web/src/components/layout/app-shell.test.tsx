@@ -102,7 +102,7 @@ describe('AppShell', () => {
     );
 
     expect(screen.getByRole('link', { name: /Jornada/ })).toBeVisible();
-    expect(screen.getByRole('link', { name: /Simulados/ })).toBeVisible();
+    expect(screen.queryByRole('link', { name: /Simulados/ })).toBeNull();
     expect(screen.getByRole('link', { name: /Mentores/ })).toBeVisible();
     expect(screen.getByRole('link', { name: /Perfil/ })).toBeVisible();
     expect(screen.queryByText('Orientações recentes')).not.toBeInTheDocument();

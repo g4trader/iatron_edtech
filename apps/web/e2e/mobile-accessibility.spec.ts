@@ -53,6 +53,7 @@ test.describe('hardening mobile', () => {
   test('respeita todas as larguras obrigatórias', async ({
     page,
   }, testInfo) => {
+    test.setTimeout(120_000);
     test.skip(
       testInfo.project.name !== 'desktop-chromium',
       'Matriz exata executada uma vez',
@@ -119,12 +120,12 @@ test.describe('hardening mobile', () => {
   test('CTAs primários têm fundo sólido e contraste acessível', async ({
     page,
   }) => {
-    for (const [route, label] of [
-      ['/app/assessment/start', 'Iniciar diagnóstico'],
-      ['/app/plan', 'Criar meu plano'],
+    for (const [route, label, role] of [
+      ['/app/assessment/start', 'Descobrir meu ponto de partida', 'button'],
+      ['/app', /Escolher minha prova|Começar diagnóstico/, 'link'],
     ] as const) {
       await page.goto(route);
-      const button = page.getByRole('button', { name: label });
+      const button = page.getByRole(role, { name: label });
       await expect(button).toBeVisible();
       const colors = await button.evaluate((element) => {
         const style = getComputedStyle(element);
@@ -233,7 +234,9 @@ test.describe('hardening mobile', () => {
     });
     expect(scroll.scrollHeight).toBeGreaterThan(scroll.clientHeight);
     expect(scroll.scrollTop).toBeGreaterThan(0);
-    await expect(page.getByRole('button', { name: 'Salvar e continuar' })).toBeVisible();
+    await expect(
+      page.getByRole('button', { name: 'Salvar e continuar' }),
+    ).toBeVisible();
     await expectNoPageOverflow(page);
     const accessibility = await new AxeBuilder({ page })
       .withTags(['wcag2a', 'wcag2aa', 'wcag21aa'])

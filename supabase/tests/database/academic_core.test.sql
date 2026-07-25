@@ -24,7 +24,7 @@ set local role authenticated;
 set local request.jwt.claims = '{"sub":"aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa","role":"authenticated"}';
 select extensions.is((select count(*) from public.competencies), 5::bigint, 'authenticated students read competencies');
 select extensions.is((select count(*) from public.guidelines), 2::bigint, 'authenticated students read guidelines');
-select extensions.is((select count(*) from public.questions), 2::bigint, 'authenticated students read published seed questions');
+select extensions.is((select count(*) from public.questions where id in ('58000000-0000-4000-8000-000000000001','58000000-0000-4000-8000-000000000002')), 2::bigint, 'authenticated students read published seed questions');
 select extensions.throws_ok($$insert into public.medical_areas (code, name) values ('INVALID', 'Área invasora')$$, '42501', null, 'authenticated students cannot mutate catalog');
 
 set local role anon;

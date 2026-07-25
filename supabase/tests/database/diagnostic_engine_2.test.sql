@@ -1,5 +1,7 @@
 begin;
-select plan(14);
+set local role postgres;
+set local search_path = public, extensions;
+select extensions.plan(14);
 
 select has_column('public', 'question_attempts', 'evidence_signal',
   'attempt stores the temporary evidence signal');
@@ -51,5 +53,5 @@ select col_has_check(
   'completion reason rejects invented precision'
 );
 
-select * from finish();
+select * from extensions.finish();
 rollback;

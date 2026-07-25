@@ -16,7 +16,7 @@ select public.import_amrigs_content(
     'questions',jsonb_build_array(
       jsonb_build_object(
         'sourceKey','AMRIGS:MVP:DB.TEST.001',
-        'canonicalHash',repeat('a',64),
+        'canonicalHash','3f7ad6e8bc2f40b88b9a405da7424cdf727ef5bfabb8fe909826889dc0fb857f',
         'institutionId','61000000-0000-4000-8000-000000000001',
         'position',950,
         'stem','Conteúdo sintético para teste do pipeline.',
@@ -66,7 +66,7 @@ select extensions.is(
       'createdBy','pgTAP',
       'questions',jsonb_build_array(
         jsonb_build_object(
-          'sourceKey','AMRIGS:MVP:DB.TEST.001','canonicalHash',repeat('a',64),
+          'sourceKey','AMRIGS:MVP:DB.TEST.001','canonicalHash','3f7ad6e8bc2f40b88b9a405da7424cdf727ef5bfabb8fe909826889dc0fb857f',
           'institutionId','61000000-0000-4000-8000-000000000001',
           'position',950,'stem','Conteúdo sintético para teste do pipeline.',
           'commentary','Não homologado.','difficulty',1,'cognitiveLevel','recognition',
