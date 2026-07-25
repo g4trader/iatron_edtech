@@ -651,10 +651,7 @@ create policy learning_contents_staff on public.learning_contents for select to 
 using (
   public.can_manage_editorial()
   or assigned_mentor_id=(select auth.uid())
-  or exists (
-    select 1 from public.learning_content_versions v
-    where v.id=current_published_version_id and v.editorial_status='published'
-  )
+  or current_published_version_id is not null
 );
 create policy learning_versions_visible on public.learning_content_versions for select to authenticated
 using (
