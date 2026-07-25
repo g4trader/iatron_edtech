@@ -26,6 +26,7 @@ describe('canonicalStagingUrl', () => {
       expect.arrayContaining([
         '/app/:path*',
         '/review/:path*',
+        '/review-preview/:path*',
         '/editorial/:path*',
         '/admin/:path*',
       ]),

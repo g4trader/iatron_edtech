@@ -17,11 +17,13 @@ export function EditorialShell({
   area,
   homeHref,
   links,
+  showStudentLink = true,
   children,
 }: {
   area: string;
   homeHref: string;
   links: { href: string; label: string }[];
+  showStudentLink?: boolean;
   children: ReactNode;
 }) {
   return (
@@ -51,7 +53,7 @@ export function EditorialShell({
                 {link.label}
               </a>
             ))}
-            <a href="/app">Área do estudante</a>
+            {showStudentLink && <a href="/app">Área do estudante</a>}
           </nav>
         </div>
       </header>

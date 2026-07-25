@@ -55,20 +55,27 @@ export function LearningContentPage({
   itemId,
   itemStatus,
   reason,
+  preview = false,
 }: {
   material: LearningContentVersion;
   itemId: string;
   itemStatus: string;
   reason: string;
+  preview?: boolean;
 }) {
   const mentor =
     mentors.find(({ specialty }) => specialty === material.mentorSpecialty) ??
     defaultMentor;
   return (
     <main className="experience-page mx-auto w-full max-w-4xl space-y-8 px-4 py-6 sm:p-8">
-      <Link className="text-sm font-semibold text-[var(--primary)]" href="/app">
-        ← Voltar para minha Jornada
-      </Link>
+      {!preview && (
+        <Link
+          className="text-sm font-semibold text-[var(--primary)]"
+          href="/app"
+        >
+          ← Voltar para minha Jornada
+        </Link>
+      )}
       <header className="space-y-3">
         <p className="text-sm text-[var(--foreground-muted)]">
           {material.mentorSpecialty ?? 'Preparação médica'} ·{' '}
@@ -174,7 +181,7 @@ export function LearningContentPage({
         )}
       </section>
 
-      {material.editorialStatus !== 'published' && (
+      {!preview && material.editorialStatus !== 'published' && (
         <form action={requestReviewPriority}>
           <input name="versionId" type="hidden" value={material.id} />
           <ActionSubmitButton pendingLabel="Registrando pedido…">
@@ -184,30 +191,34 @@ export function LearningContentPage({
           </ActionSubmitButton>
         </form>
       )}
-      {itemStatus === 'planned' ? (
-        <form action={startLearningActivity}>
-          <input name="itemId" type="hidden" value={itemId} />
-          <ActionSubmitButton pendingLabel="Iniciando atividade…">
-            Iniciar atividade
-          </ActionSubmitButton>
-        </form>
-      ) : (
-        <form action={completeLearningActivity}>
-          <input name="itemId" type="hidden" value={itemId} />
-          <input
-            name="actualMinutes"
-            type="hidden"
-            value={material.estimatedMinutes}
-          />
-          <ActionSubmitButton pendingLabel="Atualizando sua jornada…">
-            Finalizar e atualizar minha jornada
-          </ActionSubmitButton>
-        </form>
+      {!preview && (
+        <>
+          {itemStatus === 'planned' ? (
+            <form action={startLearningActivity}>
+              <input name="itemId" type="hidden" value={itemId} />
+              <ActionSubmitButton pendingLabel="Iniciando atividade…">
+                Iniciar atividade
+              </ActionSubmitButton>
+            </form>
+          ) : (
+            <form action={completeLearningActivity}>
+              <input name="itemId" type="hidden" value={itemId} />
+              <input
+                name="actualMinutes"
+                type="hidden"
+                value={material.estimatedMinutes}
+              />
+              <ActionSubmitButton pendingLabel="Atualizando sua jornada…">
+                Finalizar e atualizar minha jornada
+              </ActionSubmitButton>
+            </form>
+          )}
+          <p className="text-sm text-[var(--foreground-muted)]">
+            Ao finalizar, seus próximos passos serão reorganizados com base no
+            progresso registrado.
+          </p>
+        </>
       )}
-      <p className="text-sm text-[var(--foreground-muted)]">
-        Ao finalizar, seus próximos passos serão reorganizados com base no
-        progresso registrado.
-      </p>
     </main>
   );
 }

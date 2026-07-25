@@ -1,6 +1,7 @@
 import {
   appRoleSchema,
   learningContentVersionSchema,
+  mentorReviewHistorySchema,
   type LearningContentVersion,
 } from '@iatron/contracts';
 import { z } from 'zod';
@@ -51,6 +52,19 @@ export const editorial = {
     const response = await request(`/review/contents/${id}`);
     if (!response.ok) throw new Error('Material de revisão indisponível.');
     return learningContentVersionSchema.parse(await response.json());
+  },
+  async previousReviewVersion(id: string) {
+    const response = await request(`/review/contents/${id}/previous`);
+    if (!response.ok) throw new Error('Comparação de versões indisponível.');
+    const body: unknown = await response.json();
+    return body === null ? null : learningContentVersionSchema.parse(body);
+  },
+  async reviewHistory(page = 1, pageSize = 20) {
+    const response = await request(
+      `/review/history?page=${page}&pageSize=${pageSize}`,
+    );
+    if (!response.ok) throw new Error('Histórico de revisões indisponível.');
+    return mentorReviewHistorySchema.parse(await response.json());
   },
   async mutate(path: string, body: Record<string, unknown>) {
     const response = await request(path, {

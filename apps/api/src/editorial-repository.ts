@@ -2,6 +2,7 @@ import {
   learningContentVersionSchema,
   type AppRole,
   type LearningContentVersion,
+  type MentorReviewHistory,
 } from '@iatron/contracts';
 import type { ApiEnvironment } from './config/environment.js';
 import { RepositoryError } from './student-repository.js';
@@ -24,6 +25,11 @@ export interface EditorialRepository {
     scope: 'student' | 'review' | 'admin',
   ): Promise<LearningContentVersion[]>;
   get(versionId: string): Promise<LearningContentVersion | null>;
+  previousVersion(
+    contentId: string,
+    versionNumber: number,
+  ): Promise<LearningContentVersion | null>;
+  reviewHistory(page: number, pageSize: number): Promise<MentorReviewHistory>;
   createDraft(input: Record<string, unknown>): Promise<string>;
   createVersion(input: {
     contentId: string;
@@ -79,12 +85,13 @@ export function createEditorialRepository(
   const rpc = (name: string, body: object) =>
     request(`rpc/${name}`, { method: 'POST', body: JSON.stringify(body) });
   const select =
-    'id,content_id,version_number,schema_version,language,title,subtitle,estimated_minutes,objectives,summary,sections,key_points,clinical_reasoning,exam_application,common_mistakes,quick_review,conclusion,video,editorial_status,ai_assisted,ai_model,prompt_version,is_synthetic,content_hash,published_at,reviewed_at,learning_contents!learning_content_versions_content_id_fkey!inner(canonical_key,slug,specialty_id,competency_id,assigned_mentor_id,mentor_profiles(professional_name,specialties(name))),content_reviews(id,decision),learning_content_version_references(is_required,content_references(*)),content_review_requests(id,active)';
+    'id,content_id,version_number,schema_version,language,title,subtitle,estimated_minutes,objectives,summary,sections,key_points,clinical_reasoning,exam_application,common_mistakes,quick_review,conclusion,video,editorial_status,ai_assisted,ai_model,prompt_version,is_synthetic,content_hash,published_at,reviewed_at,provenance,author:profiles!learning_content_versions_author_id_fkey(display_name),learning_contents!learning_content_versions_content_id_fkey!inner(canonical_key,slug,specialty_id,competency_id,assigned_mentor_id,content_specialty:specialties!learning_contents_specialty_id_fkey(name),content_theme:themes!learning_contents_theme_id_fkey(name),content_competency:competencies!learning_contents_competency_id_fkey(name),mentor_profiles(professional_name,specialties(name))),content_reviews(id,decision),learning_content_version_references(is_required,content_references(*)),content_review_requests(id,active)';
 
   const serialize = (row: Row): LearningContentVersion => {
     const content = object(row.learning_contents);
     const mentor = object(content.mentor_profiles);
     const specialty = object(mentor.specialties);
+    const author = object(row.author);
     const review = rows(row.content_reviews)
       .filter((item) => text(item, 'decision') === 'approved')
       .at(-1);
@@ -128,6 +135,11 @@ export function createEditorialRepository(
       assignedMentorId: nullableText(content, 'assigned_mentor_id'),
       mentorName: nullableText(mentor, 'professional_name'),
       mentorSpecialty: nullableText(specialty, 'name'),
+      specialtyName: nullableText(object(content.content_specialty), 'name'),
+      themeName: nullableText(object(content.content_theme), 'name'),
+      competencyName: nullableText(object(content.content_competency), 'name'),
+      editorName: nullableText(author, 'display_name'),
+      provenance: object(row.provenance),
       reviewId: review ? text(review, 'id') : null,
       reviewDecision: review ? text(review, 'decision') : null,
       reviewRequested: requests.length > 0,
@@ -187,6 +199,82 @@ export function createEditorialRepository(
         ),
       )[0];
       return row ? serialize(row) : null;
+    },
+    async previousVersion(contentId, versionNumber) {
+      const row = rows(
+        await get(
+          `learning_content_versions?select=${select}&content_id=eq.${encodeURIComponent(contentId)}&version_number=lt.${versionNumber}&order=version_number.desc&limit=1`,
+        ),
+      )[0];
+      return row ? serialize(row) : null;
+    },
+    async reviewHistory(page, pageSize) {
+      const offset = (page - 1) * pageSize;
+      const reviewRows = rows(
+        await get(
+          `content_reviews?select=id,content_id,version_id,mentor_id,decision,comment,observed_references,version_hash,created_at&order=created_at.desc&limit=${pageSize}&offset=${offset}`,
+        ),
+      );
+      const totalRows = rows(await get('content_reviews?select=id'));
+      const versionIds = reviewRows.map((row) => text(row, 'version_id'));
+      const versionRows = versionIds.length
+        ? rows(
+            await get(
+              `learning_content_versions?select=id,title,version_number,editorial_status,author_id&id=in.(${versionIds.join(',')})`,
+            ),
+          )
+        : [];
+      const authorIds = versionRows.map((row) => text(row, 'author_id'));
+      const profileRows = authorIds.length
+        ? rows(
+            await get(
+              `profiles?select=id,display_name&id=in.(${authorIds.join(',')})`,
+            ),
+          )
+        : [];
+      const mentorRows = rows(
+        await get('mentor_profiles?select=user_id,professional_name'),
+      );
+      return {
+        items: reviewRows.map((review) => {
+          const version = versionRows.find(
+            (item) => text(item, 'id') === text(review, 'version_id'),
+          );
+          const editor = profileRows.find(
+            (item) => text(item, 'id') === text(version ?? {}, 'author_id'),
+          );
+          const mentor = mentorRows.find(
+            (item) => text(item, 'user_id') === text(review, 'mentor_id'),
+          );
+          return {
+            reviewId: text(review, 'id'),
+            contentId: text(review, 'content_id'),
+            versionId: text(review, 'version_id'),
+            title: text(version ?? {}, 'title'),
+            versionNumber: number(version ?? {}, 'version_number'),
+            mentorName:
+              nullableText(mentor ?? {}, 'professional_name') ??
+              'Mentor responsável',
+            editorName: nullableText(editor ?? {}, 'display_name'),
+            decision: text(review, 'decision') as
+              | 'approved'
+              | 'changes_requested'
+              | 'rejected',
+            comment: nullableText(review, 'comment'),
+            status: text(
+              version ?? {},
+              'editorial_status',
+            ) as MentorReviewHistory['items'][number]['status'],
+            reviewedAt: text(review, 'created_at'),
+            reviewMinutes: null,
+            referencesModified: rows(review.observed_references).length,
+            versionHash: text(review, 'version_hash'),
+          };
+        }),
+        page,
+        pageSize,
+        total: totalRows.length,
+      };
     },
     async createDraft(input) {
       return String(await rpc('create_learning_content_draft', snake(input)));

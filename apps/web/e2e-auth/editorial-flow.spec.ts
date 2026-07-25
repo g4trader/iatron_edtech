@@ -245,16 +245,16 @@ test('editor → mentor → admin → estudante: conteúdo versionado e revisão
   await page.goto('/admin');
   await expect(page).toHaveURL(/\/app$/);
   await page.goto('/review');
-  await page.getByRole('link', { name: 'Abrir conteúdo para revisão' }).click();
+  await page.getByRole('link', { name: 'Minha fila' }).click();
+  await page.getByRole('link', { name: 'Revisar esta versão' }).click();
   await expect(
     page.getByText(/Rascunho preparado com apoio de IA/),
   ).toBeVisible();
+  await expect(
+    page.getByRole('link', { name: 'Visualizar como aluno' }),
+  ).toBeVisible();
   await page.getByLabel('Aprovar versão').check();
-  await page
-    .getByLabel('Declaração para aprovação')
-    .fill(
-      'Confirmo que revisei esta versão para fins educacionais dentro da minha área de atuação.',
-    );
+  await page.getByLabel(/Li e confirmo esta declaração/).check();
   await page.getByRole('button', { name: 'Confirmar decisão' }).click();
   await expect(page).toHaveURL(/\/review$/);
   const reviews = (await service(
@@ -399,12 +399,20 @@ test('editor → mentor → admin → estudante: conteúdo versionado e revisão
   expect(size.scroll).toBeLessThanOrEqual(size.client);
   await logout(page);
   await login(page, 'mentor', password);
-  await page.goto('/review');
-  const reviewSize = await page.evaluate(() => ({
-    client: document.documentElement.clientWidth,
-    scroll: document.documentElement.scrollWidth,
-  }));
-  expect(reviewSize.scroll).toBeLessThanOrEqual(reviewSize.client);
+  for (const viewport of [
+    { width: 390, height: 844 },
+    { width: 414, height: 896 },
+    { width: 768, height: 1024 },
+    { width: 1280, height: 900 },
+  ]) {
+    await page.setViewportSize(viewport);
+    await page.goto('/review');
+    const reviewSize = await page.evaluate(() => ({
+      client: document.documentElement.clientWidth,
+      scroll: document.documentElement.scrollWidth,
+    }));
+    expect(reviewSize.scroll).toBeLessThanOrEqual(reviewSize.client);
+  }
 
   const tokenResponse = await request.post(
     `${supabaseUrl}/auth/v1/token?grant_type=password`,

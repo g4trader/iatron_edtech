@@ -12,12 +12,15 @@ export default async function ReviewLayout({
   await requireEditorialRole(['mentor']);
   return (
     <EditorialShell
-      area="Central de Revisão"
+      area="Mentoria médica"
       homeHref="/review"
       links={[
-        { href: '/review', label: 'Fila' },
+        { href: '/review/queue', label: 'Minha fila' },
+        { href: '/review/active', label: 'Em revisão' },
         { href: '/review/history', label: 'Histórico' },
+        { href: '/review/profile', label: 'Perfil' },
       ]}
+      showStudentLink={false}
     >
       {children}
     </EditorialShell>

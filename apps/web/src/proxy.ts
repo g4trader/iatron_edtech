@@ -70,6 +70,7 @@ export const config = {
   matcher: [
     '/app/:path*',
     '/review/:path*',
+    '/review-preview/:path*',
     '/editorial/:path*',
     '/admin/:path*',
     '/login',

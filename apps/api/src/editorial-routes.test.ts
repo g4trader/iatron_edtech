@@ -44,6 +44,11 @@ const material: LearningContentVersion = {
   assignedMentorId: mentorId,
   mentorName: 'Mentor E2E',
   mentorSpecialty: 'Clínica Médica',
+  specialtyName: 'Clínica Médica',
+  themeName: 'Emergências',
+  competencyName: 'Reconhecer instabilidade',
+  editorName: 'Editor E2E',
+  provenance: {},
   reviewId: null,
   reviewDecision: null,
   reviewRequested: false,
@@ -55,6 +60,13 @@ const repository: EditorialRepository = {
   roles: async () => roles,
   list: async () => [material],
   get: async () => material,
+  previousVersion: async () => null,
+  reviewHistory: async (page, pageSize) => ({
+    items: [],
+    page,
+    pageSize,
+    total: 0,
+  }),
   createDraft: async () => versionId,
   createVersion: async () => versionId,
   submit: async () => contentId,
@@ -186,6 +198,27 @@ describe('editorial routes', () => {
       },
     });
     expect(response.statusCode).toBe(201);
+    await server.close();
+  });
+
+  it('provides dedicated mentor history and version comparison data', async () => {
+    roles = ['mentor'];
+    const server = await app();
+    const previous = await server.inject({
+      method: 'GET',
+      url: `/v1/review/contents/${versionId}/previous`,
+      headers: { authorization: 'Bearer test-token' },
+    });
+    expect(previous.statusCode).toBe(200);
+    expect(previous.json()).toBeNull();
+
+    const history = await server.inject({
+      method: 'GET',
+      url: '/v1/review/history?page=1&pageSize=20',
+      headers: { authorization: 'Bearer test-token' },
+    });
+    expect(history.statusCode).toBe(200);
+    expect(history.json()).toMatchObject({ page: 1, pageSize: 20, total: 0 });
     await server.close();
   });
 });

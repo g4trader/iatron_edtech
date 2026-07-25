@@ -1106,6 +1106,11 @@ export const learningContentVersionSchema = z.object({
   assignedMentorId: uuidSchema.nullable(),
   mentorName: z.string().nullable(),
   mentorSpecialty: z.string().nullable(),
+  specialtyName: z.string().nullable(),
+  themeName: z.string().nullable(),
+  competencyName: z.string().nullable(),
+  editorName: z.string().nullable(),
+  provenance: z.record(z.string(), z.unknown()),
   reviewId: uuidSchema.nullable(),
   reviewDecision: z
     .enum(['approved', 'changes_requested', 'rejected'])
@@ -1117,6 +1122,34 @@ export const learningContentVersionSchema = z.object({
 export type LearningContentVersion = z.infer<
   typeof learningContentVersionSchema
 >;
+
+export const mentorReviewHistoryItemSchema = z.object({
+  reviewId: uuidSchema,
+  contentId: uuidSchema,
+  versionId: uuidSchema,
+  title: z.string(),
+  versionNumber: z.number().int().positive(),
+  mentorName: z.string(),
+  editorName: z.string().nullable(),
+  decision: z.enum(['approved', 'changes_requested', 'rejected']),
+  comment: z.string().nullable(),
+  status: learningContentStatusSchema,
+  reviewedAt: z.iso.datetime({ offset: true }),
+  reviewMinutes: z.number().int().nonnegative().nullable(),
+  referencesModified: z.number().int().nonnegative(),
+  versionHash: z.string().length(64),
+});
+export type MentorReviewHistoryItem = z.infer<
+  typeof mentorReviewHistoryItemSchema
+>;
+
+export const mentorReviewHistorySchema = z.object({
+  items: z.array(mentorReviewHistoryItemSchema),
+  page: z.number().int().positive(),
+  pageSize: z.number().int().positive(),
+  total: z.number().int().nonnegative(),
+});
+export type MentorReviewHistory = z.infer<typeof mentorReviewHistorySchema>;
 
 export const createLearningContentDraftSchema = z.object({
   canonicalKey: z.string().regex(/^[a-z0-9][a-z0-9._-]+$/),

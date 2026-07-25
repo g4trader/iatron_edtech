@@ -90,6 +90,24 @@ export async function registerEditorialRoutes(
     if (!(await requireRole(request, reply, repo, ['mentor']))) return;
     return (await repo.get(versionId(request))) ?? reply.status(404).send();
   });
+  app.get('/review/contents/:versionId/previous', async (request, reply) => {
+    const repo = repository(request);
+    if (!(await requireRole(request, reply, repo, ['mentor']))) return;
+    const current = await repo.get(versionId(request));
+    if (!current) return reply.status(404).send();
+    return repo.previousVersion(current.contentId, current.versionNumber);
+  });
+  app.get('/review/history', async (request, reply) => {
+    const repo = repository(request);
+    if (!(await requireRole(request, reply, repo, ['mentor']))) return;
+    const query = z
+      .object({
+        page: z.coerce.number().int().positive().default(1),
+        pageSize: z.coerce.number().int().min(1).max(50).default(20),
+      })
+      .parse(request.query);
+    return repo.reviewHistory(query.page, query.pageSize);
+  });
   app.post('/review/contents/:versionId/decision', async (request, reply) => {
     const repo = repository(request);
     if (!(await requireRole(request, reply, repo, ['mentor']))) return;
