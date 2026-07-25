@@ -85,12 +85,22 @@ export function createAssessmentRepository(
       new URL(`/rest/v1/${path}`, environment.SUPABASE_URL),
       { ...init, headers: { ...headers, ...init?.headers } },
     );
-    if (!response.ok)
-      throw new RepositoryError(
-        `Assessment repository failed with ${response.status}`,
-        'ASSESSMENT_REPOSITORY_ERROR',
-      );
     const body = await response.text();
+    if (!response.ok) {
+      let upstreamCode = 'UNKNOWN';
+      let upstreamMessage = 'Database request rejected';
+      try {
+        const error = object(JSON.parse(body) as unknown);
+        upstreamCode = text(error, 'code') || upstreamCode;
+        upstreamMessage = text(error, 'message') || upstreamMessage;
+      } catch {
+        // The upstream response was not JSON; do not expose its raw body.
+      }
+      throw new RepositoryError(
+        `Assessment repository failed with ${response.status}: ${upstreamCode} ${upstreamMessage}`,
+        `ASSESSMENT_REPOSITORY_ERROR_${upstreamCode}`,
+      );
+    }
     return body ? (JSON.parse(body) as unknown) : null;
   };
   const get = (path: string) => request(path);

@@ -23,7 +23,17 @@ select extensions.is((select count(*) from public.learning_events where id=(sele
 select extensions.is((select count(*) from public.learning_evidence where source_event_id=(select learning_event_id from public.question_attempts where id=:'attempt_id')),2::bigint,'attempt automatically creates competency evidence');
 select extensions.is((select count(*) from public.current_mastery where student_id=auth.uid()),2::bigint,'attempt automatically recalculates mastery');
 select extensions.throws_ok(format('update public.question_attempts set response_time_ms=1 where id=%L',:'attempt_id'),'42501',null,'browser cannot mutate attempts');
-select extensions.throws_ok(format('select public.answer_diagnostic_question(%L,%L,%L,1000,%L)',:'assessment_id','59000000-0000-4000-8000-000000000001','5a000000-0000-4000-8000-000000000002','low'),'23505',null,'a question cannot be answered twice');
+select extensions.is(
+  public.answer_diagnostic_question(
+    :'assessment_id'::uuid,
+    '59000000-0000-4000-8000-000000000001'::uuid,
+    '5a000000-0000-4000-8000-000000000002'::uuid,
+    1000,
+    'low'
+  ),
+  :'attempt_id'::uuid,
+  'retry returns the original attempt without duplicating evidence'
+);
 
 select public.finish_diagnostic_assessment(:'assessment_id'::uuid) as result_id \gset
 select extensions.is((select status from public.diagnostic_assessments where id=:'assessment_id'),'completed','assessment finishes');

@@ -20,9 +20,9 @@ select has_index('public', 'learning_dna_snapshots',
 select has_trigger('public', 'learning_dna_snapshots',
   'learning_dna_snapshots_immutable',
   'snapshot history cannot be overwritten');
-select has_trigger('public', 'question_attempts',
+select hasnt_trigger('public', 'question_attempts',
   'question_attempts_capture_learning_dna',
-  'new attempts capture an append-only snapshot');
+  'a derived snapshot cannot abort the primary diagnostic attempt');
 select policies_are(
   'public', 'learning_dna_policies',
   array['learning_dna_policies_read'],
