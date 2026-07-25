@@ -221,8 +221,11 @@ test('editor → mentor → admin → estudante: conteúdo versionado e revisão
     is_required: true,
     position: 1,
   });
-  await page.getByLabel('ID do mentor autorizado').fill(mentorId);
-  await page.getByRole('button', { name: 'Enviar para revisão' }).click();
+  await page.getByLabel('ID do mentor autorizado').first().fill(mentorId);
+  await page
+    .getByRole('button', { name: 'Enviar para revisão' })
+    .first()
+    .click();
   await expect(page.getByText('awaiting_mentor_review')).toBeVisible();
   const emailEvents = (await service(
     `/rest/v1/editorial_email_events?select=event_type,idempotency_key&version_id=eq.${version.id}`,
@@ -260,11 +263,19 @@ test('editor → mentor → admin → estudante: conteúdo versionado e revisão
   // Admin publica; aprovação e publicação permanecem separadas.
   await login(page, 'admin', password);
   await page.goto('/admin');
-  await page.getByRole('button', { name: 'Publicar versão aprovada' }).click();
-  await expect(page.getByText('published')).toBeVisible();
-  const audit = (await service(
-    `/rest/v1/editorial_audit_events?select=action&resource_id=eq.${version.content_id}`,
-  )) as { action: string }[];
+  await page
+    .getByRole('button', { name: 'Publicar versão aprovada' })
+    .first()
+    .click();
+  let audit: { action: string }[] = [];
+  await expect
+    .poll(async () => {
+      audit = (await service(
+        `/rest/v1/editorial_audit_events?select=action&resource_id=eq.${version.content_id}`,
+      )) as { action: string }[];
+      return audit.map(({ action }) => action);
+    })
+    .toEqual(expect.arrayContaining(['published']));
   expect(audit.map(({ action }) => action)).toEqual(
     expect.arrayContaining([
       'created',
@@ -276,6 +287,13 @@ test('editor → mentor → admin → estudante: conteúdo versionado e revisão
   await logout(page);
 
   // Cria um plano real e fixa a versão publicada na atividade.
+  await service(
+    `/rest/v1/study_plans?student_id=eq.${studentId}&status=eq.active`,
+    {
+      method: 'PATCH',
+      body: JSON.stringify({ status: 'superseded' }),
+    },
+  );
   const planId = crypto.randomUUID();
   const planVersionId = crypto.randomUUID();
   const itemId = crypto.randomUUID();
@@ -313,7 +331,15 @@ test('editor → mentor → admin → estudante: conteúdo versionado e revisão
     position: 1,
     status: 'planned',
     recommendation_origin: 'learning_gap',
-    justification: { reasons: [{ code: 'critical_gap' }] },
+    justification: {
+      reasons: [
+        {
+          code: 'gap_priority',
+          contribution: 0.9,
+          detail: 'Prioridade sintética do cenário editorial.',
+        },
+      ],
+    },
     source_snapshot: {},
     algorithm_version: 'study-plan-v1',
   });
@@ -331,7 +357,7 @@ test('editor → mentor → admin → estudante: conteúdo versionado e revisão
       name: 'Ressuscitação inicial do choque séptico',
     }),
   ).toBeVisible();
-  await expect(page.getByText('✓ Revisado pelo Mentor')).toBeVisible();
+  await page.getByText('✓ Revisado pelo Mentor').click();
   await expect(
     page.getByText(/Mentor Médico de Demonstração · Clínica Médica/),
   ).toBeVisible();

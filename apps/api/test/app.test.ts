@@ -28,7 +28,7 @@ describe('operational routes', () => {
       service: 'iatron-api',
       buildSha: 'local',
       contractVersion: 'journey-v1',
-      migrationBaseline: '202607250003',
+      migrationBaseline: '202607250004',
     });
   });
 
