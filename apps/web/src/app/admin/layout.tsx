@@ -9,15 +9,12 @@ export default async function AdminLayout({
 }: {
   children: ReactNode;
 }) {
-  await requireEditorialRole(['editor', 'admin']);
+  await requireEditorialRole(['admin']);
   return (
     <EditorialShell
-      area="Operação editorial"
-      links={[
-        { href: '/admin', label: 'Visão geral' },
-        { href: '/admin/content', label: 'Conteúdos' },
-        { href: '/admin/audit', label: 'Auditoria' },
-      ]}
+      area="Console administrativo"
+      homeHref="/admin"
+      links={[{ href: '/admin', label: 'Visão geral' }]}
     >
       {children}
     </EditorialShell>

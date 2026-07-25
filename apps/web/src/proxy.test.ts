@@ -1,6 +1,6 @@
 import { NextRequest } from 'next/server';
 import { describe, expect, it } from 'vitest';
-import { canonicalStagingUrl } from './proxy';
+import { canonicalStagingUrl, config } from './proxy';
 
 describe('canonicalStagingUrl', () => {
   it('preserva caminho e busca ao trocar o alias técnico pelo domínio oficial', () => {
@@ -19,5 +19,16 @@ describe('canonicalStagingUrl', () => {
     );
 
     expect(canonicalStagingUrl(request)).toBeNull();
+  });
+
+  it('renova autenticação em todos os ambientes protegidos', () => {
+    expect(config.matcher).toEqual(
+      expect.arrayContaining([
+        '/app/:path*',
+        '/review/:path*',
+        '/editorial/:path*',
+        '/admin/:path*',
+      ]),
+    );
   });
 });

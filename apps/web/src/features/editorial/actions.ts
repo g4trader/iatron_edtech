@@ -55,7 +55,7 @@ export async function submitMentorDecision(formData: FormData) {
 export async function publishContent(formData: FormData) {
   const versionId = String(formData.get('versionId'));
   await editorial.mutate(`/admin/editorial/contents/${versionId}/publish`, {});
-  revalidatePath('/admin');
+  revalidatePath('/editorial');
   revalidatePath('/app');
 }
 
@@ -87,8 +87,8 @@ export async function createEditorialDraft(formData: FormData) {
     isSynthetic: formData.get('isSynthetic') === 'on',
     requestId: crypto.randomUUID(),
   });
-  revalidatePath('/admin');
-  redirect('/admin' as Route);
+  revalidatePath('/editorial');
+  redirect('/editorial' as Route);
 }
 
 export async function assignMentorForReview(formData: FormData) {
@@ -97,5 +97,5 @@ export async function assignMentorForReview(formData: FormData) {
     `/admin/editorial/contents/${versionId}/assign-review`,
     { mentorId: String(formData.get('mentorId')) },
   );
-  revalidatePath('/admin');
+  revalidatePath('/editorial');
 }

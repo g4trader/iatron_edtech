@@ -13,6 +13,7 @@ export default async function ReviewLayout({
   return (
     <EditorialShell
       area="Central de Revisão"
+      homeHref="/review"
       links={[
         { href: '/review', label: 'Fila' },
         { href: '/review/history', label: 'Histórico' },

@@ -69,6 +69,9 @@ export async function proxy(request: NextRequest) {
 export const config = {
   matcher: [
     '/app/:path*',
+    '/review/:path*',
+    '/editorial/:path*',
+    '/admin/:path*',
     '/login',
     '/cadastro',
     '/esqueci-minha-senha',

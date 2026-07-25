@@ -155,7 +155,9 @@ test('editor → mentor → admin → estudante: conteúdo versionado e revisão
 
   // Editor cria rascunho sintético assistido, sem autoridade médica.
   await login(page, 'editor', password);
-  await page.goto('/admin/content');
+  await page.goto('/admin');
+  await expect(page).toHaveURL(/\/app$/);
+  await page.goto('/editorial/content');
   await expect(
     page.getByRole('heading', { name: 'Criar conteúdo estruturado' }),
   ).toBeVisible();
@@ -195,7 +197,7 @@ test('editor → mentor → admin → estudante: conteúdo versionado e revisão
   await page.getByLabel('Rascunho produzido com apoio de IA').check();
   await page.getByLabel('Material demonstrativo sintético').check();
   await page.getByRole('button', { name: 'Criar rascunho' }).click();
-  await expect(page).toHaveURL(/\/admin$/);
+  await expect(page).toHaveURL(/\/editorial$/);
 
   const versions = (await service(
     `/rest/v1/learning_content_versions?select=id,content_id,content_hash,learning_contents!learning_content_versions_content_id_fkey!inner(canonical_key)&learning_contents.canonical_key=eq.${runCanonicalKey}`,
@@ -238,6 +240,10 @@ test('editor → mentor → admin → estudante: conteúdo versionado e revisão
 
   // Mentor autenticado revisa a versão exata.
   await login(page, 'mentor', password);
+  await page.goto('/editorial');
+  await expect(page).toHaveURL(/\/app$/);
+  await page.goto('/admin');
+  await expect(page).toHaveURL(/\/app$/);
   await page.goto('/review');
   await page.getByRole('link', { name: 'Abrir conteúdo para revisão' }).click();
   await expect(
@@ -263,6 +269,11 @@ test('editor → mentor → admin → estudante: conteúdo versionado e revisão
   // Admin publica; aprovação e publicação permanecem separadas.
   await login(page, 'admin', password);
   await page.goto('/admin');
+  await expect(
+    page.getByRole('heading', { name: 'Console administrativo' }),
+  ).toBeVisible();
+  await expect(page.getByText('Fila editorial')).toHaveCount(0);
+  await page.goto('/editorial');
   await page
     .getByRole('button', { name: 'Publicar versão aprovada' })
     .first()
@@ -351,6 +362,10 @@ test('editor → mentor → admin → estudante: conteúdo versionado e revisão
 
   // Estudante acessa conteúdo publicado, selo e conclui a atividade.
   await login(page, 'student', password);
+  for (const protectedRoute of ['/review', '/editorial', '/admin']) {
+    await page.goto(protectedRoute);
+    await expect(page).toHaveURL(/\/app$/);
+  }
   await page.goto(`/app/plan/items/${itemId}`);
   await expect(
     page.getByRole('heading', {

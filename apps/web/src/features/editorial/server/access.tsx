@@ -15,10 +15,12 @@ export async function requireEditorialRole(allowed: AppRole[]) {
 
 export function EditorialShell({
   area,
+  homeHref,
   links,
   children,
 }: {
   area: string;
+  homeHref: string;
   links: { href: string; label: string }[];
   children: ReactNode;
 }) {
@@ -26,7 +28,16 @@ export function EditorialShell({
     <div className="min-h-screen bg-[var(--background)]">
       <header className="border-b border-[var(--border)] bg-[var(--surface)] px-4 py-4">
         <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-3">
-          <strong>Iatron · {area}</strong>
+          <div>
+            <strong>Iatron · {area}</strong>
+            <nav
+              aria-label="Breadcrumb"
+              className="text-sm text-[var(--foreground-muted)]"
+            >
+              <a href={homeHref}>Início</a> <span aria-hidden="true">/</span>{' '}
+              <span aria-current="page">{area}</span>
+            </nav>
+          </div>
           <nav
             aria-label={`Navegação de ${area}`}
             className="flex flex-wrap gap-4"
