@@ -1,7 +1,48 @@
 -- Completa o conjunto mínimo homologado necessário para um diagnóstico de 10 questões.
 -- O conteúdo permanece vinculado às guidelines versionadas já publicadas no catálogo.
 
+insert into public.specialties (id, code, name, description) values
+  (
+    '50000000-0000-4000-8000-000000000001',
+    'CLINICA_MEDICA',
+    'Clínica Médica',
+    'Cuidado integral do adulto e raciocínio clínico.'
+  )
+on conflict (id) do nothing;
+
+insert into public.medical_areas (id, code, name, description) values
+  ('51000000-0000-4000-8000-000000000001', 'CARDIOLOGIA', 'Cardiologia', 'Doenças do coração e sistema circulatório.'),
+  ('51000000-0000-4000-8000-000000000002', 'INFECTOLOGIA', 'Infectologia', 'Prevenção, diagnóstico e manejo de doenças infecciosas.'),
+  ('51000000-0000-4000-8000-000000000003', 'URGENCIA_EMERGENCIA', 'Urgência e Emergência', 'Reconhecimento e estabilização de condições agudas.')
+on conflict (id) do nothing;
+
+insert into public.themes (id, area_id, code, name, description) values
+  ('52000000-0000-4000-8000-000000000001', '51000000-0000-4000-8000-000000000001', 'SINDROMES_CORONARIANAS', 'Síndromes coronarianas', 'Avaliação e manejo da doença coronariana aguda.'),
+  ('52000000-0000-4000-8000-000000000002', '51000000-0000-4000-8000-000000000002', 'ANTIMICROBIANOS', 'Uso de antimicrobianos', 'Seleção e uso seguro de terapias antimicrobianas.'),
+  ('52000000-0000-4000-8000-000000000003', '51000000-0000-4000-8000-000000000003', 'CHOQUE', 'Choque', 'Identificação, classificação e estabilização do choque.')
+on conflict (id) do nothing;
+
+insert into public.subthemes (id, theme_id, code, name, description) values
+  ('53000000-0000-4000-8000-000000000001', '52000000-0000-4000-8000-000000000001', 'IAM_COM_SUPRA', 'Infarto com supra de ST', 'Diagnóstico e reperfusão no infarto com supra de ST.'),
+  ('53000000-0000-4000-8000-000000000002', '52000000-0000-4000-8000-000000000002', 'ANTIBIOTICOTERAPIA_EMPIRICA', 'Antibioticoterapia empírica', 'Escolha inicial orientada por foco e gravidade.'),
+  ('53000000-0000-4000-8000-000000000003', '52000000-0000-4000-8000-000000000003', 'CHOQUE_SEPTICO', 'Choque séptico', 'Reconhecimento e manejo inicial da sepse com choque.')
+on conflict (id) do nothing;
+
+insert into public.competencies (id, subtheme_id, code, name, description) values
+  ('54000000-0000-4000-8000-000000000001', '53000000-0000-4000-8000-000000000001', 'CARD.SCA.001', 'Reconhecer infarto com supra de ST', 'Identificar critérios clínicos e eletrocardiográficos de infarto com supra de ST.'),
+  ('54000000-0000-4000-8000-000000000002', '53000000-0000-4000-8000-000000000001', 'CARD.SCA.002', 'Indicar estratégia de reperfusão', 'Selecionar reperfusão conforme tempo, disponibilidade e contraindicações.'),
+  ('54000000-0000-4000-8000-000000000003', '53000000-0000-4000-8000-000000000002', 'INF.ATM.001', 'Selecionar terapia antimicrobiana empírica', 'Escolher esquema inicial considerando foco, gravidade e epidemiologia.'),
+  ('54000000-0000-4000-8000-000000000004', '53000000-0000-4000-8000-000000000003', 'EMERG.CHOQUE.001', 'Reconhecer choque séptico', 'Reconhecer hipoperfusão e critérios clínicos de choque séptico.'),
+  ('54000000-0000-4000-8000-000000000005', '53000000-0000-4000-8000-000000000003', 'EMERG.CHOQUE.002', 'Iniciar ressuscitação do choque séptico', 'Priorizar fluidos, vasopressor e monitorização inicial.')
+on conflict (id) do nothing;
+
 insert into public.guideline_issuers (id, name, acronym, url) values
+  (
+    '56000000-0000-4000-8000-000000000001',
+    'Sociedade Brasileira de Cardiologia',
+    'SBC',
+    'https://www.portal.cardiol.br'
+  ),
   (
     '56000000-0000-4000-8000-000000000002',
     'Surviving Sepsis Campaign',
@@ -13,6 +54,17 @@ on conflict (id) do nothing;
 insert into public.guidelines (
   id, issuer_id, stable_key, title, version, issued_on, effective_from, url, notes, status
 ) values (
+  '57000000-0000-4000-8000-000000000001',
+  '56000000-0000-4000-8000-000000000001',
+  'sbc-sindrome-coronariana',
+  'Diretriz de Síndrome Coronariana Aguda',
+  '2021',
+  '2021-03-01',
+  '2021-03-01',
+  'https://abccardiol.org',
+  'Referência acadêmica para o seed de navegação.',
+  'published'
+), (
   '57000000-0000-4000-8000-000000000002',
   '56000000-0000-4000-8000-000000000002',
   'ssc-sepsis',
@@ -187,7 +239,6 @@ on conflict (id) do update set
 insert into public.question_version_competencies (
   question_version_id, competency_id, relevance
 ) values
-  ('59000000-0000-4000-8000-000000000002', '54000000-0000-4000-8000-000000000005', 0.5),
   ('59000000-0000-4000-8000-000000000003', '54000000-0000-4000-8000-000000000001', 1),
   ('59000000-0000-4000-8000-000000000004', '54000000-0000-4000-8000-000000000001', 1),
   ('59000000-0000-4000-8000-000000000005', '54000000-0000-4000-8000-000000000002', 1),
@@ -199,8 +250,6 @@ insert into public.question_version_competencies (
 on conflict do nothing;
 
 insert into public.question_version_themes (question_version_id, theme_id) values
-  ('59000000-0000-4000-8000-000000000001', '52000000-0000-4000-8000-000000000001'),
-  ('59000000-0000-4000-8000-000000000002', '52000000-0000-4000-8000-000000000003'),
   ('59000000-0000-4000-8000-000000000003', '52000000-0000-4000-8000-000000000001'),
   ('59000000-0000-4000-8000-000000000004', '52000000-0000-4000-8000-000000000001'),
   ('59000000-0000-4000-8000-000000000005', '52000000-0000-4000-8000-000000000001'),
@@ -214,8 +263,6 @@ on conflict do nothing;
 insert into public.question_version_subthemes (
   question_version_id, subtheme_id
 ) values
-  ('59000000-0000-4000-8000-000000000001', '53000000-0000-4000-8000-000000000001'),
-  ('59000000-0000-4000-8000-000000000002', '53000000-0000-4000-8000-000000000003'),
   ('59000000-0000-4000-8000-000000000003', '53000000-0000-4000-8000-000000000001'),
   ('59000000-0000-4000-8000-000000000004', '53000000-0000-4000-8000-000000000001'),
   ('59000000-0000-4000-8000-000000000005', '53000000-0000-4000-8000-000000000001'),
@@ -232,8 +279,6 @@ insert into public.question_version_specialties (
 select question_version_id, '50000000-0000-4000-8000-000000000001'::uuid
 from (
   values
-    ('59000000-0000-4000-8000-000000000001'::uuid),
-    ('59000000-0000-4000-8000-000000000002'::uuid),
     ('59000000-0000-4000-8000-000000000003'::uuid),
     ('59000000-0000-4000-8000-000000000004'::uuid),
     ('59000000-0000-4000-8000-000000000005'::uuid),
