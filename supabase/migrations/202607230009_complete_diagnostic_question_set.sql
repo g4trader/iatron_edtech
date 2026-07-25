@@ -1,6 +1,31 @@
 -- Completa o conjunto mínimo homologado necessário para um diagnóstico de 10 questões.
 -- O conteúdo permanece vinculado às guidelines versionadas já publicadas no catálogo.
 
+insert into public.guideline_issuers (id, name, acronym, url) values
+  (
+    '56000000-0000-4000-8000-000000000002',
+    'Surviving Sepsis Campaign',
+    'SSC',
+    'https://www.sccm.org'
+  )
+on conflict (id) do nothing;
+
+insert into public.guidelines (
+  id, issuer_id, stable_key, title, version, issued_on, effective_from, url, notes, status
+) values (
+  '57000000-0000-4000-8000-000000000002',
+  '56000000-0000-4000-8000-000000000002',
+  'ssc-sepsis',
+  'International Guidelines for Management of Sepsis and Septic Shock',
+  '2021',
+  '2021-10-01',
+  '2021-10-01',
+  'https://www.sccm.org/clinical-resources/surviving-sepsis-campaign-guidelines-2021',
+  'Versão identificada para rastreabilidade.',
+  'published'
+)
+on conflict (id) do nothing;
+
 insert into public.guideline_competencies (guideline_id, competency_id) values
   ('57000000-0000-4000-8000-000000000002', '54000000-0000-4000-8000-000000000003')
 on conflict do nothing;
