@@ -109,7 +109,7 @@ export function createExamIntelligenceRepository(
   };
 
   const profileSelect =
-    'id,display_name,version,valid_from,valid_until,editorial_status,is_active,analysis_period_start,analysis_period_end,exams_analyzed,questions_analyzed,coverage,confidence,limitations,source_title,source_url,source_origin,responsible_editorial,responsible_statistical,notes,method_version,is_synthetic,last_updated_at,exam_programs!inner(id,code,name,exam_boards(id,name,acronym),institutions(id,name,acronym))';
+    'id,display_name,version,valid_from,valid_until,editorial_status,is_active,analysis_period_start,analysis_period_end,exams_analyzed,questions_analyzed,coverage,confidence,limitations,source_title,source_url,source_origin,responsible_editorial,responsible_statistical,notes,method_version,is_synthetic,last_updated_at,exam_programs!exam_intelligence_profiles_exam_program_id_fkey!inner(id,code,name,exam_boards!exam_programs_exam_board_id_fkey(id,name,acronym),institutions!exam_programs_institution_id_fkey(id,name,acronym))';
 
   return {
     async listProfiles() {

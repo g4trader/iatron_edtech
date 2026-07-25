@@ -40,6 +40,7 @@ export function AppShell({
         identity={identity}
       />
       <MobileSidebarDrawer
+        identity={identity}
         open={drawerOpen}
         onClose={() => setDrawerOpen(false)}
       />

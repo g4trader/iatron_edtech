@@ -29,7 +29,36 @@ export default async function SessionPage({
       </AssessmentPage>
     );
 
-  const question = await nextQuestion(id);
+  let question: Awaited<ReturnType<typeof nextQuestion>>;
+  try {
+    question = await nextQuestion(id);
+  } catch {
+    return (
+      <AssessmentPage
+        title="Não conseguimos iniciar seu diagnóstico agora"
+        description="Seu progresso está seguro. Tente novamente em instantes."
+      >
+        <section aria-live="assertive" className="state-card error-state">
+          <h2>A primeira pergunta não ficou disponível</h2>
+          <p>
+            Você pode tentar carregar novamente ou retornar à sua Jornada sem
+            perder o diagnóstico iniciado.
+          </p>
+          <div className="state-action flex flex-wrap gap-2">
+            <Link
+              className="primary-button inline-flex"
+              href={`/app/assessment/session?id=${id}`}
+            >
+              Tentar novamente
+            </Link>
+            <Link className="secondary-button inline-flex" href="/app">
+              Voltar para minha Jornada
+            </Link>
+          </div>
+        </section>
+      </AssessmentPage>
+    );
+  }
   if (!question)
     return (
       <AssessmentPage

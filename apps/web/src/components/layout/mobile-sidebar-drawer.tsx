@@ -3,13 +3,17 @@
 import Link from 'next/link';
 import { useEffect, useRef } from 'react';
 import { NavigationLinks } from './navigation';
+import { logout } from '@/app/(public)/auth/actions';
+import { ActionSubmitButton } from '@/components/feedback/action-submit-button';
 
 export function MobileSidebarDrawer({
   open,
   onClose,
+  identity,
 }: {
   open: boolean;
   onClose: () => void;
+  identity: { displayName: string; email: string };
 }) {
   const closeButtonRef = useRef<HTMLButtonElement>(null);
   const previousFocusRef = useRef<HTMLElement | null>(null);
@@ -48,6 +52,12 @@ export function MobileSidebarDrawer({
   }, [onClose, open]);
 
   if (!open) return null;
+  const initials = identity.displayName
+    .split(/\s+/)
+    .slice(0, 2)
+    .map((part) => part[0])
+    .join('')
+    .toUpperCase();
   return (
     <div className="drawer-layer" data-testid="mobile-drawer-layer">
       <button
@@ -77,6 +87,29 @@ export function MobileSidebarDrawer({
           </button>
         </div>
         <NavigationLinks onNavigate={onClose} />
+        <div className="sidebar-account mobile-account">
+          <div
+            aria-label={`Usuário: ${identity.displayName}`}
+            className="profile-menu"
+          >
+            <span className="avatar" aria-hidden="true">
+              {initials}
+            </span>
+            <span>
+              <strong>{identity.displayName}</strong>
+              <small>{identity.email}</small>
+            </span>
+          </div>
+          <form action={logout}>
+            <ActionSubmitButton
+              className="sidebar-logout-button"
+              pendingLabel="Saindo…"
+              variant="secondary"
+            >
+              Sair
+            </ActionSubmitButton>
+          </form>
+        </div>
       </aside>
     </div>
   );

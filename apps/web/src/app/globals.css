@@ -438,6 +438,16 @@ button:disabled {
   overscroll-behavior: contain;
   padding-bottom: max(1rem, env(safe-area-inset-bottom));
 }
+.mobile-account {
+  margin-top: auto;
+  padding-top: 0.75rem;
+}
+.mobile-account .profile-menu {
+  border-top-color: rgb(255 255 255 / 0.18);
+}
+.mobile-account .sidebar-logout-button {
+  color: white;
+}
 
 .public-shell {
   min-height: 100dvh;
