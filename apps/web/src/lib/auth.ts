@@ -1,6 +1,14 @@
 import { createClient } from './supabase/server';
 import { isAuthBypassEnabled } from './auth-bypass';
 
+export function workspaceForRoles(roles: string[]) {
+  if (roles.includes('admin') || roles.includes('super_admin')) return '/admin';
+  if (roles.includes('editor')) return '/editorial';
+  if (roles.includes('mentor') || roles.includes('medical_reviewer'))
+    return '/review';
+  return '/app';
+}
+
 export function safeReturnTo(
   value: string | null | undefined,
   fallback = '/app',

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { safeReturnTo } from './auth';
+import { safeReturnTo, workspaceForRoles } from './auth';
 
 describe('safeReturnTo', () => {
   it('preserves an internal route', () => {
@@ -13,5 +13,23 @@ describe('safeReturnTo', () => {
     '\\example-malicious.invalid',
   ])('rejects an external or executable destination: %s', (value) => {
     expect(safeReturnTo(value)).toBe('/app');
+  });
+});
+
+describe('workspaceForRoles', () => {
+  it.each([
+    [['admin'], '/admin'],
+    [['super_admin'], '/admin'],
+    [['editor'], '/editorial'],
+    [['mentor'], '/review'],
+    [['medical_reviewer'], '/review'],
+    [['student'], '/app'],
+    [[], '/app'],
+  ])('routes %j to %s', (roles, expected) => {
+    expect(workspaceForRoles(roles)).toBe(expected);
+  });
+
+  it('uses the most privileged dedicated workspace for legacy multi-role data', () => {
+    expect(workspaceForRoles(['student', 'mentor', 'admin'])).toBe('/admin');
   });
 });
