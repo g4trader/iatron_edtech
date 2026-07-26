@@ -65,6 +65,11 @@ import {
   createResendEditorialEmailGateway,
   type EditorialEmailGateway,
 } from './editorial-email.js';
+import {
+  createAdminRepository,
+  type AdminRepository,
+} from './admin-repository.js';
+import { registerAdminRoutes } from './admin-routes.js';
 
 export interface BuildAppOptions {
   environment: ApiEnvironment;
@@ -88,6 +93,7 @@ export interface BuildAppOptions {
   examIntelligenceClock?: () => Date;
   editorialRepositoryFactory?: (token: string) => EditorialRepository;
   editorialEmailGateway?: EditorialEmailGateway;
+  adminRepositoryFactory?: () => AdminRepository;
 }
 
 function isFastifyValidationError(error: unknown): boolean {
@@ -297,6 +303,11 @@ export async function buildApp(
             ((token) => createEditorialRepository(options.environment, token)),
           options.editorialEmailGateway ??
             createResendEditorialEmailGateway(options.environment),
+        );
+        await registerAdminRoutes(
+          protectedApi,
+          options.adminRepositoryFactory ??
+            (() => createAdminRepository(options.environment)),
         );
       });
     },

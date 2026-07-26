@@ -20,6 +20,8 @@ import {
   studyPlanSchema,
   targetExamsInputSchema,
   reviewLearningContentSchema,
+  adminInviteUserSchema,
+  adminOverviewSchema,
 } from './index.js';
 
 describe('serviceStatusSchema', () => {
@@ -31,6 +33,63 @@ describe('serviceStatusSchema', () => {
         timestamp: new Date().toISOString(),
       }).status,
     ).toBe('ok');
+  });
+});
+
+describe('executive console contracts', () => {
+  it('rejects unsupported invitation roles', () => {
+    expect(() =>
+      adminInviteUserSchema.parse({
+        email: 'user@example.test',
+        displayName: 'Usuário Beta',
+        role: 'student',
+      }),
+    ).toThrow();
+  });
+
+  it('requires unavailable operational metrics to be explicit', () => {
+    const metric = { value: null, available: false, note: 'Sem telemetria.' };
+    expect(
+      adminOverviewSchema.parse({
+        generatedAt: new Date().toISOString(),
+        students: {
+          registered: 1,
+          activeLast30Days: 1,
+          newToday: 0,
+          diagnosticsCompleted: 0,
+          diagnosticsInProgress: 0,
+          activePlans: 0,
+          activitiesCompleted: 0,
+          completionRate: null,
+          inactive: 0,
+        },
+        mentors: { active: 0, awaitingReview: 0, pendingRequests: 0 },
+        editorial: {
+          published: 0,
+          drafts: 0,
+          inReview: 0,
+          readyToPublish: 0,
+          pendingReferences: 0,
+          newVersionsLast30Days: 0,
+        },
+        ai: {
+          drafts: 0,
+          awaitingReview: 0,
+          approved: 0,
+          rejected: 0,
+          queued: 0,
+          usage: metric,
+        },
+        platform: {
+          health: 'ok',
+          ready: 'ready',
+          buildSha: 'test',
+          migrationBaseline: '202607250005',
+          failures: metric,
+          averageResponseTimeMs: metric,
+        },
+      }).platform.failures.available,
+    ).toBe(false);
   });
 });
 

@@ -996,6 +996,146 @@ export const appRoleSchema = z.enum([
 ]);
 export type AppRole = z.infer<typeof appRoleSchema>;
 
+export const adminAccountStatusSchema = z.enum(['active', 'disabled']);
+export const adminOperationalMetricSchema = z.object({
+  value: z.number().nonnegative().nullable(),
+  available: z.boolean(),
+  note: z.string().nullable(),
+});
+export const adminOverviewSchema = z.object({
+  generatedAt: z.iso.datetime({ offset: true }),
+  students: z.object({
+    registered: z.number().int().nonnegative(),
+    activeLast30Days: z.number().int().nonnegative(),
+    newToday: z.number().int().nonnegative(),
+    diagnosticsCompleted: z.number().int().nonnegative(),
+    diagnosticsInProgress: z.number().int().nonnegative(),
+    activePlans: z.number().int().nonnegative(),
+    activitiesCompleted: z.number().int().nonnegative(),
+    completionRate: z.number().min(0).max(1).nullable(),
+    inactive: z.number().int().nonnegative(),
+  }),
+  mentors: z.object({
+    active: z.number().int().nonnegative(),
+    awaitingReview: z.number().int().nonnegative(),
+    pendingRequests: z.number().int().nonnegative(),
+  }),
+  editorial: z.object({
+    published: z.number().int().nonnegative(),
+    drafts: z.number().int().nonnegative(),
+    inReview: z.number().int().nonnegative(),
+    readyToPublish: z.number().int().nonnegative(),
+    pendingReferences: z.number().int().nonnegative(),
+    newVersionsLast30Days: z.number().int().nonnegative(),
+  }),
+  ai: z.object({
+    drafts: z.number().int().nonnegative(),
+    awaitingReview: z.number().int().nonnegative(),
+    approved: z.number().int().nonnegative(),
+    rejected: z.number().int().nonnegative(),
+    queued: z.number().int().nonnegative(),
+    usage: adminOperationalMetricSchema,
+  }),
+  platform: z.object({
+    health: z.literal('ok'),
+    ready: z.literal('ready'),
+    buildSha: z.string(),
+    migrationBaseline: z.string(),
+    failures: adminOperationalMetricSchema,
+    averageResponseTimeMs: adminOperationalMetricSchema,
+  }),
+});
+export type AdminOverview = z.infer<typeof adminOverviewSchema>;
+
+export const adminStudentSummarySchema = z.object({
+  id: uuidSchema,
+  displayName: z.string(),
+  emailMasked: z.string(),
+  status: adminAccountStatusSchema,
+  onboardingStatus: z.string(),
+  targetExam: z.string().nullable(),
+  diagnosticStatus: z.string().nullable(),
+  planStatus: z.string().nullable(),
+  lastActivityAt: z.iso.datetime({ offset: true }).nullable(),
+  lastAccessAt: z.iso.datetime({ offset: true }).nullable(),
+  createdAt: z.iso.datetime({ offset: true }),
+});
+export const adminStudentListSchema = z.object({
+  items: z.array(adminStudentSummarySchema),
+  page: z.number().int().positive(),
+  pageSize: z.number().int().positive(),
+  total: z.number().int().nonnegative(),
+});
+export type AdminStudentSummary = z.infer<typeof adminStudentSummarySchema>;
+export type AdminStudentList = z.infer<typeof adminStudentListSchema>;
+
+export const adminStudentDetailSchema = adminStudentSummarySchema.extend({
+  onboardingStep: z.number().int().min(0).max(4),
+  diagnosticCoverage: z.number().min(0).max(1).nullable(),
+  diagnosticCompletedAt: z.iso.datetime({ offset: true }).nullable(),
+  planItemsTotal: z.number().int().nonnegative(),
+  planItemsCompleted: z.number().int().nonnegative(),
+  studyMinutes: z.number().int().nonnegative(),
+  learningEvents: z.number().int().nonnegative(),
+});
+export type AdminStudentDetail = z.infer<typeof adminStudentDetailSchema>;
+
+export const adminMentorSummarySchema = z.object({
+  id: uuidSchema,
+  professionalName: z.string(),
+  status: z.string(),
+  specialty: z.string().nullable(),
+  areas: z.array(z.string()),
+  assignedContents: z.number().int().nonnegative(),
+  publishedContents: z.number().int().nonnegative(),
+  pendingReviews: z.number().int().nonnegative(),
+  completedReviews: z.number().int().nonnegative(),
+  lastReviewAt: z.iso.datetime({ offset: true }).nullable(),
+  studentRequests: z.number().int().nonnegative(),
+  videos: adminOperationalMetricSchema,
+  questions: adminOperationalMetricSchema,
+  averageReviewMinutes: adminOperationalMetricSchema,
+});
+export const adminMentorListSchema = z.object({
+  items: z.array(adminMentorSummarySchema),
+  total: z.number().int().nonnegative(),
+});
+export type AdminMentorSummary = z.infer<typeof adminMentorSummarySchema>;
+export type AdminMentorList = z.infer<typeof adminMentorListSchema>;
+
+export const adminUserSchema = z.object({
+  id: uuidSchema,
+  displayName: z.string(),
+  email: z.email(),
+  status: adminAccountStatusSchema,
+  roles: z.array(appRoleSchema),
+  lastAccessAt: z.iso.datetime({ offset: true }).nullable(),
+  createdAt: z.iso.datetime({ offset: true }),
+});
+export const adminUserListSchema = z.object({
+  items: z.array(adminUserSchema),
+  total: z.number().int().nonnegative(),
+});
+export type AdminUser = z.infer<typeof adminUserSchema>;
+
+export const adminInviteUserSchema = z
+  .object({
+    email: z.email(),
+    displayName: z.string().trim().min(2).max(100),
+    role: z.enum(['mentor', 'editor', 'admin']),
+  })
+  .strict();
+export const adminRolesUpdateSchema = z
+  .object({
+    roles: z.array(appRoleSchema).min(1),
+    confirmed: z.literal(true),
+  })
+  .strict();
+export const adminMutationResultSchema = z.object({
+  id: uuidSchema,
+  status: z.string(),
+});
+
 export const learningContentStatusSchema = z.enum([
   'draft',
   'ai_draft',

@@ -41,7 +41,12 @@ try {
 
 const supabaseUrl = local.API_URL;
 const publishableKey = local.PUBLISHABLE_KEY ?? local.ANON_KEY;
-if (typeof supabaseUrl !== 'string' || typeof publishableKey !== 'string') {
+const serviceRoleKey = local.SERVICE_ROLE_KEY;
+if (
+  typeof supabaseUrl !== 'string' ||
+  typeof publishableKey !== 'string' ||
+  typeof serviceRoleKey !== 'string'
+) {
   console.error('URL ou chave publicável local não encontrada.');
   process.exit(1);
 }
@@ -58,6 +63,8 @@ const result = spawnSync(
       NEXT_PUBLIC_API_URL: 'http://127.0.0.1:8080/v1',
       SUPABASE_URL: supabaseUrl,
       SUPABASE_PUBLISHABLE_KEY: publishableKey,
+      SUPABASE_SERVICE_ROLE_KEY: serviceRoleKey,
+      E2E_SUPABASE_SERVICE_ROLE_KEY: serviceRoleKey,
       SUPABASE_JWT_ISSUER: `${supabaseUrl}/auth/v1`,
       SUPABASE_JWT_AUDIENCE: 'authenticated',
       SUPABASE_JWT_ALGORITHMS: 'ES256,RS256',

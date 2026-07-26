@@ -34,6 +34,7 @@ describe('readEnvironment', () => {
         APP_ENV: 'staging',
         SUPABASE_URL: 'https://example.supabase.co',
         SUPABASE_PUBLISHABLE_KEY: 'public-key',
+        SUPABASE_SERVICE_ROLE_KEY: 'service-role-key',
         SUPABASE_JWT_ISSUER: 'https://example.supabase.co/auth/v1',
         CORS_ALLOWED_ORIGINS: 'https://staging.example.com',
         OPENAI_API_KEY: 'test-key',

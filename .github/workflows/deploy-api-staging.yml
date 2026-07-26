@@ -57,6 +57,7 @@ jobs:
             OPENAI_REQUEST_TIMEOUT_MS=45000
           secrets: |-
             SUPABASE_PUBLISHABLE_KEY=SUPABASE_STAGING_PUBLISHABLE_KEY:latest
+            SUPABASE_SERVICE_ROLE_KEY=SUPABASE_STAGING_SERVICE_ROLE_KEY:latest
             OPENAI_API_KEY=OPENAI_API_KEY:latest
           flags: >-
             --service-account=${{ vars.GCP_RUNTIME_SERVICE_ACCOUNT }}
