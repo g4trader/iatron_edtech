@@ -10,20 +10,20 @@ const canonicalKey = 'demo.sepsis.editorial-mvp';
 
 const personas = {
   editor: {
-    email: 'editorial-editor@example.com',
-    name: 'Editor de Demonstração',
+    email: 'iatron.edtech+editorial-beta@gmail.com',
+    name: 'Editorial Beta',
   },
   mentor: {
-    email: 'editorial-mentor@example.com',
-    name: 'Mentor Médico de Demonstração',
+    email: 'iatron.edtech+mentor-beta@gmail.com',
+    name: 'Mentor Beta',
   },
   admin: {
-    email: 'editorial-admin@example.com',
-    name: 'Admin de Demonstração',
+    email: 'iatron.edtech+admin-beta@gmail.com',
+    name: 'Admin Beta',
   },
   student: {
-    email: 'editorial-student@example.com',
-    name: 'Estudante de Demonstração',
+    email: 'iatron.edtech+student-beta@gmail.com',
+    name: 'Student Beta',
   },
 } as const;
 
@@ -388,6 +388,20 @@ test('editor → mentor → admin → estudante: conteúdo versionado e revisão
     .getByRole('button', { name: 'Finalizar e atualizar minha jornada' })
     .click();
   await expect(page).toHaveURL(/\/app$/);
+  const itemActions = (await service(
+    `/rest/v1/study_plan_item_actions?select=action,learning_event_id&item_id=eq.${itemId}&order=occurred_at.asc`,
+  )) as { action: string; learning_event_id: string }[];
+  expect(itemActions.map(({ action }) => action)).toEqual([
+    'started',
+    'completed',
+  ]);
+  const activityEvents = (await service(
+    `/rest/v1/learning_events?select=event_type&id=in.(${itemActions.map(({ learning_event_id }) => learning_event_id).join(',')})`,
+  )) as { event_type: string }[];
+  expect(activityEvents.map(({ event_type }) => event_type).sort()).toEqual([
+    'StudyPlanItemStarted',
+    'StudySessionCompleted',
+  ]);
 
   // Mobile crítico: estudante, mentor, menu e ausência de overflow.
   await page.setViewportSize({ width: 375, height: 812 });
@@ -429,4 +443,19 @@ test('editor → mentor → admin → estudante: conteúdo versionado e revisão
     { headers: { authorization: `Bearer ${accessToken}` } },
   );
   expect(publishedResponse.ok()).toBeTruthy();
+  const expiredSession = await request.get(`${apiBaseUrl}/v1/me`, {
+    headers: { authorization: 'Bearer expired-private-beta-session' },
+  });
+  expect(expiredSession.status()).toBe(401);
+  await expect(expiredSession.json()).resolves.toMatchObject({
+    error: { code: 'INVALID_TOKEN' },
+  });
+  const recovery = await request.post(`${supabaseUrl}/auth/v1/recover`, {
+    headers: { apikey: publishableKey },
+    data: {
+      email: personas.student.email,
+      gotrue_meta_security: {},
+    },
+  });
+  expect(recovery.ok()).toBeTruthy();
 });
