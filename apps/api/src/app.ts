@@ -305,13 +305,21 @@ export async function buildApp(
           (options.environment.APP_ENV === 'local'
             ? true
             : (
-                await fetch(`${options.environment.SUPABASE_URL}/rest/v1/`, {
-                  method: 'HEAD',
-                  headers: {
-                    apikey: options.environment.SUPABASE_PUBLISHABLE_KEY,
+                await fetch(
+                  `${options.environment.SUPABASE_URL}/rest/v1/institutions?select=id&limit=1`,
+                  {
+                    headers: {
+                      apikey:
+                        options.environment.SUPABASE_SERVICE_ROLE_KEY ??
+                        options.environment.SUPABASE_PUBLISHABLE_KEY,
+                      authorization: `Bearer ${
+                        options.environment.SUPABASE_SERVICE_ROLE_KEY ??
+                        options.environment.SUPABASE_PUBLISHABLE_KEY
+                      }`,
+                    },
+                    signal: AbortSignal.timeout(2_000),
                   },
-                  signal: AbortSignal.timeout(2_000),
-                })
+                )
               ).ok);
       } catch {
         ready = false;
