@@ -22,11 +22,6 @@ export default async function ReviewLayout({
           { href: '/review', label: 'Visão da área', icon: 'V' },
           { href: '/review/queue', label: 'Minha fila', icon: 'F' },
           { href: '/review/active', label: 'Em revisão', icon: 'R' },
-          {
-            href: '/review/library',
-            label: 'Conteúdos e cobertura',
-            icon: 'C',
-          },
           { href: '/review/history', label: 'Histórico', icon: 'H' },
           { href: '/review/profile', label: 'Perfil', icon: 'P' },
         ],

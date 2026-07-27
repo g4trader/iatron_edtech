@@ -1,15 +1,6 @@
-import { KnowledgeLibrary } from '@/features/editorial/components/knowledge-library';
+import type { Route } from 'next';
+import { redirect } from 'next/navigation';
 
-export default function MentorLibraryPage({
-  searchParams,
-}: {
-  searchParams: Promise<Record<string, string | string[] | undefined>>;
-}) {
-  return (
-    <KnowledgeLibrary
-      basePath="/review/library"
-      scope="review"
-      searchParams={searchParams}
-    />
-  );
+export default function MentorLibraryPage() {
+  redirect('/review' as Route);
 }

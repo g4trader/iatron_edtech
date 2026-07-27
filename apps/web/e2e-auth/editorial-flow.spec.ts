@@ -85,6 +85,30 @@ async function upsert(table: string, values: unknown) {
   });
 }
 
+async function ensureSpecialtyOwner(mentorId: string) {
+  const existing = (await service(
+    `/rest/v1/medical_specialty_owners?select=id&specialty_id=eq.${specialtyId}&owner_role=eq.primary&status=eq.active`,
+  )) as { id: string }[];
+  const values = {
+    specialty_id: specialtyId,
+    mentor_id: mentorId,
+    owner_role: 'primary',
+    status: 'active',
+    authorization_reference: 'e2e:documented-beta-authorization',
+  };
+  if (existing[0]) {
+    await service(`/rest/v1/medical_specialty_owners?id=eq.${existing[0].id}`, {
+      method: 'PATCH',
+      body: JSON.stringify(values),
+    });
+    return;
+  }
+  await service('/rest/v1/medical_specialty_owners', {
+    method: 'POST',
+    body: JSON.stringify(values),
+  });
+}
+
 async function login(page: Page, persona: Persona, password: string) {
   await page.goto('/login');
   await page.getByLabel('E-mail').fill(personas[persona].email);
@@ -115,7 +139,9 @@ async function validateWorkspaceShell(
 ) {
   await page.setViewportSize({ width: 1280, height: 900 });
   await page.goto(path);
-  await expect(page.getByLabel('Barra lateral')).toBeVisible();
+  await expect(
+    page.getByRole('complementary', { name: 'Barra lateral' }),
+  ).toBeVisible();
   await expect(page.getByText(role, { exact: true })).toBeVisible();
   await expect(
     page.getByRole('button', { name: 'Sair da conta' }),
@@ -169,6 +195,100 @@ async function validateWorkspaceShell(
   await page.setViewportSize({ width: 1280, height: 900 });
 }
 
+test('os quatro perfis compartilham shell, scroll, navegação e logout', async ({
+  page,
+}, testInfo) => {
+  const password = `Workspace-${crypto.randomUUID()}-Aa1!`;
+  const editorId = await ensureUser('editor', password);
+  const mentorId = await ensureUser('mentor', password);
+  const adminId = await ensureUser('admin', password);
+  const studentId = await ensureUser('student', password);
+  await upsert('user_roles', [
+    { user_id: editorId, role: 'editor' },
+    { user_id: mentorId, role: 'mentor' },
+    { user_id: adminId, role: 'admin' },
+  ]);
+  await service(
+    `/rest/v1/profiles?id=in.(${editorId},${mentorId},${adminId},${studentId})`,
+    {
+      method: 'PATCH',
+      body: JSON.stringify({
+        onboarding_status: 'completed',
+        onboarding_step: 4,
+      }),
+    },
+  );
+
+  await login(page, 'editor', password);
+  await validateWorkspaceShell(
+    page,
+    testInfo,
+    'editorial',
+    '/editorial',
+    'Editorial',
+  );
+  await page.goto('/editorial/content');
+  await expect(
+    page.getByRole('heading', { name: 'Criar conteúdo estruturado' }),
+  ).toBeVisible();
+  await page.goto('/editorial/library');
+  await expect(page).toHaveURL(/\/editorial$/);
+  await logout(page);
+
+  await login(page, 'mentor', password);
+  await validateWorkspaceShell(page, testInfo, 'mentor', '/review', 'Mentor');
+  await page.getByRole('link', { name: /Minha fila/ }).click();
+  await expect(page).toHaveURL(/\/review\/queue$/);
+  await page.getByRole('link', { name: /Perfil/ }).click();
+  await expect(page).toHaveURL(/\/review\/profile$/);
+  await page.goto('/review/library');
+  await expect(page).toHaveURL(/\/review$/);
+  await logout(page);
+
+  await login(page, 'admin', password);
+  await validateWorkspaceShell(
+    page,
+    testInfo,
+    'admin',
+    '/admin',
+    'Administrador',
+  );
+  await page.getByRole('link', { name: /Alunos/ }).click();
+  await expect(page).toHaveURL(/\/admin\/students$/);
+  await page.getByRole('link', { name: /Mentores/ }).click();
+  await expect(page).toHaveURL(/\/admin\/mentors$/);
+  await page.getByRole('link', { name: /Platform/ }).click();
+  await expect(page).toHaveURL(/\/admin\/platform$/);
+  await page.goto('/admin/library');
+  await expect(page).toHaveURL(/\/admin$/);
+  await logout(page);
+
+  await login(page, 'student', password);
+  await page.setViewportSize({ width: 1280, height: 900 });
+  await page.goto('/app');
+  await expect(
+    page.getByRole('complementary', { name: 'Barra lateral' }),
+  ).toBeVisible();
+  await page.getByRole('link', { name: /Perfil/ }).click();
+  await expect(page).toHaveURL(/\/app\/profile$/);
+  const studentContent = page.locator('.app-content');
+  await expect(studentContent).toHaveCSS('overflow-y', 'auto');
+  await testInfo.attach('student-desktop', {
+    body: await page.screenshot({ fullPage: true }),
+    contentType: 'image/png',
+  });
+  await page.setViewportSize({ width: 390, height: 640 });
+  await page.getByRole('button', { name: 'Abrir menu' }).click();
+  const drawer = page.getByRole('dialog', { name: 'Menu de navegação' });
+  await expect(drawer.getByRole('button', { name: 'Sair' })).toBeVisible();
+  await testInfo.attach('student-mobile-390', {
+    body: await page.screenshot({ fullPage: true }),
+    contentType: 'image/png',
+  });
+  await page.keyboard.press('Escape');
+  await logout(page);
+});
+
 test('editor → mentor → admin → estudante: conteúdo versionado e revisão real', async ({
   page,
   request,
@@ -190,13 +310,7 @@ test('editor → mentor → admin → estudante: conteúdo versionado e revisão
     authorization_status: 'authorized',
     mfa_required: true,
   });
-  await upsert('medical_specialty_owners', {
-    specialty_id: specialtyId,
-    mentor_id: mentorId,
-    owner_role: 'primary',
-    status: 'active',
-    authorization_reference: 'e2e:documented-beta-authorization',
-  });
+  await ensureSpecialtyOwner(mentorId);
   await service(
     `/rest/v1/profiles?id=in.(${editorId},${mentorId},${adminId},${studentId})`,
     {
@@ -475,7 +589,9 @@ test('editor → mentor → admin → estudante: conteúdo versionado e revisão
   await login(page, 'student', password);
   await page.setViewportSize({ width: 1280, height: 900 });
   await page.goto('/app');
-  await expect(page.getByLabel('Barra lateral')).toBeVisible();
+  await expect(
+    page.getByRole('complementary', { name: 'Barra lateral' }),
+  ).toBeVisible();
   await testInfo.attach('student-desktop', {
     body: await page.screenshot({ fullPage: true }),
     contentType: 'image/png',

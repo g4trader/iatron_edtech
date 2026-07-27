@@ -22,7 +22,6 @@ export default async function EditorialLayout({
           { href: '/editorial', label: 'Visão geral', icon: 'V' },
           { href: '/editorial/content', label: 'Conteúdos', icon: 'C' },
           { href: '/editorial/specialties', label: 'Workflow', icon: 'W' },
-          { href: '/editorial/library', label: 'Biblioteca', icon: 'B' },
           { href: '/editorial/audit', label: 'Auditoria editorial', icon: 'A' },
         ],
       }}

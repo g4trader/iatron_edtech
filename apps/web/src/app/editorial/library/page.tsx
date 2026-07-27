@@ -1,15 +1,6 @@
-import { KnowledgeLibrary } from '@/features/editorial/components/knowledge-library';
+import type { Route } from 'next';
+import { redirect } from 'next/navigation';
 
-export default function EditorialLibraryPage({
-  searchParams,
-}: {
-  searchParams: Promise<Record<string, string | string[] | undefined>>;
-}) {
-  return (
-    <KnowledgeLibrary
-      basePath="/editorial/library"
-      scope="editorial"
-      searchParams={searchParams}
-    />
-  );
+export default function EditorialLibraryPage() {
+  redirect('/editorial' as Route);
 }

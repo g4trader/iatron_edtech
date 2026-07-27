@@ -1,15 +1,6 @@
-import { KnowledgeLibrary } from '@/features/editorial/components/knowledge-library';
+import type { Route } from 'next';
+import { redirect } from 'next/navigation';
 
-export default function AdminLibraryPage({
-  searchParams,
-}: {
-  searchParams: Promise<Record<string, string | string[] | undefined>>;
-}) {
-  return (
-    <KnowledgeLibrary
-      basePath="/admin/library"
-      scope="admin"
-      searchParams={searchParams}
-    />
-  );
+export default function AdminLibraryPage() {
+  redirect('/admin' as Route);
 }
