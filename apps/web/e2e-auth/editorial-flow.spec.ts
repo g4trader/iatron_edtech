@@ -169,6 +169,9 @@ async function validateWorkspaceShell(
   expect(contentScroll.overflowY).toBe('auto');
   if (contentScroll.scrollHeight > contentScroll.clientHeight)
     expect(contentScroll.scrollTop).toBeGreaterThan(0);
+  await page.locator('.app-content').evaluate((element) => {
+    (element as HTMLElement).scrollTop = 0;
+  });
   await testInfo.attach(`${workspace}-desktop`, {
     body: await page.screenshot({ fullPage: true }),
     contentType: 'image/png',
