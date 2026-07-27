@@ -2,10 +2,14 @@ import { fireEvent, render, screen, within } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { AppShell } from './app-shell';
 
-vi.mock('next/navigation', () => ({ usePathname: () => '/app' }));
+let pathname = '/app';
+vi.mock('next/navigation', () => ({ usePathname: () => pathname }));
 
 describe('AppShell', () => {
-  beforeEach(() => window.localStorage.clear());
+  beforeEach(() => {
+    pathname = '/app';
+    window.localStorage.clear();
+  });
 
   it('recolhe e restaura a sidebar desktop', () => {
     const { rerender } = render(
@@ -106,5 +110,70 @@ describe('AppShell', () => {
     expect(screen.getByRole('link', { name: /Mentores/ })).toBeVisible();
     expect(screen.getByRole('link', { name: /Perfil/ })).toBeVisible();
     expect(screen.queryByText('Orientações recentes')).not.toBeInTheDocument();
+  });
+
+  it('reutiliza navegação, papel, breadcrumb e rota ativa em outro workspace', () => {
+    pathname = '/review/queue';
+    render(
+      <AppShell
+        identity={{
+          displayName: 'Mentor Beta',
+          email: 'mentor@example.com',
+        }}
+        workspace={{
+          homeHref: '/review',
+          label: 'Mentoria médica',
+          roleLabel: 'Mentor',
+          navigationItems: [
+            { href: '/review', label: 'Visão geral', icon: 'V' },
+            { href: '/review/queue', label: 'Minha fila', icon: 'F' },
+            { href: '/review/profile', label: 'Perfil', icon: 'P' },
+          ],
+        }}
+      >
+        <div>Conteúdo longo</div>
+      </AppShell>,
+    );
+
+    expect(screen.getByText('Mentoria médica')).toBeVisible();
+    expect(screen.getByText('Mentor')).toBeVisible();
+    expect(screen.getByRole('heading', { name: 'Minha fila' })).toBeVisible();
+    expect(screen.getByRole('link', { name: /Minha fila/ })).toHaveAttribute(
+      'aria-current',
+      'page',
+    );
+    const breadcrumb = screen.getByRole('navigation', { name: 'Breadcrumb' });
+    expect(
+      within(breadcrumb).getByRole('link', { name: 'Início' }),
+    ).toHaveAttribute('href', '/review');
+    expect(screen.getByText('Conteúdo longo')).toBeVisible();
+  });
+
+  it('leva a mesma navegação e o logout do workspace para o drawer mobile', () => {
+    pathname = '/admin/users';
+    render(
+      <AppShell
+        identity={{ displayName: 'Admin Beta', email: 'admin@example.com' }}
+        workspace={{
+          homeHref: '/admin',
+          label: 'Executive Console',
+          roleLabel: 'Administrador',
+          navigationItems: [
+            { href: '/admin', label: 'Visão geral', icon: 'V' },
+            { href: '/admin/users', label: 'Usuários e acessos', icon: 'U' },
+          ],
+        }}
+      >
+        <div>Admin</div>
+      </AppShell>,
+    );
+
+    fireEvent.click(screen.getByRole('button', { name: 'Abrir menu' }));
+    const drawer = screen.getByRole('dialog', { name: 'Menu de navegação' });
+    expect(
+      within(drawer).getByRole('link', { name: /Usuários e acessos/ }),
+    ).toHaveAttribute('aria-current', 'page');
+    expect(within(drawer).getByText('Administrador')).toBeVisible();
+    expect(within(drawer).getByRole('button', { name: 'Sair' })).toBeVisible();
   });
 });

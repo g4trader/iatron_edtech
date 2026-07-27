@@ -2,7 +2,13 @@ import Link from 'next/link';
 import type { Route } from 'next';
 import { usePathname } from 'next/navigation';
 
-export const navigationItems = [
+export type NavigationItem = {
+  href: string;
+  label: string;
+  icon: string;
+};
+
+export const navigationItems: readonly NavigationItem[] = [
   { href: '/app', label: 'Jornada', icon: 'J' },
   { href: '/app/tutor', label: 'Mentores', icon: 'M' },
   { href: '/app/profile', label: 'Perfil', icon: 'P' },
@@ -10,17 +16,22 @@ export const navigationItems = [
 
 export function NavigationLinks({
   collapsed = false,
+  items = navigationItems,
   onNavigate,
 }: {
   collapsed?: boolean;
+  items?: readonly NavigationItem[];
   onNavigate?: () => void;
 }) {
   const pathname = usePathname();
   return (
     <nav aria-label="Navegação principal" className="sidebar-nav">
-      {navigationItems.map((item) => {
+      {items.map((item) => {
         const active =
-          item.href === '/app'
+          item.href === '/app' ||
+          item.href === '/review' ||
+          item.href === '/editorial' ||
+          item.href === '/admin'
             ? pathname === item.href
             : pathname.startsWith(item.href);
         return (

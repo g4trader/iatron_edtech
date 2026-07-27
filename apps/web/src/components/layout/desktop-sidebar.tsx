@@ -1,17 +1,24 @@
 'use client';
 
 import Link from 'next/link';
-import { NavigationLinks } from './navigation';
+import type { Route } from 'next';
+import { NavigationLinks, type NavigationItem } from './navigation';
 import { logout } from '@/app/(public)/auth/actions';
 
 export function DesktopSidebar({
   collapsed,
   onToggle,
   identity,
+  homeHref = '/app',
+  navigationItems,
+  roleLabel,
 }: {
   collapsed: boolean;
   onToggle: () => void;
   identity: { displayName: string; email: string };
+  homeHref?: string;
+  navigationItems?: readonly NavigationItem[];
+  roleLabel?: string;
 }) {
   const initials = identity.displayName
     .split(/\s+/)
@@ -26,7 +33,11 @@ export function DesktopSidebar({
       data-collapsed={collapsed}
     >
       <div className="sidebar-brand-row">
-        <Link aria-label="Iatron — início" className="brand" href="/app">
+        <Link
+          aria-label="Iatron — início"
+          className="brand"
+          href={homeHref as Route}
+        >
           <span className="brand-mark" aria-hidden="true">
             I
           </span>
@@ -44,7 +55,7 @@ export function DesktopSidebar({
           {collapsed ? '›' : '‹'}
         </button>
       </div>
-      <NavigationLinks collapsed={collapsed} />
+      <NavigationLinks collapsed={collapsed} items={navigationItems} />
       <div className="sidebar-account">
         <div
           aria-label={`Usuário: ${identity.displayName}`}
@@ -57,6 +68,7 @@ export function DesktopSidebar({
           {!collapsed && (
             <span>
               <strong>{identity.displayName}</strong>
+              {roleLabel && <small>{roleLabel}</small>}
               <small>{identity.email}</small>
             </span>
           )}

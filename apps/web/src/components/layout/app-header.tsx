@@ -1,5 +1,9 @@
 'use client';
 
+import Link from 'next/link';
+import type { Route } from 'next';
+import type { NavigationItem } from './navigation';
+
 const titleByPath: Record<string, string> = {
   '/app': 'Jornada',
   '/app/profile': 'Perfil',
@@ -18,11 +22,27 @@ const titleByPrefix = [
 export function AppHeader({
   pathname,
   onOpenMenu,
+  eyebrow = 'Sua preparação',
+  homeHref = '/app',
+  navigationItems,
+  showBreadcrumb = false,
 }: {
   pathname: string;
   onOpenMenu: () => void;
+  eyebrow?: string;
+  homeHref?: string;
+  navigationItems?: readonly NavigationItem[];
+  showBreadcrumb?: boolean;
 }) {
+  const configuredTitle = [...(navigationItems ?? [])]
+    .sort((a, b) => b.href.length - a.href.length)
+    .find((item) =>
+      item.href === homeHref
+        ? pathname === item.href
+        : pathname.startsWith(item.href),
+    )?.label;
   const title =
+    configuredTitle ??
     titleByPath[pathname] ??
     titleByPrefix.find(([prefix]) => pathname.startsWith(prefix))?.[1] ??
     (pathname.startsWith('/app/chat/') ? 'Conversa de estudo' : 'Iatron');
@@ -37,8 +57,19 @@ export function AppHeader({
         ☰
       </button>
       <div>
-        <p>Sua preparação</p>
+        <p>{eyebrow}</p>
         <h1>{title}</h1>
+        {showBreadcrumb && (
+          <nav aria-label="Breadcrumb" className="app-breadcrumb">
+            <Link href={homeHref as Route}>Início</Link>
+            {pathname !== homeHref && (
+              <>
+                <span aria-hidden="true">/</span>
+                <span aria-current="page">{title}</span>
+              </>
+            )}
+          </nav>
+        )}
       </div>
       <span aria-hidden="true" className="header-action-spacer" />
     </header>

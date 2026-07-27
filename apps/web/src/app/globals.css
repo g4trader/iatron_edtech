@@ -186,6 +186,16 @@ button:disabled {
   height: 100dvh;
   overflow: hidden;
 }
+.app-content {
+  display: flex;
+  flex: 1;
+  min-width: 0;
+  min-height: 0;
+  overflow-x: hidden;
+  overflow-y: auto;
+  overscroll-behavior-y: contain;
+  -webkit-overflow-scrolling: touch;
+}
 .desktop-sidebar {
   width: 270px;
   height: 100dvh;
@@ -247,8 +257,12 @@ button:disabled {
 }
 .sidebar-nav {
   display: grid;
+  align-content: start;
   gap: 0.2rem;
   margin-top: 0.5rem;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
   width: 100%;
 }
 .sidebar-link {
@@ -397,6 +411,19 @@ button:disabled {
   text-overflow: ellipsis;
   white-space: nowrap;
   font-size: 1rem;
+}
+.app-breadcrumb {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  margin-top: 0.2rem;
+  color: var(--foreground-muted);
+  font-size: 0.72rem;
+}
+.app-breadcrumb a:hover {
+  color: var(--primary);
+  text-decoration: underline;
+  text-underline-offset: 0.15em;
 }
 .mobile-menu-button {
   display: none;
@@ -826,7 +853,6 @@ button:disabled {
   width: 100%;
   max-width: 1240px;
   margin: 0 auto;
-  overflow-y: auto;
   padding: clamp(1.25rem, 3vw, 2.5rem);
 }
 .page-container[data-narrow='true'] {
@@ -836,9 +862,6 @@ button:disabled {
 .catalog-page {
   flex: 1;
   min-height: 0;
-  overflow-y: auto;
-  overscroll-behavior-y: contain;
-  -webkit-overflow-scrolling: touch;
 }
 .catalog-page {
   width: 100%;

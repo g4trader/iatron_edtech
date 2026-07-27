@@ -1,31 +1,38 @@
 import type { ReactNode } from 'react';
-import {
-  EditorialShell,
-  requireEditorialRole,
-} from '@/features/editorial/server/access';
+import { AppShell } from '@/components/layout/app-shell';
+import { requireEditorialRole } from '@/features/editorial/server/access';
 
 export default async function ReviewLayout({
   children,
 }: {
   children: ReactNode;
 }) {
-  await requireEditorialRole(['mentor']);
+  const { user, profile } = await requireEditorialRole(['mentor']);
   return (
-    <EditorialShell
-      area="Mentoria médica"
-      homeHref="/review"
-      links={[
-        { href: '/review/specialties', label: 'Visão da área' },
-        { href: '/review/library', label: 'Biblioteca da área' },
-        { href: '/review/queue', label: 'Minha fila' },
-        { href: '/review/active', label: 'Em revisão' },
-        { href: '/review/specialties', label: 'Conteúdos e cobertura' },
-        { href: '/review/history', label: 'Histórico' },
-        { href: '/review/profile', label: 'Perfil' },
-      ]}
-      showStudentLink={false}
+    <AppShell
+      identity={{
+        displayName: profile?.display_name ?? 'Mentor',
+        email: user.email ?? '',
+      }}
+      workspace={{
+        homeHref: '/review',
+        label: 'Mentoria médica',
+        roleLabel: 'Mentor',
+        navigationItems: [
+          { href: '/review', label: 'Visão da área', icon: 'V' },
+          { href: '/review/queue', label: 'Minha fila', icon: 'F' },
+          { href: '/review/active', label: 'Em revisão', icon: 'R' },
+          {
+            href: '/review/library',
+            label: 'Conteúdos e cobertura',
+            icon: 'C',
+          },
+          { href: '/review/history', label: 'Histórico', icon: 'H' },
+          { href: '/review/profile', label: 'Perfil', icon: 'P' },
+        ],
+      }}
     >
       {children}
-    </EditorialShell>
+    </AppShell>
   );
 }

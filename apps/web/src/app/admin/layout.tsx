@@ -1,8 +1,6 @@
 import type { ReactNode } from 'react';
-import {
-  EditorialShell,
-  requireEditorialRole,
-} from '@/features/editorial/server/access';
+import { AppShell } from '@/components/layout/app-shell';
+import { requireEditorialRole } from '@/features/editorial/server/access';
 
 export default async function AdminLayout({
   children,
@@ -11,25 +9,26 @@ export default async function AdminLayout({
 }) {
   const { user, profile } = await requireEditorialRole(['admin']);
   return (
-    <EditorialShell
-      area="Executive Console"
-      homeHref="/admin"
+    <AppShell
       identity={{
         displayName: profile?.display_name ?? 'Administrador',
         email: user.email ?? '',
       }}
-      links={[
-        { href: '/admin', label: 'Visão geral' },
-        { href: '/admin/students', label: 'Alunos' },
-        { href: '/admin/mentors', label: 'Mentores' },
-        { href: '/admin/specialties', label: 'Áreas médicas' },
-        { href: '/admin/library', label: 'Biblioteca médica' },
-        { href: '/admin/users', label: 'Acessos' },
-        { href: '/admin/platform', label: 'Platform' },
-      ]}
-      showStudentLink={false}
+      workspace={{
+        homeHref: '/admin',
+        label: 'Executive Console',
+        roleLabel: 'Administrador',
+        navigationItems: [
+          { href: '/admin', label: 'Visão geral', icon: 'V' },
+          { href: '/admin/students', label: 'Alunos', icon: 'A' },
+          { href: '/admin/mentors', label: 'Mentores', icon: 'M' },
+          { href: '/admin/users', label: 'Usuários e acessos', icon: 'U' },
+          { href: '/admin/specialties', label: 'Operação', icon: 'O' },
+          { href: '/admin/platform', label: 'Platform', icon: 'P' },
+        ],
+      }}
     >
       {children}
-    </EditorialShell>
+    </AppShell>
   );
 }

@@ -1,8 +1,9 @@
 'use client';
 
 import Link from 'next/link';
+import type { Route } from 'next';
 import { useEffect, useRef } from 'react';
-import { NavigationLinks } from './navigation';
+import { NavigationLinks, type NavigationItem } from './navigation';
 import { logout } from '@/app/(public)/auth/actions';
 import { ActionSubmitButton } from '@/components/feedback/action-submit-button';
 
@@ -10,10 +11,16 @@ export function MobileSidebarDrawer({
   open,
   onClose,
   identity,
+  homeHref = '/app',
+  navigationItems,
+  roleLabel,
 }: {
   open: boolean;
   onClose: () => void;
   identity: { displayName: string; email: string };
+  homeHref?: string;
+  navigationItems?: readonly NavigationItem[];
+  roleLabel?: string;
 }) {
   const closeButtonRef = useRef<HTMLButtonElement>(null);
   const previousFocusRef = useRef<HTMLElement | null>(null);
@@ -73,7 +80,7 @@ export function MobileSidebarDrawer({
         role="dialog"
       >
         <div className="sidebar-brand-row">
-          <Link className="brand" href="/app" onClick={onClose}>
+          <Link className="brand" href={homeHref as Route} onClick={onClose}>
             <span className="brand-mark">I</span>Iatron
           </Link>
           <button
@@ -86,7 +93,7 @@ export function MobileSidebarDrawer({
             ×
           </button>
         </div>
-        <NavigationLinks onNavigate={onClose} />
+        <NavigationLinks items={navigationItems} onNavigate={onClose} />
         <div className="sidebar-account mobile-account">
           <div
             aria-label={`Usuário: ${identity.displayName}`}
@@ -97,6 +104,7 @@ export function MobileSidebarDrawer({
             </span>
             <span>
               <strong>{identity.displayName}</strong>
+              {roleLabel && <small>{roleLabel}</small>}
               <small>{identity.email}</small>
             </span>
           </div>

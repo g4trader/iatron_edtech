@@ -1,4 +1,4 @@
-import { expect, test, type Page } from '@playwright/test';
+import { expect, test, type Page, type TestInfo } from '@playwright/test';
 
 const supabaseUrl = process.env.E2E_SUPABASE_URL!;
 const publishableKey = process.env.E2E_SUPABASE_PUBLISHABLE_KEY!;
@@ -94,7 +94,6 @@ async function login(page: Page, persona: Persona, password: string) {
 }
 
 async function logout(page: Page) {
-  await page.goto('/app');
   const desktop = page.getByRole('button', { name: 'Sair da conta' });
   if (await desktop.isVisible().catch(() => false)) await desktop.click();
   else {
@@ -107,10 +106,73 @@ async function logout(page: Page) {
   await expect(page).toHaveURL(/\/login/);
 }
 
+async function validateWorkspaceShell(
+  page: Page,
+  testInfo: TestInfo,
+  workspace: string,
+  path: string,
+  role: string,
+) {
+  await page.setViewportSize({ width: 1280, height: 900 });
+  await page.goto(path);
+  await expect(page.getByLabel('Barra lateral')).toBeVisible();
+  await expect(page.getByText(role, { exact: true })).toBeVisible();
+  await expect(
+    page.getByRole('button', { name: 'Sair da conta' }),
+  ).toBeVisible();
+  await expect(
+    page.getByRole('navigation', { name: 'Breadcrumb' }),
+  ).toBeVisible();
+  const desktopWidth = await page.evaluate(() => ({
+    client: document.documentElement.clientWidth,
+    scroll: document.documentElement.scrollWidth,
+  }));
+  expect(desktopWidth.scroll).toBeLessThanOrEqual(desktopWidth.client);
+  const contentScroll = await page
+    .locator('.app-content')
+    .evaluate((element) => {
+      const container = element as HTMLElement;
+      container.scrollTop = container.scrollHeight;
+      return {
+        clientHeight: container.clientHeight,
+        overflowY: getComputedStyle(container).overflowY,
+        scrollHeight: container.scrollHeight,
+        scrollTop: container.scrollTop,
+      };
+    });
+  expect(contentScroll.overflowY).toBe('auto');
+  if (contentScroll.scrollHeight > contentScroll.clientHeight)
+    expect(contentScroll.scrollTop).toBeGreaterThan(0);
+  await testInfo.attach(`${workspace}-desktop`, {
+    body: await page.screenshot({ fullPage: true }),
+    contentType: 'image/png',
+  });
+
+  await page.setViewportSize({ width: 390, height: 844 });
+  await expect(page.getByRole('button', { name: 'Abrir menu' })).toBeVisible();
+  const mobileWidth = await page.evaluate(() => ({
+    client: document.documentElement.clientWidth,
+    scroll: document.documentElement.scrollWidth,
+  }));
+  expect(mobileWidth.scroll).toBeLessThanOrEqual(mobileWidth.client);
+  await testInfo.attach(`${workspace}-mobile-390`, {
+    body: await page.screenshot({ fullPage: true }),
+    contentType: 'image/png',
+  });
+  await page.getByRole('button', { name: 'Abrir menu' }).click();
+  const drawer = page.getByRole('dialog', { name: 'Menu de navegação' });
+  await expect(drawer).toBeVisible();
+  await expect(drawer.getByText(role, { exact: true })).toBeVisible();
+  await expect(drawer.getByRole('button', { name: 'Sair' })).toBeVisible();
+  await page.keyboard.press('Escape');
+  await expect(drawer).toBeHidden();
+  await page.setViewportSize({ width: 1280, height: 900 });
+}
+
 test('editor → mentor → admin → estudante: conteúdo versionado e revisão real', async ({
   page,
   request,
-}) => {
+}, testInfo) => {
   const password = `Editorial-${crypto.randomUUID()}-Aa1!`;
   const editorId = await ensureUser('editor', password);
   const mentorId = await ensureUser('mentor', password);
@@ -162,6 +224,13 @@ test('editor → mentor → admin → estudante: conteúdo versionado e revisão
 
   // Editor cria rascunho sintético assistido, sem autoridade médica.
   await login(page, 'editor', password);
+  await validateWorkspaceShell(
+    page,
+    testInfo,
+    'editorial',
+    '/editorial',
+    'Editorial',
+  );
   await page.goto('/admin');
   await expect(page).toHaveURL(/\/app$/);
   await page.goto('/editorial/library');
@@ -257,6 +326,7 @@ test('editor → mentor → admin → estudante: conteúdo versionado e revisão
 
   // Mentor autenticado revisa a versão exata.
   await login(page, 'mentor', password);
+  await validateWorkspaceShell(page, testInfo, 'mentor', '/review', 'Mentor');
   await page.goto('/editorial');
   await expect(page).toHaveURL(/\/app$/);
   await page.goto('/admin');
@@ -297,6 +367,13 @@ test('editor → mentor → admin → estudante: conteúdo versionado e revisão
 
   // Admin publica; aprovação e publicação permanecem separadas.
   await login(page, 'admin', password);
+  await validateWorkspaceShell(
+    page,
+    testInfo,
+    'admin',
+    '/admin',
+    'Administrador',
+  );
   await page.goto('/admin');
   await expect(
     page.getByRole('heading', { name: 'Console administrativo' }),
@@ -396,6 +473,19 @@ test('editor → mentor → admin → estudante: conteúdo versionado e revisão
 
   // Estudante acessa conteúdo publicado, selo e conclui a atividade.
   await login(page, 'student', password);
+  await page.setViewportSize({ width: 1280, height: 900 });
+  await page.goto('/app');
+  await expect(page.getByLabel('Barra lateral')).toBeVisible();
+  await testInfo.attach('student-desktop', {
+    body: await page.screenshot({ fullPage: true }),
+    contentType: 'image/png',
+  });
+  await page.setViewportSize({ width: 390, height: 844 });
+  await expect(page.getByRole('button', { name: 'Abrir menu' })).toBeVisible();
+  await testInfo.attach('student-mobile-390', {
+    body: await page.screenshot({ fullPage: true }),
+    contentType: 'image/png',
+  });
   for (const protectedRoute of ['/review', '/editorial', '/admin']) {
     await page.goto(protectedRoute);
     await expect(page).toHaveURL(/\/app$/);
