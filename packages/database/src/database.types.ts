@@ -2619,17 +2619,100 @@ export type Database = {
         }
         Relationships: []
       }
+      medical_specialty_ownership_history: {
+        Row: {
+          assigned_by: string | null
+          authorization_reference: string
+          ends_at: string | null
+          id: string
+          mentor_id: string
+          operation: string
+          owner_role: string
+          ownership_id: string
+          reason: string | null
+          recorded_at: string
+          request_id: string
+          scope: string
+          specialty_id: string
+          starts_at: string
+          status: string
+          unavailable_until: string | null
+        }
+        Insert: {
+          assigned_by?: string | null
+          authorization_reference: string
+          ends_at?: string | null
+          id?: string
+          mentor_id: string
+          operation: string
+          owner_role: string
+          ownership_id: string
+          reason?: string | null
+          recorded_at?: string
+          request_id: string
+          scope: string
+          specialty_id: string
+          starts_at: string
+          status: string
+          unavailable_until?: string | null
+        }
+        Update: {
+          assigned_by?: string | null
+          authorization_reference?: string
+          ends_at?: string | null
+          id?: string
+          mentor_id?: string
+          operation?: string
+          owner_role?: string
+          ownership_id?: string
+          reason?: string | null
+          recorded_at?: string
+          request_id?: string
+          scope?: string
+          specialty_id?: string
+          starts_at?: string
+          status?: string
+          unavailable_until?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "medical_specialty_ownership_history_assigned_by_fkey"
+            columns: ["assigned_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "medical_specialty_ownership_history_mentor_id_fkey"
+            columns: ["mentor_id"]
+            isOneToOne: false
+            referencedRelation: "mentor_profiles"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "medical_specialty_ownership_history_specialty_id_fkey"
+            columns: ["specialty_id"]
+            isOneToOne: false
+            referencedRelation: "specialties"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       medical_specialty_owners: {
         Row: {
           authorization_reference: string
           authorized_by: string | null
           created_at: string
           ends_at: string | null
+          id: string
           mentor_id: string
           owner_role: string
+          reason: string | null
+          scope: string
           specialty_id: string
           starts_at: string
           status: string
+          unavailable_until: string | null
           updated_at: string
         }
         Insert: {
@@ -2637,11 +2720,15 @@ export type Database = {
           authorized_by?: string | null
           created_at?: string
           ends_at?: string | null
+          id?: string
           mentor_id: string
           owner_role: string
+          reason?: string | null
+          scope?: string
           specialty_id: string
           starts_at?: string
           status?: string
+          unavailable_until?: string | null
           updated_at?: string
         }
         Update: {
@@ -2649,11 +2736,15 @@ export type Database = {
           authorized_by?: string | null
           created_at?: string
           ends_at?: string | null
+          id?: string
           mentor_id?: string
           owner_role?: string
+          reason?: string | null
+          scope?: string
           specialty_id?: string
           starts_at?: string
           status?: string
+          unavailable_until?: string | null
           updated_at?: string
         }
         Relationships: [
@@ -4562,6 +4653,16 @@ export type Database = {
           p_question_version_id: string
           p_rationale: Json
           p_selection_order: number
+        }
+        Returns: string
+      }
+      set_medical_specialty_owner_status: {
+        Args: {
+          p_ownership_id: string
+          p_reason: string
+          p_request_id: string
+          p_status: string
+          p_unavailable_until: string
         }
         Returns: string
       }
