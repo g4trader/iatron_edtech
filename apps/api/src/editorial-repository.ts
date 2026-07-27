@@ -4,6 +4,11 @@ import {
   learningContentVersionSchema,
   type AppRole,
   type LearningContentVersion,
+  type KnowledgeLibraryItem,
+  type KnowledgeLibraryOverview,
+  type KnowledgeLibraryPage,
+  type KnowledgeLibraryQuery,
+  type ResolveKnowledgeDuplicateInput,
   type MedicalSpecialtyDashboard,
   type MedicalSpecialtyOwnershipHistory,
   type MedicalSpecialtySummary,
@@ -66,6 +71,12 @@ export interface EditorialRepository {
       requestId: string;
     },
   ): Promise<string>;
+  libraryOverview(mentorId: string | null): Promise<KnowledgeLibraryOverview>;
+  library(
+    query: KnowledgeLibraryQuery,
+    mentorId: string | null,
+  ): Promise<KnowledgeLibraryPage>;
+  resolveDuplicate(input: ResolveKnowledgeDuplicateInput): Promise<string>;
   createDraft(input: Record<string, unknown>): Promise<string>;
   createVersion(input: {
     contentId: string;
@@ -505,6 +516,308 @@ export function createEditorialRepository(
       });
     });
   };
+
+  const librarySpecialtyIds = async (mentorId: string | null) =>
+    mentorId
+      ? rows(
+          await get(
+            `medical_specialty_owners?select=specialty_id&mentor_id=eq.${encodeURIComponent(mentorId)}&status=in.(active,temporarily_unavailable)&ends_at=is.null`,
+          ),
+        ).map((row) => text(row, 'specialty_id'))
+      : rows(await get('specialties?select=id')).map((row) => text(row, 'id'));
+
+  const matchesLibraryQuery = (
+    item: KnowledgeLibraryItem,
+    query: KnowledgeLibraryQuery,
+  ) => {
+    if (query.specialtyId && item.specialtyId !== query.specialtyId)
+      return false;
+    if (query.status && item.status !== query.status) return false;
+    const term = query.search.toLocaleLowerCase('pt-BR');
+    if (!term) return true;
+    return [
+      item.title,
+      item.identifier,
+      item.specialtyName,
+      item.competencyName,
+      item.status,
+      item.ownerName,
+      ...Object.values(item.metadata).map(String),
+    ]
+      .filter(Boolean)
+      .some((value) => String(value).toLocaleLowerCase('pt-BR').includes(term));
+  };
+
+  const buildLibraryItems = async (
+    kind: KnowledgeLibraryQuery['kind'],
+    mentorId: string | null,
+  ): Promise<KnowledgeLibraryItem[]> => {
+    const specialtyIds = await librarySpecialtyIds(mentorId);
+    if (!specialtyIds.length) return [];
+    const [ownerResponse, specialtyResponse] = await Promise.all([
+      get(
+        `medical_specialty_owners?select=specialty_id,owner_role,status,mentor_profiles(professional_name)&specialty_id=in.(${specialtyIds.join(',')})&status=in.(active,temporarily_unavailable)&ends_at=is.null`,
+      ),
+      get(`specialties?select=id,name&id=in.(${specialtyIds.join(',')})`),
+    ]);
+    const owners = rows(ownerResponse);
+    const specialtyRows = rows(specialtyResponse);
+    const specialtyName = (specialtyId: string | null) =>
+      nullableText(
+        specialtyRows.find((row) => text(row, 'id') === specialtyId) ?? {},
+        'name',
+      );
+    const ownerName = (specialtyId: string | null) =>
+      nullableText(
+        object(
+          owners.find(
+            (owner) =>
+              text(owner, 'specialty_id') === specialtyId &&
+              text(owner, 'owner_role') === 'primary',
+          )?.mentor_profiles,
+        ),
+        'professional_name',
+      );
+    if (kind === 'contents') {
+      const contentRows = rows(
+        await get(
+          `learning_contents?select=id,canonical_key,slug,specialty_id,competency_id,updated_at,specialties(name),competencies(name),learning_content_versions(id,title,version_number,editorial_status,reviewed_at,published_at)&specialty_id=in.(${specialtyIds.join(',')})&order=updated_at.desc&limit=500`,
+        ),
+      );
+      return contentRows.map((row) => {
+        const versions = rows(row.learning_content_versions).sort(
+          (left, right) =>
+            number(right, 'version_number') - number(left, 'version_number'),
+        );
+        const version = versions[0] ?? {};
+        const specialtyId = nullableText(row, 'specialty_id');
+        return {
+          id: text(row, 'id'),
+          kind,
+          title: text(version, 'title') || text(row, 'slug'),
+          identifier: text(row, 'canonical_key'),
+          specialtyId,
+          specialtyName: nullableText(object(row.specialties), 'name'),
+          competencyId: nullableText(row, 'competency_id'),
+          competencyName: nullableText(object(row.competencies), 'name'),
+          status: text(version, 'editorial_status') || 'draft',
+          ownerName: ownerName(specialtyId),
+          updatedAt: nullableText(row, 'updated_at'),
+          detail: `Versão ${number(version, 'version_number') || 1}`,
+          metadata: {
+            slug: text(row, 'slug'),
+            versions: versions.length,
+            reviewedAt: nullableText(version, 'reviewed_at'),
+            publishedAt: nullableText(version, 'published_at'),
+          },
+        };
+      });
+    }
+    if (kind === 'questions') {
+      const questionRows = rows(
+        await get(
+          `question_version_specialties?select=specialty_id,question_versions(id,question_id,version_number,status,difficulty,created_at,question_version_competencies(competency_id,competencies(name)),question_version_provenance(external_identifier,source_title,editorial_status))&specialty_id=in.(${specialtyIds.join(',')})&limit=500`,
+        ),
+      );
+      return questionRows.map((link) => {
+        const row = object(link.question_versions);
+        const competencyLink = rows(row.question_version_competencies)[0] ?? {};
+        const provenance = rows(row.question_version_provenance)[0] ?? {};
+        const specialtyId = nullableText(link, 'specialty_id');
+        return {
+          id: text(row, 'id'),
+          kind,
+          title:
+            nullableText(provenance, 'external_identifier') ??
+            `Questão ${text(row, 'id').slice(0, 8)}`,
+          identifier: nullableText(provenance, 'external_identifier'),
+          specialtyId,
+          specialtyName: specialtyName(specialtyId),
+          competencyId: nullableText(competencyLink, 'competency_id'),
+          competencyName: nullableText(
+            object(competencyLink.competencies),
+            'name',
+          ),
+          status: text(row, 'status'),
+          ownerName: ownerName(specialtyId),
+          updatedAt: nullableText(row, 'created_at'),
+          detail: nullableText(provenance, 'source_title'),
+          metadata: {
+            difficulty: text(row, 'difficulty'),
+            version: number(row, 'version_number'),
+            eligible: ['homologated', 'published'].includes(
+              text(row, 'status'),
+            ),
+          },
+        };
+      });
+    }
+    if (kind === 'references') {
+      const referenceRows = rows(
+        await get(
+          `content_reference_specialties?select=specialty_id,content_references(id,title,authors_or_organization,reference_type,publication_year,doi,pmid,isbn,url,verification_status,verified_at,created_at)&specialty_id=in.(${specialtyIds.join(',')})&limit=500`,
+        ),
+      );
+      return referenceRows.map((link) => {
+        const row = object(link.content_references);
+        const specialtyId = nullableText(link, 'specialty_id');
+        return {
+          id: text(row, 'id'),
+          kind,
+          title: text(row, 'title'),
+          identifier:
+            nullableText(row, 'doi') ??
+            nullableText(row, 'pmid') ??
+            nullableText(row, 'isbn'),
+          specialtyId,
+          specialtyName: specialtyName(specialtyId),
+          competencyId: null,
+          competencyName: null,
+          status: text(row, 'verification_status'),
+          ownerName: ownerName(specialtyId),
+          updatedAt:
+            nullableText(row, 'verified_at') ?? nullableText(row, 'created_at'),
+          detail: nullableText(row, 'authors_or_organization'),
+          metadata: {
+            type: text(row, 'reference_type'),
+            year:
+              row.publication_year == null
+                ? null
+                : number(row, 'publication_year'),
+            doi: nullableText(row, 'doi'),
+            pmid: nullableText(row, 'pmid'),
+            isbn: nullableText(row, 'isbn'),
+          },
+        };
+      });
+    }
+    if (kind === 'blueprints') {
+      const blueprintRows = rows(
+        await get(
+          `exam_blueprint_areas?select=specialty_id,exam_blueprints(id,version,is_active,editorial_status,confidence,is_synthetic,period_start,period_end,created_at,exam_profiles(name))&specialty_id=in.(${specialtyIds.join(',')})&limit=500`,
+        ),
+      );
+      return blueprintRows.map((link) => {
+        const row = object(link.exam_blueprints);
+        const specialtyId = nullableText(link, 'specialty_id');
+        return {
+          id: text(row, 'id'),
+          kind,
+          title:
+            nullableText(object(row.exam_profiles), 'name') ??
+            `Blueprint ${text(row, 'version')}`,
+          identifier: text(row, 'version'),
+          specialtyId,
+          specialtyName: specialtyName(specialtyId),
+          competencyId: null,
+          competencyName: null,
+          status: text(row, 'editorial_status'),
+          ownerName: ownerName(specialtyId),
+          updatedAt: nullableText(row, 'created_at'),
+          detail: boolean(row, 'is_synthetic')
+            ? 'Perfil sintético claramente identificado'
+            : 'Perfil sustentado por fonte registrada',
+          metadata: {
+            active: boolean(row, 'is_active'),
+            confidence: text(row, 'confidence'),
+            synthetic: boolean(row, 'is_synthetic'),
+            periodStart: nullableText(row, 'period_start'),
+            periodEnd: nullableText(row, 'period_end'),
+          },
+        };
+      });
+    }
+    const dashboards = await specialtyDashboards(mentorId);
+    const competencyItems = dashboards.flatMap((dashboard) =>
+      dashboard.coverage.map((coverage) => ({
+        id: coverage.competencyId,
+        kind: 'competencies' as const,
+        title: coverage.competencyName,
+        identifier: null,
+        specialtyId: dashboard.id,
+        specialtyName: dashboard.name,
+        competencyId: coverage.competencyId,
+        competencyName: coverage.competencyName,
+        status: coverage.status,
+        ownerName:
+          dashboard.owners.find(({ ownerRole }) => ownerRole === 'primary')
+            ?.professionalName ?? null,
+        updatedAt: coverage.lastReviewedAt,
+        detail: coverage.pending.join(' · ') || 'Cobertura completa',
+        metadata: {
+          publishedContents: coverage.publishedContents,
+          eligibleQuestions: coverage.eligibleQuestions,
+          verifiedReferences: coverage.validReferences,
+        },
+      })),
+    );
+    if (kind === 'competencies') return competencyItems;
+    if (kind === 'gaps')
+      return dashboards.flatMap((dashboard) =>
+        dashboard.gaps.map((gap) => ({
+          id: gap.competencyId ?? dashboard.id,
+          kind: 'gaps' as const,
+          title: gap.title,
+          identifier: gap.key,
+          specialtyId: dashboard.id,
+          specialtyName: dashboard.name,
+          competencyId: gap.competencyId,
+          competencyName: gap.title,
+          status: gap.priority,
+          ownerName:
+            dashboard.owners.find(({ ownerRole }) => ownerRole === 'primary')
+              ?.professionalName ?? null,
+          updatedAt: dashboard.lastScientificUpdateAt,
+          detail: gap.reason,
+          metadata: { nextAction: gap.nextAction },
+        })),
+      );
+    const duplicateCandidates = [
+      ...(await buildLibraryItems('contents', mentorId)),
+      ...(await buildLibraryItems('references', mentorId)),
+      ...(await buildLibraryItems('questions', mentorId)),
+    ];
+    const normalized = (value: string) =>
+      value
+        .normalize('NFD')
+        .replace(/\p{Diacritic}/gu, '')
+        .toLocaleLowerCase('pt-BR')
+        .replace(/[^a-z0-9]+/g, ' ')
+        .trim();
+    return duplicateCandidates.flatMap((item, index, all) => {
+      const candidate = all.find(
+        (other, candidateIndex) =>
+          candidateIndex < index &&
+          other.kind === item.kind &&
+          other.id !== item.id &&
+          ((item.identifier &&
+            other.identifier &&
+            item.identifier === other.identifier) ||
+            (normalized(item.title).length > 8 &&
+              normalized(item.title) === normalized(other.title))),
+      );
+      if (!candidate) return [];
+      return [
+        {
+          ...item,
+          kind: 'duplicates' as const,
+          status: 'possible_duplicate',
+          detail: `Possível correspondência com “${candidate.title}”.`,
+          metadata: {
+            ...item.metadata,
+            candidateId: candidate.id,
+            candidateTitle: candidate.title,
+            resourceType:
+              item.kind === 'contents'
+                ? 'content'
+                : item.kind === 'questions'
+                  ? 'question'
+                  : 'reference',
+          },
+        },
+      ];
+    });
+  };
   return {
     async roles() {
       return rows(await get('user_roles?select=role')).map(
@@ -668,6 +981,91 @@ export function createEditorialRepository(
           p_status: input.status,
           p_reason: input.reason,
           p_unavailable_until: input.unavailableUntil,
+          p_request_id: input.requestId,
+        }),
+      );
+    },
+    async libraryOverview(mentorId) {
+      const dashboards = await specialtyDashboards(mentorId);
+      const [contents, questions, references, blueprints, duplicates] =
+        await Promise.all([
+          buildLibraryItems('contents', mentorId),
+          buildLibraryItems('questions', mentorId),
+          buildLibraryItems('references', mentorId),
+          buildLibraryItems('blueprints', mentorId),
+          buildLibraryItems('duplicates', mentorId),
+        ]);
+      const coverage = dashboards.flatMap((dashboard) => dashboard.coverage);
+      return {
+        publishedContents: contents.filter(
+          ({ status }) => status === 'published',
+        ).length,
+        contentsInReview: contents.filter(({ status }) =>
+          [
+            'editorial_review',
+            'awaiting_mentor_review',
+            'mentor_changes_requested',
+          ].includes(status),
+        ).length,
+        publishedQuestions: questions.filter(
+          ({ status }) => status === 'published',
+        ).length,
+        diagnosticEligibleQuestions: questions.filter(
+          ({ metadata }) => metadata.eligible === true,
+        ).length,
+        verifiedReferences: references.filter(
+          ({ status }) => status === 'verified',
+        ).length,
+        pendingReferences: references.filter(
+          ({ status }) => status !== 'verified',
+        ).length,
+        activeBlueprints: blueprints.filter(
+          ({ metadata }) => metadata.active === true,
+        ).length,
+        coveredCompetencies: coverage.filter(
+          ({ status }) => status === 'covered',
+        ).length,
+        uncoveredCompetencies: coverage.filter(
+          ({ status }) => status !== 'covered',
+        ).length,
+        possibleDuplicates: duplicates.length,
+        outdatedItems: [
+          ...contents.filter(({ status }) => status === 'archived'),
+          ...references.filter(({ status }) => status === 'outdated'),
+          ...coverage.filter(({ status }) => status === 'needs_update'),
+        ].length,
+        priorityGaps: dashboards
+          .flatMap(({ gaps }) => gaps)
+          .filter(({ priority }) => ['critical', 'high'].includes(priority))
+          .length,
+      };
+    },
+    async library(query, mentorId) {
+      const all = (await buildLibraryItems(query.kind, mentorId))
+        .filter((item) => matchesLibraryQuery(item, query))
+        .sort((left, right) =>
+          query.order === 'title_asc'
+            ? left.title.localeCompare(right.title, 'pt-BR')
+            : Date.parse(right.updatedAt ?? '1970-01-01') -
+              Date.parse(left.updatedAt ?? '1970-01-01'),
+        );
+      const offset = (query.page - 1) * query.pageSize;
+      return {
+        items: all.slice(offset, offset + query.pageSize),
+        page: query.page,
+        pageSize: query.pageSize,
+        total: all.length,
+      };
+    },
+    async resolveDuplicate(input) {
+      return String(
+        await rpc('resolve_knowledge_duplicate', {
+          p_resource_type: input.resourceType,
+          p_resource_id: input.resourceId,
+          p_candidate_id: input.candidateId,
+          p_decision: input.decision,
+          p_canonical_id: input.canonicalId,
+          p_reason: input.reason,
           p_request_id: input.requestId,
         }),
       );

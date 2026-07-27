@@ -1,10 +1,14 @@
 import {
   appRoleSchema,
+  knowledgeLibraryOverviewSchema,
+  knowledgeLibraryPageSchema,
+  knowledgeLibraryQuerySchema,
   learningContentVersionSchema,
   medicalSpecialtyDashboardSchema,
   medicalSpecialtySummarySchema,
   mentorReviewHistorySchema,
   type LearningContentVersion,
+  type KnowledgeLibraryQuery,
 } from '@iatron/contracts';
 import { z } from 'zod';
 import { createClient } from '@/lib/supabase/server';
@@ -56,6 +60,31 @@ export const editorial = {
     return z
       .array(medicalSpecialtyDashboardSchema)
       .parse(await response.json());
+  },
+  async library(
+    scope: 'editorial' | 'review' | 'admin',
+    input: Partial<KnowledgeLibraryQuery> = {},
+  ) {
+    const query = knowledgeLibraryQuerySchema.parse(input);
+    const params = new URLSearchParams({
+      kind: query.kind,
+      search: query.search,
+      page: String(query.page),
+      pageSize: String(query.pageSize),
+      order: query.order,
+    });
+    if (query.specialtyId) params.set('specialtyId', query.specialtyId);
+    if (query.status) params.set('status', query.status);
+    const response = await request(`/${scope}/library?${params}`);
+    if (!response.ok)
+      throw new Error('A biblioteca médica está indisponível agora.');
+    return knowledgeLibraryPageSchema.parse(await response.json());
+  },
+  async libraryOverview(scope: 'editorial' | 'review' | 'admin') {
+    const response = await request(`/${scope}/library/overview`);
+    if (!response.ok)
+      throw new Error('O resumo da biblioteca está indisponível agora.');
+    return knowledgeLibraryOverviewSchema.parse(await response.json());
   },
   async specialty(id: string) {
     const response = await request(`/review/specialties/${id}`);

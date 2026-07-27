@@ -25,6 +25,8 @@ import {
   adminOverviewSchema,
   medicalSpecialtyDashboardSchema,
   releaseMetaSchema,
+  knowledgeLibraryQuerySchema,
+  resolveKnowledgeDuplicateSchema,
 } from './index.js';
 
 describe('serviceStatusSchema', () => {
@@ -512,6 +514,30 @@ describe('editorial intelligence contracts', () => {
 });
 
 describe('operational contracts', () => {
+  it('bounds library pagination and requires a canonical duplicate decision', () => {
+    expect(
+      knowledgeLibraryQuerySchema.parse({
+        kind: 'questions',
+        page: '2',
+        pageSize: '20',
+      }).page,
+    ).toBe(2);
+    expect(() =>
+      knowledgeLibraryQuerySchema.parse({ pageSize: 500 }),
+    ).toThrow();
+    expect(() =>
+      resolveKnowledgeDuplicateSchema.parse({
+        resourceType: 'content',
+        resourceId: crypto.randomUUID(),
+        candidateId: crypto.randomUUID(),
+        decision: 'confirmed_duplicate',
+        canonicalId: null,
+        reason: 'Os identificadores indicam o mesmo conteúdo.',
+        requestId: crypto.randomUUID(),
+      }),
+    ).toThrow();
+  });
+
   it('accepts public release metadata', () => {
     expect(
       releaseMetaSchema.parse({

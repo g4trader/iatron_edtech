@@ -111,6 +111,27 @@ const repository: EditorialRepository = {
   specialties: async () => [specialty],
   specialty: async (_mentor, id) => (id === specialty.id ? specialty : null),
   managedSpecialties: async () => [specialty],
+  libraryOverview: async () => ({
+    publishedContents: 1,
+    contentsInReview: 1,
+    publishedQuestions: 1,
+    diagnosticEligibleQuestions: 1,
+    verifiedReferences: 1,
+    pendingReferences: 1,
+    activeBlueprints: 1,
+    coveredCompetencies: 1,
+    uncoveredCompetencies: 1,
+    possibleDuplicates: 0,
+    outdatedItems: 0,
+    priorityGaps: 1,
+  }),
+  library: async (query) => ({
+    items: [],
+    page: query.page,
+    pageSize: query.pageSize,
+    total: 0,
+  }),
+  resolveDuplicate: async () => versionId,
   ownershipHistory: async () => [],
   assignSpecialtyOwner: async (id) => id,
   setSpecialtyOwnerStatus: async (id) => id,
@@ -333,5 +354,36 @@ describe('editorial routes', () => {
     });
     expect(list.statusCode).toBe(200);
     await server.close();
+  });
+
+  it('isolates the knowledge library by workspace role', async () => {
+    roles = ['mentor'];
+    const mentorServer = await app();
+    const mentor = await mentorServer.inject({
+      url: '/v1/review/library?kind=contents&page=1&pageSize=20',
+      headers: { authorization: 'Bearer test-token' },
+    });
+    expect(mentor.statusCode).toBe(200);
+    expect(mentor.json()).toMatchObject({ page: 1, pageSize: 20 });
+    const mentorEditorial = await mentorServer.inject({
+      url: '/v1/editorial/library/overview',
+      headers: { authorization: 'Bearer test-token' },
+    });
+    expect(mentorEditorial.statusCode).toBe(403);
+    await mentorServer.close();
+
+    roles = ['editor'];
+    const editorialServer = await app();
+    const editorial = await editorialServer.inject({
+      url: '/v1/editorial/library/overview',
+      headers: { authorization: 'Bearer test-token' },
+    });
+    expect(editorial.statusCode).toBe(200);
+    const admin = await editorialServer.inject({
+      url: '/v1/admin/library/overview',
+      headers: { authorization: 'Bearer test-token' },
+    });
+    expect(admin.statusCode).toBe(403);
+    await editorialServer.close();
   });
 });

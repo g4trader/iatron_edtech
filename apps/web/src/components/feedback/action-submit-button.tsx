@@ -8,11 +8,15 @@ export function ActionSubmitButton({
   pendingLabel,
   variant = 'primary',
   className = '',
+  name,
+  value,
 }: {
   children: ReactNode;
   pendingLabel: string;
   variant?: 'primary' | 'secondary';
   className?: string;
+  name?: string;
+  value?: string;
 }) {
   const { pending } = useFormStatus();
   const variantClass =
@@ -23,6 +27,9 @@ export function ActionSubmitButton({
       aria-disabled={pending}
       className={`${variantClass} ${className}`.trim()}
       disabled={pending}
+      name={name}
+      type="submit"
+      value={value}
     >
       {pending ? pendingLabel : children}
     </button>

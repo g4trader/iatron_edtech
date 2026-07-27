@@ -16,6 +16,7 @@ export default async function ReviewLayout({
       homeHref="/review"
       links={[
         { href: '/review/specialties', label: 'Visão da área' },
+        { href: '/review/library', label: 'Biblioteca da área' },
         { href: '/review/queue', label: 'Minha fila' },
         { href: '/review/active', label: 'Em revisão' },
         { href: '/review/specialties', label: 'Conteúdos e cobertura' },

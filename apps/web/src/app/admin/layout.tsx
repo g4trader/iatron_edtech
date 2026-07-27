@@ -23,6 +23,7 @@ export default async function AdminLayout({
         { href: '/admin/students', label: 'Alunos' },
         { href: '/admin/mentors', label: 'Mentores' },
         { href: '/admin/specialties', label: 'Áreas médicas' },
+        { href: '/admin/library', label: 'Biblioteca médica' },
         { href: '/admin/users', label: 'Acessos' },
         { href: '/admin/platform', label: 'Platform' },
       ]}

@@ -99,3 +99,20 @@ export async function assignMentorForReview(formData: FormData) {
   );
   revalidatePath('/editorial');
 }
+
+export async function resolveKnowledgeDuplicate(formData: FormData) {
+  await editorial.mutate('/editorial/library/duplicates/decision', {
+    resourceType: String(formData.get('resourceType')),
+    resourceId: String(formData.get('resourceId')),
+    candidateId: String(formData.get('candidateId')),
+    decision: String(formData.get('decision')),
+    canonicalId:
+      String(formData.get('decision')) === 'not_duplicate'
+        ? null
+        : String(formData.get('resourceId')),
+    reason: String(formData.get('reason')),
+    requestId: crypto.randomUUID(),
+  });
+  revalidatePath('/editorial/library');
+  revalidatePath('/admin/library');
+}

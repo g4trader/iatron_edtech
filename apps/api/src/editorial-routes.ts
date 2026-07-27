@@ -1,6 +1,8 @@
 import {
   assignMedicalSpecialtyOwnerSchema,
   createLearningContentDraftSchema,
+  knowledgeLibraryQuerySchema,
+  resolveKnowledgeDuplicateSchema,
   reviewLearningContentSchema,
   setMedicalSpecialtyOwnerStatusSchema,
   type AppRole,
@@ -273,6 +275,56 @@ export async function registerEditorialRoutes(
     const repo = repository(request);
     if (!(await requireRole(request, reply, repo, ['editor', 'admin']))) return;
     return repo.managedSpecialties();
+  });
+  app.get('/editorial/library/overview', async (request, reply) => {
+    const repo = repository(request);
+    if (!(await requireRole(request, reply, repo, ['editor', 'admin']))) return;
+    return repo.libraryOverview(null);
+  });
+  app.get('/editorial/library', async (request, reply) => {
+    const repo = repository(request);
+    if (!(await requireRole(request, reply, repo, ['editor', 'admin']))) return;
+    return repo.library(knowledgeLibraryQuerySchema.parse(request.query), null);
+  });
+  app.post('/editorial/library/duplicates/decision', async (request, reply) => {
+    const repo = repository(request);
+    if (!(await requireRole(request, reply, repo, ['editor', 'admin']))) return;
+    const input = resolveKnowledgeDuplicateSchema.parse(request.body);
+    const id = await repo.resolveDuplicate(input);
+    request.log.info(
+      {
+        event: 'knowledge_duplicate_decided',
+        actor: safeUserIdentifier(request.auth.userId),
+        resourceType: input.resourceType,
+        decision: input.decision,
+        requestId: input.requestId,
+      },
+      'editorial_action_completed',
+    );
+    return reply.status(201).send({ id });
+  });
+  app.get('/review/library/overview', async (request, reply) => {
+    const repo = repository(request);
+    if (!(await requireRole(request, reply, repo, ['mentor']))) return;
+    return repo.libraryOverview(request.auth.userId);
+  });
+  app.get('/review/library', async (request, reply) => {
+    const repo = repository(request);
+    if (!(await requireRole(request, reply, repo, ['mentor']))) return;
+    return repo.library(
+      knowledgeLibraryQuerySchema.parse(request.query),
+      request.auth.userId,
+    );
+  });
+  app.get('/admin/library/overview', async (request, reply) => {
+    const repo = repository(request);
+    if (!(await requireRole(request, reply, repo, ['admin']))) return;
+    return repo.libraryOverview(null);
+  });
+  app.get('/admin/library', async (request, reply) => {
+    const repo = repository(request);
+    if (!(await requireRole(request, reply, repo, ['admin']))) return;
+    return repo.library(knowledgeLibraryQuerySchema.parse(request.query), null);
   });
   app.get('/admin/specialties', async (request, reply) => {
     const repo = repository(request);

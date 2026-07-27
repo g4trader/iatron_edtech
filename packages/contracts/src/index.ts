@@ -1547,3 +1547,101 @@ export const reviewLearningContentSchema = z
         path: ['comment'],
       });
   });
+
+export const knowledgeLibraryKindSchema = z.enum([
+  'contents',
+  'questions',
+  'references',
+  'blueprints',
+  'competencies',
+  'duplicates',
+  'gaps',
+]);
+export type KnowledgeLibraryKind = z.infer<typeof knowledgeLibraryKindSchema>;
+
+export const knowledgeLibraryQuerySchema = z.object({
+  kind: knowledgeLibraryKindSchema.default('contents'),
+  search: z.string().trim().max(120).default(''),
+  specialtyId: uuidSchema.nullable().default(null),
+  status: z.string().trim().max(60).nullable().default(null),
+  page: z.coerce.number().int().positive().default(1),
+  pageSize: z.coerce.number().int().min(1).max(50).default(20),
+  order: z.enum(['updated_desc', 'title_asc']).default('updated_desc'),
+});
+export type KnowledgeLibraryQuery = z.infer<typeof knowledgeLibraryQuerySchema>;
+
+export const knowledgeLibraryItemSchema = z.object({
+  id: uuidSchema,
+  kind: knowledgeLibraryKindSchema,
+  title: z.string(),
+  identifier: z.string().nullable(),
+  specialtyId: uuidSchema.nullable(),
+  specialtyName: z.string().nullable(),
+  competencyId: uuidSchema.nullable(),
+  competencyName: z.string().nullable(),
+  status: z.string(),
+  ownerName: z.string().nullable(),
+  updatedAt: z.iso.datetime({ offset: true }).nullable(),
+  detail: z.string().nullable(),
+  metadata: z.record(
+    z.string(),
+    z.union([z.string(), z.number(), z.boolean(), z.null()]),
+  ),
+});
+export type KnowledgeLibraryItem = z.infer<typeof knowledgeLibraryItemSchema>;
+
+export const knowledgeLibraryPageSchema = z.object({
+  items: z.array(knowledgeLibraryItemSchema),
+  page: z.number().int().positive(),
+  pageSize: z.number().int().positive(),
+  total: z.number().int().nonnegative(),
+});
+export type KnowledgeLibraryPage = z.infer<typeof knowledgeLibraryPageSchema>;
+
+export const knowledgeLibraryOverviewSchema = z.object({
+  publishedContents: z.number().int().nonnegative(),
+  contentsInReview: z.number().int().nonnegative(),
+  publishedQuestions: z.number().int().nonnegative(),
+  diagnosticEligibleQuestions: z.number().int().nonnegative(),
+  verifiedReferences: z.number().int().nonnegative(),
+  pendingReferences: z.number().int().nonnegative(),
+  activeBlueprints: z.number().int().nonnegative(),
+  coveredCompetencies: z.number().int().nonnegative(),
+  uncoveredCompetencies: z.number().int().nonnegative(),
+  possibleDuplicates: z.number().int().nonnegative(),
+  outdatedItems: z.number().int().nonnegative(),
+  priorityGaps: z.number().int().nonnegative(),
+});
+export type KnowledgeLibraryOverview = z.infer<
+  typeof knowledgeLibraryOverviewSchema
+>;
+
+export const resolveKnowledgeDuplicateSchema = z
+  .object({
+    resourceType: z.enum(['content', 'question', 'reference']),
+    resourceId: uuidSchema,
+    candidateId: uuidSchema,
+    decision: z.enum([
+      'confirmed_duplicate',
+      'not_duplicate',
+      'merged',
+      'archived',
+    ]),
+    canonicalId: uuidSchema.nullable().default(null),
+    reason: z.string().trim().min(10).max(500),
+    requestId: uuidSchema,
+  })
+  .superRefine((value, context) => {
+    if (
+      ['confirmed_duplicate', 'merged', 'archived'].includes(value.decision) &&
+      !value.canonicalId
+    )
+      context.addIssue({
+        code: 'custom',
+        path: ['canonicalId'],
+        message: 'Escolha o item canônico para esta decisão.',
+      });
+  });
+export type ResolveKnowledgeDuplicateInput = z.infer<
+  typeof resolveKnowledgeDuplicateSchema
+>;

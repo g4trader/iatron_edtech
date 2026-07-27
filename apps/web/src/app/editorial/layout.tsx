@@ -16,6 +16,7 @@ export default async function EditorialLayout({
       homeHref="/editorial"
       links={[
         { href: '/editorial', label: 'Workflow' },
+        { href: '/editorial/library', label: 'Biblioteca' },
         { href: '/editorial/content', label: 'Novo conteúdo' },
         { href: '/editorial/specialties', label: 'Responsabilidades' },
         { href: '/editorial/audit', label: 'Auditoria editorial' },
