@@ -1984,6 +1984,53 @@ export type Database = {
         }
         Relationships: []
       }
+      knowledge_duplicate_decisions: {
+        Row: {
+          candidate_id: string
+          canonical_id: string | null
+          created_at: string
+          decided_by: string
+          decision: string
+          id: string
+          reason: string
+          request_id: string
+          resource_id: string
+          resource_type: string
+        }
+        Insert: {
+          candidate_id: string
+          canonical_id?: string | null
+          created_at?: string
+          decided_by: string
+          decision: string
+          id?: string
+          reason: string
+          request_id: string
+          resource_id: string
+          resource_type: string
+        }
+        Update: {
+          candidate_id?: string
+          canonical_id?: string | null
+          created_at?: string
+          decided_by?: string
+          decision?: string
+          id?: string
+          reason?: string
+          request_id?: string
+          resource_id?: string
+          resource_type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "knowledge_duplicate_decisions_decided_by_fkey"
+            columns: ["decided_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       learning_content_version_references: {
         Row: {
           is_required: boolean
@@ -4611,6 +4658,18 @@ export type Database = {
       }
       request_content_review_priority: {
         Args: { p_request_id: string; p_version_id: string }
+        Returns: string
+      }
+      resolve_knowledge_duplicate: {
+        Args: {
+          p_candidate_id: string
+          p_canonical_id: string
+          p_decision: string
+          p_reason: string
+          p_request_id: string
+          p_resource_id: string
+          p_resource_type: string
+        }
         Returns: string
       }
       resume_diagnostic_assessment: {
