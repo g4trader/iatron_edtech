@@ -2619,6 +2619,79 @@ export type Database = {
         }
         Relationships: []
       }
+      medical_specialty_owners: {
+        Row: {
+          authorization_reference: string
+          authorized_by: string | null
+          created_at: string
+          ends_at: string | null
+          id: string
+          mentor_id: string
+          owner_role: string
+          reason: string | null
+          scope: string
+          specialty_id: string
+          starts_at: string
+          status: string
+          unavailable_until: string | null
+          updated_at: string
+        }
+        Insert: {
+          authorization_reference: string
+          authorized_by?: string | null
+          created_at?: string
+          ends_at?: string | null
+          id?: string
+          mentor_id: string
+          owner_role: string
+          reason?: string | null
+          scope?: string
+          specialty_id: string
+          starts_at?: string
+          status?: string
+          unavailable_until?: string | null
+          updated_at?: string
+        }
+        Update: {
+          authorization_reference?: string
+          authorized_by?: string | null
+          created_at?: string
+          ends_at?: string | null
+          id?: string
+          mentor_id?: string
+          owner_role?: string
+          reason?: string | null
+          scope?: string
+          specialty_id?: string
+          starts_at?: string
+          status?: string
+          unavailable_until?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "medical_specialty_owners_authorized_by_fkey"
+            columns: ["authorized_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "medical_specialty_owners_mentor_id_fkey"
+            columns: ["mentor_id"]
+            isOneToOne: false
+            referencedRelation: "mentor_profiles"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "medical_specialty_owners_specialty_id_fkey"
+            columns: ["specialty_id"]
+            isOneToOne: false
+            referencedRelation: "specialties"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       medical_specialty_ownership_history: {
         Row: {
           assigned_by: string | null
@@ -2691,79 +2764,6 @@ export type Database = {
           },
           {
             foreignKeyName: "medical_specialty_ownership_history_specialty_id_fkey"
-            columns: ["specialty_id"]
-            isOneToOne: false
-            referencedRelation: "specialties"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      medical_specialty_owners: {
-        Row: {
-          authorization_reference: string
-          authorized_by: string | null
-          created_at: string
-          ends_at: string | null
-          id: string
-          mentor_id: string
-          owner_role: string
-          reason: string | null
-          scope: string
-          specialty_id: string
-          starts_at: string
-          status: string
-          unavailable_until: string | null
-          updated_at: string
-        }
-        Insert: {
-          authorization_reference: string
-          authorized_by?: string | null
-          created_at?: string
-          ends_at?: string | null
-          id?: string
-          mentor_id: string
-          owner_role: string
-          reason?: string | null
-          scope?: string
-          specialty_id: string
-          starts_at?: string
-          status?: string
-          unavailable_until?: string | null
-          updated_at?: string
-        }
-        Update: {
-          authorization_reference?: string
-          authorized_by?: string | null
-          created_at?: string
-          ends_at?: string | null
-          id?: string
-          mentor_id?: string
-          owner_role?: string
-          reason?: string | null
-          scope?: string
-          specialty_id?: string
-          starts_at?: string
-          status?: string
-          unavailable_until?: string | null
-          updated_at?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "medical_specialty_owners_authorized_by_fkey"
-            columns: ["authorized_by"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "medical_specialty_owners_mentor_id_fkey"
-            columns: ["mentor_id"]
-            isOneToOne: false
-            referencedRelation: "mentor_profiles"
-            referencedColumns: ["user_id"]
-          },
-          {
-            foreignKeyName: "medical_specialty_owners_specialty_id_fkey"
             columns: ["specialty_id"]
             isOneToOne: false
             referencedRelation: "specialties"
