@@ -61,6 +61,10 @@ export class AdminRepositoryError extends Error {
   constructor(
     readonly code: string,
     message: string,
+    readonly context?: {
+      operation: string;
+      upstreamStatus: number;
+    },
   ) {
     super(message);
   }
@@ -108,6 +112,10 @@ export function createAdminRepository(environment: ApiEnvironment) {
       throw new AdminRepositoryError(
         code,
         'Operação administrativa indisponível.',
+        {
+          operation: path.split('?')[0] ?? 'unknown',
+          upstreamStatus: response.status,
+        },
       );
     }
     return (text ? JSON.parse(text) : null) as T;

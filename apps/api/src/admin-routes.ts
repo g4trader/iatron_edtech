@@ -38,6 +38,14 @@ function sendAdminError(
   reply: FastifyReply,
 ) {
   if (!(error instanceof AdminRepositoryError)) throw error;
+  request.log.error(
+    {
+      adminErrorCode: error.code,
+      operation: error.context?.operation,
+      upstreamStatus: error.context?.upstreamStatus,
+    },
+    'admin operation failed',
+  );
   const status =
     error.code === 'ADMIN_FORBIDDEN' ||
     error.code === 'ADMIN_ACCOUNT_DISABLED' ||
