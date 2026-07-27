@@ -17,6 +17,7 @@ export default async function EditorialLayout({
       links={[
         { href: '/editorial', label: 'Workflow' },
         { href: '/editorial/content', label: 'Novo conteúdo' },
+        { href: '/editorial/specialties', label: 'Responsabilidades' },
         { href: '/editorial/audit', label: 'Auditoria editorial' },
       ]}
     >

@@ -9,6 +9,8 @@ import {
   adminUserListSchema,
   apiErrorSchema,
   releaseMetaSchema,
+  medicalSpecialtyDashboardSchema,
+  medicalSpecialtyOwnershipHistorySchema,
 } from '@iatron/contracts';
 import { z } from 'zod';
 import { createClient } from '@/lib/supabase/server';
@@ -89,6 +91,20 @@ export const admin = {
     return adminMentorListSchema.parse(
       await (await request('/admin/mentors')).json(),
     );
+  },
+  async specialties() {
+    return z
+      .array(medicalSpecialtyDashboardSchema)
+      .parse(await (await request('/admin/specialties')).json());
+  },
+  async specialtyOwnershipHistory(id: string) {
+    return z
+      .array(medicalSpecialtyOwnershipHistorySchema)
+      .parse(
+        await (
+          await request(`/admin/specialties/${id}/ownership-history`)
+        ).json(),
+      );
   },
   async mentor(id: string) {
     return adminMentorSummarySchema.parse(

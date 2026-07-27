@@ -2,6 +2,7 @@ import {
   assignMedicalSpecialtyOwnerSchema,
   createLearningContentDraftSchema,
   reviewLearningContentSchema,
+  setMedicalSpecialtyOwnerStatusSchema,
   type AppRole,
 } from '@iatron/contracts';
 import type { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify';
@@ -268,12 +269,32 @@ export async function registerEditorialRoutes(
   app.get('/editorial/notifications', async (request) =>
     repository(request).notifications(),
   );
+  app.get('/editorial/specialties', async (request, reply) => {
+    const repo = repository(request);
+    if (!(await requireRole(request, reply, repo, ['editor', 'admin']))) return;
+    return repo.managedSpecialties();
+  });
+  app.get('/admin/specialties', async (request, reply) => {
+    const repo = repository(request);
+    if (!(await requireRole(request, reply, repo, ['admin']))) return;
+    return repo.managedSpecialties();
+  });
+  app.get(
+    '/admin/specialties/:specialtyId/ownership-history',
+    async (request, reply) => {
+      const repo = repository(request);
+      if (!(await requireRole(request, reply, repo, ['admin']))) return;
+      const specialtyId = uuid.parse(
+        (request.params as { specialtyId: string }).specialtyId,
+      );
+      return repo.ownershipHistory(specialtyId);
+    },
+  );
   app.post(
     '/editorial/specialties/:specialtyId/owners',
     async (request, reply) => {
       const repo = repository(request);
-      if (!(await requireRole(request, reply, repo, ['editor', 'admin'])))
-        return;
+      if (!(await requireRole(request, reply, repo, ['admin']))) return;
       const specialtyId = uuid.parse(
         (request.params as { specialtyId: string }).specialtyId,
       );
@@ -289,7 +310,30 @@ export async function registerEditorialRoutes(
         },
         'editorial_action_completed',
       );
-      return reply.status(201).send({ id });
+      return reply.status(201).send({ id, status: 'recorded' });
+    },
+  );
+  app.post(
+    '/admin/specialty-owners/:ownershipId/status',
+    async (request, reply) => {
+      const repo = repository(request);
+      if (!(await requireRole(request, reply, repo, ['admin']))) return;
+      const ownershipId = uuid.parse(
+        (request.params as { ownershipId: string }).ownershipId,
+      );
+      const input = setMedicalSpecialtyOwnerStatusSchema.parse(request.body);
+      const id = await repo.setSpecialtyOwnerStatus(ownershipId, input);
+      request.log.info(
+        {
+          event: 'specialty_owner_status_changed',
+          actor: safeUserIdentifier(request.auth.userId),
+          ownershipId,
+          status: input.status,
+          requestId: input.requestId,
+        },
+        'admin_action_completed',
+      );
+      return reply.status(201).send({ id, status: 'recorded' });
     },
   );
 }

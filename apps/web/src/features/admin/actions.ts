@@ -2,8 +2,10 @@
 
 import { revalidatePath } from 'next/cache';
 import {
+  assignMedicalSpecialtyOwnerSchema,
   adminInviteUserSchema,
   adminRolesUpdateSchema,
+  setMedicalSpecialtyOwnerStatusSchema,
 } from '@iatron/contracts';
 import { admin } from './server/admin';
 
@@ -43,4 +45,32 @@ export async function updateUserRoles(formData: FormData) {
   });
   await admin.mutate(`/admin/users/${id}/roles`, input);
   revalidatePath('/admin/users');
+}
+
+export async function assignSpecialtyOwner(formData: FormData) {
+  const specialtyId = value(formData, 'specialtyId');
+  const input = assignMedicalSpecialtyOwnerSchema.parse({
+    mentorId: value(formData, 'mentorId'),
+    ownerRole: value(formData, 'ownerRole'),
+    authorizationReference: value(formData, 'authorizationReference'),
+    requestId: crypto.randomUUID(),
+  });
+  await admin.mutate(`/editorial/specialties/${specialtyId}/owners`, input);
+  revalidatePath('/admin/specialties');
+  revalidatePath(`/admin/specialties/${specialtyId}`);
+}
+
+export async function setSpecialtyOwnerStatus(formData: FormData) {
+  const specialtyId = value(formData, 'specialtyId');
+  const ownershipId = value(formData, 'ownershipId');
+  const rawUntil = value(formData, 'unavailableUntil');
+  const input = setMedicalSpecialtyOwnerStatusSchema.parse({
+    status: value(formData, 'status'),
+    reason: value(formData, 'reason'),
+    unavailableUntil: rawUntil ? new Date(rawUntil).toISOString() : null,
+    requestId: crypto.randomUUID(),
+  });
+  await admin.mutate(`/admin/specialty-owners/${ownershipId}/status`, input);
+  revalidatePath('/admin/specialties');
+  revalidatePath(`/admin/specialties/${specialtyId}`);
 }

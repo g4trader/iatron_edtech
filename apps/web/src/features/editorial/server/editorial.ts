@@ -49,6 +49,14 @@ export const editorial = {
       throw new Error('Suas especialidades estão indisponíveis agora.');
     return z.array(medicalSpecialtySummarySchema).parse(await response.json());
   },
+  async managedSpecialties() {
+    const response = await request('/editorial/specialties');
+    if (!response.ok)
+      throw new Error('As responsabilidades médicas estão indisponíveis.');
+    return z
+      .array(medicalSpecialtyDashboardSchema)
+      .parse(await response.json());
+  },
   async specialty(id: string) {
     const response = await request(`/review/specialties/${id}`);
     if (response.status === 404) return null;

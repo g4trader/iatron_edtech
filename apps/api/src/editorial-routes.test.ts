@@ -64,13 +64,19 @@ const specialty: MedicalSpecialtyDashboard = {
   code: 'CLINICA_MEDICA',
   name: 'Clínica Médica',
   description: 'Conhecimento científico de Clínica Médica.',
+  ownershipStatus: 'active',
   owners: [
     {
+      id: '10000000-0000-4000-8000-000000000011',
       mentorId,
       professionalName: 'Mentor E2E',
       ownerRole: 'primary',
       status: 'active',
+      scope: 'scientific_and_operational',
+      reason: 'Autorização de teste',
       startsAt: new Date().toISOString(),
+      endsAt: null,
+      unavailableUntil: null,
     },
   ],
   areas: ['Emergências'],
@@ -86,6 +92,8 @@ const specialty: MedicalSpecialtyDashboard = {
   competencyNames: ['Reconhecer instabilidade'],
   referenceNames: ['Diretriz demonstrativa'],
   blueprintVersions: ['1'],
+  coverage: [],
+  gaps: [],
   limitations: ['Cobertura científica ainda não estimada.'],
 };
 
@@ -102,7 +110,10 @@ const repository: EditorialRepository = {
   }),
   specialties: async () => [specialty],
   specialty: async (_mentor, id) => (id === specialty.id ? specialty : null),
+  managedSpecialties: async () => [specialty],
+  ownershipHistory: async () => [],
   assignSpecialtyOwner: async (id) => id,
+  setSpecialtyOwnerStatus: async (id) => id,
   createDraft: async () => versionId,
   createVersion: async () => versionId,
   submit: async () => contentId,
@@ -279,7 +290,7 @@ describe('editorial routes', () => {
     await server.close();
   });
 
-  it('allows editorial staff to register auditable ownership', async () => {
+  it('prevents editorial staff from assigning scientific ownership', async () => {
     roles = ['editor'];
     const server = await app();
     const response = await server.inject({
@@ -293,8 +304,34 @@ describe('editorial routes', () => {
         requestId: crypto.randomUUID(),
       },
     });
+    expect(response.statusCode).toBe(403);
+    await server.close();
+  });
+
+  it('allows an admin to assign and inspect auditable ownership', async () => {
+    roles = ['admin'];
+    const server = await app();
+    const response = await server.inject({
+      method: 'POST',
+      url: `/v1/editorial/specialties/${specialty.id}/owners`,
+      headers: { authorization: 'Bearer test-token' },
+      payload: {
+        mentorId,
+        ownerRole: 'primary',
+        authorizationReference: 'authorization:test-record',
+        requestId: crypto.randomUUID(),
+      },
+    });
     expect(response.statusCode).toBe(201);
-    expect(response.json()).toEqual({ id: specialty.id });
+    expect(response.json()).toEqual({
+      id: specialty.id,
+      status: 'recorded',
+    });
+    const list = await server.inject({
+      url: '/v1/admin/specialties',
+      headers: { authorization: 'Bearer test-token' },
+    });
+    expect(list.statusCode).toBe(200);
     await server.close();
   });
 });

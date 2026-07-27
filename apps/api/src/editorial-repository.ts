@@ -5,6 +5,7 @@ import {
   type AppRole,
   type LearningContentVersion,
   type MedicalSpecialtyDashboard,
+  type MedicalSpecialtyOwnershipHistory,
   type MedicalSpecialtySummary,
   type MentorReviewHistory,
 } from '@iatron/contracts';
@@ -39,12 +40,29 @@ export interface EditorialRepository {
     mentorId: string,
     specialtyId: string,
   ): Promise<MedicalSpecialtyDashboard | null>;
+  managedSpecialties(): Promise<MedicalSpecialtyDashboard[]>;
+  ownershipHistory(
+    specialtyId: string,
+  ): Promise<MedicalSpecialtyOwnershipHistory[]>;
   assignSpecialtyOwner(
     specialtyId: string,
     input: {
       mentorId: string;
       ownerRole: 'primary' | 'co_owner';
       authorizationReference: string;
+      requestId: string;
+    },
+  ): Promise<string>;
+  setSpecialtyOwnerStatus(
+    ownershipId: string,
+    input: {
+      status:
+        | 'active'
+        | 'temporarily_unavailable'
+        | 'inactive'
+        | 'pending_assignment';
+      reason: string;
+      unavailableUntil: string | null;
       requestId: string;
     },
   ): Promise<string>;
@@ -193,18 +211,20 @@ export function createEditorialRepository(
   };
 
   const specialtyDashboards = async (
-    mentorId: string,
+    mentorId: string | null,
     requestedSpecialtyId?: string,
   ): Promise<MedicalSpecialtyDashboard[]> => {
-    const ownershipFilter = requestedSpecialtyId
-      ? `&specialty_id=eq.${encodeURIComponent(requestedSpecialtyId)}`
-      : '';
-    const ownRows = rows(
-      await get(
-        `medical_specialty_owners?select=specialty_id&mentor_id=eq.${encodeURIComponent(mentorId)}&status=eq.active${ownershipFilter}`,
-      ),
-    );
-    const specialtyIds = ownRows.map((row) => text(row, 'specialty_id'));
+    const specialtyIds = mentorId
+      ? rows(
+          await get(
+            `medical_specialty_owners?select=specialty_id&mentor_id=eq.${encodeURIComponent(mentorId)}&status=in.(active,temporarily_unavailable)&ends_at=is.null${requestedSpecialtyId ? `&specialty_id=eq.${encodeURIComponent(requestedSpecialtyId)}` : ''}`,
+          ),
+        ).map((row) => text(row, 'specialty_id'))
+      : rows(
+          await get(
+            `specialties?select=id${requestedSpecialtyId ? `&id=eq.${encodeURIComponent(requestedSpecialtyId)}` : ''}`,
+          ),
+        ).map((row) => text(row, 'id'));
     if (!specialtyIds.length) return [];
     const inIds = `in.(${specialtyIds.join(',')})`;
     const [
@@ -221,19 +241,19 @@ export function createEditorialRepository(
         `specialties?select=id,code,name,description&id=${inIds}&order=name.asc`,
       ),
       get(
-        `medical_specialty_owners?select=specialty_id,mentor_id,owner_role,status,starts_at,mentor_profiles(professional_name)&specialty_id=${inIds}&status=eq.active&order=owner_role.asc`,
+        `medical_specialty_owners?select=id,specialty_id,mentor_id,owner_role,status,scope,reason,starts_at,ends_at,unavailable_until,mentor_profiles(professional_name)&specialty_id=${inIds}&status=in.(active,temporarily_unavailable)&ends_at=is.null&order=owner_role.asc`,
       ),
       get(
         `specialty_areas?select=specialty_id,medical_areas(name)&specialty_id=${inIds}`,
       ),
       get(
-        `learning_contents?select=id,specialty_id,updated_at,learning_content_versions(id,title,editorial_status,video,created_at),content_reviews(id,decision,created_at,mentor_profiles(professional_name))&specialty_id=${inIds}`,
+        `learning_contents?select=id,specialty_id,competency_id,updated_at,learning_content_versions(id,title,editorial_status,video,created_at,reviewed_at),content_reviews(id,decision,created_at,mentor_profiles(professional_name))&specialty_id=${inIds}`,
       ),
       get(
-        `question_version_specialties?select=specialty_id,question_version_id&specialty_id=${inIds}`,
+        `question_version_specialties?select=specialty_id,question_version_id,question_versions(id,status,difficulty,created_at,question_version_competencies(competency_id))&specialty_id=${inIds}`,
       ),
       get(
-        `competency_specialties?select=specialty_id,competencies(name)&specialty_id=${inIds}`,
+        `competency_specialties?select=specialty_id,competency_id,competencies(id,name)&specialty_id=${inIds}`,
       ),
       get(
         `content_reference_specialties?select=specialty_id,content_references(title,verification_status)&specialty_id=${inIds}`,
@@ -273,6 +293,15 @@ export function createEditorialRepository(
       const references = rows(referenceRows).filter(
         (row) => text(row, 'specialty_id') === specialtyId,
       );
+      const specialtyQuestions = rows(questionRows).filter(
+        (row) => text(row, 'specialty_id') === specialtyId,
+      );
+      const specialtyCompetencies = rows(competencyRows).filter(
+        (row) => text(row, 'specialty_id') === specialtyId,
+      );
+      const activeOwners = rows(ownerRows).filter(
+        (row) => text(row, 'specialty_id') === specialtyId,
+      );
       const blueprints = rows(blueprintRows).filter(
         (row) => text(row, 'specialty_id') === specialtyId,
       );
@@ -288,23 +317,123 @@ export function createEditorialRepository(
         .filter((value): value is string => value !== null)
         .sort()
         .at(-1);
+      const coverage = specialtyCompetencies.map((competencyLink) => {
+        const competency = object(competencyLink.competencies);
+        const competencyId =
+          nullableText(competency, 'id') ??
+          text(competencyLink, 'competency_id');
+        const competencyContents = ownedContents.filter(
+          (row) => nullableText(row, 'competency_id') === competencyId,
+        );
+        const publishedContents = competencyContents.filter((row) =>
+          rows(row.learning_content_versions).some(
+            (version) => text(version, 'editorial_status') === 'published',
+          ),
+        ).length;
+        const eligibleQuestions = specialtyQuestions
+          .filter((row) =>
+            rows(
+              object(row.question_versions).question_version_competencies,
+            ).some((link) => text(link, 'competency_id') === competencyId),
+          )
+          .filter((row) =>
+            ['homologated', 'published'].includes(
+              text(object(row.question_versions), 'status'),
+            ),
+          ).length;
+        const validReferences = references.filter(
+          (row) =>
+            text(object(row.content_references), 'verification_status') ===
+            'verified',
+        ).length;
+        const lastReviewedAt =
+          competencyContents
+            .flatMap((row) => rows(row.learning_content_versions))
+            .map((version) => nullableText(version, 'reviewed_at'))
+            .filter((value): value is string => value !== null)
+            .sort()
+            .at(-1) ?? null;
+        const pending: string[] = [];
+        if (!publishedContents) pending.push('Sem conteúdo publicado');
+        if (!eligibleQuestions) pending.push('Sem questão elegível');
+        if (!validReferences) pending.push('Sem referência verificada');
+        const needsUpdate =
+          lastReviewedAt !== null &&
+          Date.parse(lastReviewedAt) < Date.now() - 365 * 24 * 60 * 60 * 1000;
+        if (needsUpdate) pending.push('Revisão científica desatualizada');
+        const status =
+          publishedContents && eligibleQuestions && validReferences
+            ? needsUpdate
+              ? 'needs_update'
+              : 'covered'
+            : publishedContents || eligibleQuestions || validReferences
+              ? 'partially_covered'
+              : 'uncovered';
+        return {
+          competencyId,
+          competencyName: text(competency, 'name'),
+          publishedContents,
+          eligibleQuestions,
+          validReferences,
+          lastReviewedAt,
+          status,
+          pending,
+        };
+      });
+      const gaps = coverage.flatMap((item) => {
+        if (item.status === 'covered') return [];
+        const missingAll =
+          item.publishedContents === 0 &&
+          item.eligibleQuestions === 0 &&
+          item.validReferences === 0;
+        return [
+          {
+            key: `competency:${item.competencyId}`,
+            competencyId: item.competencyId,
+            title: item.competencyName,
+            reason: item.pending.join(' · '),
+            priority: missingAll
+              ? ('critical' as const)
+              : item.status === 'needs_update'
+                ? ('high' as const)
+                : ('medium' as const),
+            nextAction: missingAll
+              ? 'Definir uma pauta editorial para esta competência.'
+              : 'Revisar a pendência de maior impacto científico.',
+          },
+        ];
+      });
       return medicalSpecialtyDashboardSchema.parse({
         id: specialtyId,
         code: text(specialtyRow, 'code'),
         name: text(specialtyRow, 'name'),
         description: nullableText(specialtyRow, 'description'),
-        owners: rows(ownerRows)
-          .filter((row) => text(row, 'specialty_id') === specialtyId)
-          .map((row) => ({
-            mentorId: text(row, 'mentor_id'),
-            professionalName: text(
-              object(row.mentor_profiles),
-              'professional_name',
-            ),
-            ownerRole: text(row, 'owner_role'),
-            status: text(row, 'status'),
-            startsAt: text(row, 'starts_at'),
-          })),
+        ownershipStatus: activeOwners.some(
+          (row) =>
+            text(row, 'owner_role') === 'primary' &&
+            text(row, 'status') === 'active',
+        )
+          ? 'active'
+          : activeOwners.some(
+                (row) => text(row, 'status') === 'temporarily_unavailable',
+              )
+            ? 'temporarily_unavailable'
+            : 'pending_assignment',
+        owners: activeOwners.map((row) => ({
+          id: text(row, 'id'),
+          mentorId: text(row, 'mentor_id'),
+          professionalName: text(
+            object(row.mentor_profiles),
+            'professional_name',
+          ),
+          ownerRole: text(row, 'owner_role'),
+          status: text(row, 'status'),
+          scope: text(row, 'scope'),
+          reason: nullableText(row, 'reason'),
+          startsAt: text(row, 'starts_at'),
+          endsAt: nullableText(row, 'ends_at'),
+          unavailableUntil: nullableText(row, 'unavailable_until'),
+        })),
         areas: rows(areaRows)
           .filter((row) => text(row, 'specialty_id') === specialtyId)
           .map((row) => text(object(row.medical_areas), 'name'))
@@ -321,13 +450,9 @@ export function createEditorialRepository(
           ).length,
         },
         questions: new Set(
-          rows(questionRows)
-            .filter((row) => text(row, 'specialty_id') === specialtyId)
-            .map((row) => text(row, 'question_version_id')),
+          specialtyQuestions.map((row) => text(row, 'question_version_id')),
         ).size,
-        competencies: rows(competencyRows).filter(
-          (row) => text(row, 'specialty_id') === specialtyId,
-        ).length,
+        competencies: specialtyCompetencies.length,
         references: {
           total: references.length,
           pending: references.filter(
@@ -354,8 +479,7 @@ export function createEditorialRepository(
             'Mentor responsável',
           reviewedAt: text(review, 'created_at'),
         })),
-        competencyNames: rows(competencyRows)
-          .filter((row) => text(row, 'specialty_id') === specialtyId)
+        competencyNames: specialtyCompetencies
           .map((row) => text(object(row.competencies), 'name'))
           .sort(),
         referenceNames: references
@@ -368,9 +492,15 @@ export function createEditorialRepository(
             ),
           ),
         ].sort(),
+        coverage,
+        gaps: gaps.sort((left, right) => {
+          const rank = { critical: 0, high: 1, medium: 2, low: 3 };
+          return rank[left.priority] - rank[right.priority];
+        }),
         limitations: [
           'Vídeos são contabilizados a partir das versões de conteúdo.',
-          'A cobertura científica não é estimada sem critérios estatísticos aprovados.',
+          'A cobertura considera conteúdo publicado, questão elegível e referência verificada.',
+          'A cobertura não representa pontuação de qualidade científica.',
         ],
       });
     });
@@ -486,6 +616,40 @@ export function createEditorialRepository(
     async specialty(mentorId, specialtyId) {
       return (await specialtyDashboards(mentorId, specialtyId))[0] ?? null;
     },
+    async managedSpecialties() {
+      return specialtyDashboards(null);
+    },
+    async ownershipHistory(specialtyId) {
+      return rows(
+        await get(
+          `medical_specialty_ownership_history?select=id,ownership_id,specialty_id,mentor_id,owner_role,status,scope,reason,recorded_at,operation,mentor_profiles(professional_name)&specialty_id=eq.${encodeURIComponent(specialtyId)}&order=recorded_at.desc`,
+        ),
+      ).map((row) => ({
+        id: text(row, 'id'),
+        ownershipId: text(row, 'ownership_id'),
+        specialtyId: text(row, 'specialty_id'),
+        mentorId: text(row, 'mentor_id'),
+        professionalName:
+          nullableText(object(row.mentor_profiles), 'professional_name') ??
+          'Mentor',
+        ownerRole: text(row, 'owner_role') as 'primary' | 'co_owner',
+        status: text(row, 'status') as
+          | 'active'
+          | 'temporarily_unavailable'
+          | 'inactive'
+          | 'pending_assignment',
+        scope: text(row, 'scope') as
+          | 'scientific'
+          | 'operational'
+          | 'scientific_and_operational',
+        reason: nullableText(row, 'reason'),
+        recordedAt: text(row, 'recorded_at'),
+        operation: text(row, 'operation') as
+          | 'created'
+          | 'transitioned'
+          | 'snapshot',
+      }));
+    },
     async assignSpecialtyOwner(specialtyId, input) {
       return String(
         await rpc('assign_medical_specialty_owner', {
@@ -493,6 +657,17 @@ export function createEditorialRepository(
           p_mentor_id: input.mentorId,
           p_owner_role: input.ownerRole,
           p_authorization_reference: input.authorizationReference,
+          p_request_id: input.requestId,
+        }),
+      );
+    },
+    async setSpecialtyOwnerStatus(ownershipId, input) {
+      return String(
+        await rpc('set_medical_specialty_owner_status', {
+          p_ownership_id: ownershipId,
+          p_status: input.status,
+          p_reason: input.reason,
+          p_unavailable_until: input.unavailableUntil,
           p_request_id: input.requestId,
         }),
       );

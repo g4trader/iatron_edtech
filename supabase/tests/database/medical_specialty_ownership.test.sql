@@ -29,8 +29,8 @@ select extensions.has_table('public', 'competency_specialties', 'competency spec
 select extensions.has_table('public', 'content_reference_specialties', 'reference specialty links exist');
 select extensions.col_is_pk(
   'public', 'medical_specialty_owners',
-  array['specialty_id','mentor_id'],
-  'ownership is unique per specialty and mentor'
+  array['id'],
+  'each ownership term has an immutable identity'
 );
 select extensions.throws_ok(
   $$
@@ -49,9 +49,7 @@ insert into public.medical_specialty_owners(
 )
 select specialty_id, user_id, 'co_owner', 'test:authorization-record'
 from public.mentor_profiles
-where user_id = '85000000-0000-4000-8000-000000000001'
-on conflict (specialty_id, mentor_id) do update
-set status = 'active', authorization_reference = excluded.authorization_reference;
+where user_id = '85000000-0000-4000-8000-000000000001';
 select extensions.is(
   (select status from public.medical_specialty_owners
    where mentor_id = '85000000-0000-4000-8000-000000000001'),

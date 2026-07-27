@@ -1194,11 +1194,21 @@ export const learningContentStatusSchema = z.enum([
 export type LearningContentStatus = z.infer<typeof learningContentStatusSchema>;
 
 export const medicalSpecialtyOwnerSchema = z.object({
+  id: uuidSchema,
   mentorId: uuidSchema,
   professionalName: z.string(),
   ownerRole: z.enum(['primary', 'co_owner']),
-  status: z.enum(['active', 'suspended', 'revoked']),
+  status: z.enum([
+    'active',
+    'temporarily_unavailable',
+    'inactive',
+    'pending_assignment',
+  ]),
+  scope: z.enum(['scientific', 'operational', 'scientific_and_operational']),
+  reason: z.string().nullable(),
   startsAt: z.iso.datetime({ offset: true }),
+  endsAt: z.iso.datetime({ offset: true }).nullable(),
+  unavailableUntil: z.iso.datetime({ offset: true }).nullable(),
 });
 export type MedicalSpecialtyOwner = z.infer<typeof medicalSpecialtyOwnerSchema>;
 export const assignMedicalSpecialtyOwnerSchema = z
@@ -1219,7 +1229,12 @@ export const medicalSpecialtySummarySchema = z.object({
   code: z.string(),
   name: z.string(),
   description: z.string().nullable(),
-  owners: z.array(medicalSpecialtyOwnerSchema).min(1),
+  ownershipStatus: z.enum([
+    'active',
+    'temporarily_unavailable',
+    'pending_assignment',
+  ]),
+  owners: z.array(medicalSpecialtyOwnerSchema),
   areas: z.array(z.string()),
   contents: medicalSpecialtyCountSchema,
   questions: z.number().int().nonnegative(),
@@ -1253,11 +1268,82 @@ export const medicalSpecialtyDashboardSchema =
     competencyNames: z.array(z.string()),
     referenceNames: z.array(z.string()),
     blueprintVersions: z.array(z.string()),
+    coverage: z.array(
+      z.object({
+        competencyId: uuidSchema,
+        competencyName: z.string(),
+        publishedContents: z.number().int().nonnegative(),
+        eligibleQuestions: z.number().int().nonnegative(),
+        validReferences: z.number().int().nonnegative(),
+        lastReviewedAt: z.iso.datetime({ offset: true }).nullable(),
+        status: z.enum([
+          'covered',
+          'partially_covered',
+          'uncovered',
+          'needs_update',
+          'insufficient_data',
+        ]),
+        pending: z.array(z.string()),
+      }),
+    ),
+    gaps: z.array(
+      z.object({
+        key: z.string(),
+        competencyId: uuidSchema.nullable(),
+        title: z.string(),
+        reason: z.string(),
+        priority: z.enum(['critical', 'high', 'medium', 'low']),
+        nextAction: z.string(),
+      }),
+    ),
     limitations: z.array(z.string()),
   });
 export type MedicalSpecialtyDashboard = z.infer<
   typeof medicalSpecialtyDashboardSchema
 >;
+
+export const medicalSpecialtyOwnershipHistorySchema = z.object({
+  id: uuidSchema,
+  ownershipId: uuidSchema,
+  specialtyId: uuidSchema,
+  mentorId: uuidSchema,
+  professionalName: z.string(),
+  ownerRole: z.enum(['primary', 'co_owner']),
+  status: z.enum([
+    'active',
+    'temporarily_unavailable',
+    'inactive',
+    'pending_assignment',
+  ]),
+  scope: z.enum(['scientific', 'operational', 'scientific_and_operational']),
+  reason: z.string().nullable(),
+  recordedAt: z.iso.datetime({ offset: true }),
+  operation: z.enum(['created', 'transitioned', 'snapshot']),
+});
+export type MedicalSpecialtyOwnershipHistory = z.infer<
+  typeof medicalSpecialtyOwnershipHistorySchema
+>;
+
+export const setMedicalSpecialtyOwnerStatusSchema = z
+  .object({
+    status: z.enum([
+      'active',
+      'temporarily_unavailable',
+      'inactive',
+      'pending_assignment',
+    ]),
+    reason: z.string().trim().min(3).max(500),
+    unavailableUntil: z.iso.datetime({ offset: true }).nullable().default(null),
+    requestId: uuidSchema,
+  })
+  .superRefine((value, context) => {
+    if (value.status === 'temporarily_unavailable' && !value.unavailableUntil)
+      context.addIssue({
+        code: 'custom',
+        path: ['unavailableUntil'],
+        message: 'Informe até quando o mentor ficará indisponível.',
+      });
+  });
 
 export const learningContentVideoSchema = z
   .object({

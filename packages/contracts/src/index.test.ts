@@ -453,13 +453,14 @@ describe('learning DNA contracts', () => {
 });
 
 describe('editorial intelligence contracts', () => {
-  it('requires a scientific owner for every medical specialty dashboard', () => {
-    expect(() =>
+  it('represents an unassigned specialty without inventing an owner', () => {
+    expect(
       medicalSpecialtyDashboardSchema.parse({
         id: crypto.randomUUID(),
         code: 'CLINICA_MEDICA',
         name: 'Clínica Médica',
         description: null,
+        ownershipStatus: 'pending_assignment',
         owners: [],
         areas: [],
         contents: { total: 0, pending: 0 },
@@ -474,9 +475,11 @@ describe('editorial intelligence contracts', () => {
         competencyNames: [],
         referenceNames: [],
         blueprintVersions: [],
+        coverage: [],
+        gaps: [],
         limitations: [],
-      }),
-    ).toThrow();
+      }).owners,
+    ).toEqual([]);
   });
 
   it('requires an explicit mentor declaration tied to an approval', () => {
