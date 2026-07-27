@@ -1,23 +1,23 @@
 # Iatron — Active Backlog
 
-Backlog restrito ao fechamento do MVP, na ordem fornecida pela tarefa de
-handoff. Não cria Product Vision nem autoriza implementação. A ausência de
-`IATRON_CONSTITUTION.md` impede confirmar que esta ordem está registrada na
-fonte constitucional citada.
+Backlog restrito ao fechamento do MVP definido no artigo 22 da
+[`IATRON_CONSTITUTION.md`](IATRON_CONSTITUTION.md). Não cria Product Vision nem
+autoriza implementação.
 
 ## 1. Política de aptidão configurável
 
 - **Problema:** não há política de aptidão do MVP localizada que seja
   configurável, versionada e explicável.
-- **Estado:** não iniciado como política de produto; existe base parcial.
+- **Estado:** especificado constitucionalmente; implementação parcial.
 - **Evidência:** `diagnostic_question_eligibility` governa elegibilidade de
   questões, não aptidão do estudante/produto.
 - **Já existe:** diagnóstico determinístico, domínio/confiança, cobertura,
   requisitos de proveniência e resposta validada.
-- **Falta:** definição constitucional, responsáveis, configuração, versão,
-  decisão e exposição segura dos critérios.
-- **Dependências:** Constituição restaurada, tarefa/RFC aprovada, Decision
-  Register, domínio diagnóstico existente.
+- **Falta:** persistência configurável sem valores hardcoded, vigência,
+  justificativa, responsável, histórico, ativação exclusiva por Admin e
+  integração com os últimos simulados.
+- **Dependências:** tarefa/RFC aprovada, Decision Register, domínio diagnóstico
+  existente e simulados integrados.
 - **Riscos:** falsa garantia de aprovação; regra duplicada; viés; métrica sem
   amostra/limites.
 - **Aceite:** regra backend determinística, configurável, versionada,
@@ -26,7 +26,8 @@ fonte constitucional citada.
   novo módulo aprovado, migrations/RLS se indispensáveis, testes e docs.
 - **Testes:** unidade, contratos, pgTAP/RLS, isolamento, limites estatísticos,
   E2E de explicação.
-- **Status:** **bloqueado** pela ausência da Constituição e especificação vigente.
+- **Status:** **parcial**; bloqueado operacionalmente pela ausência de simulados
+  integrados e de tarefa/RFC de implementação.
 
 ## 2. Simulados integrados ao ciclo
 
@@ -142,6 +143,6 @@ Usando somente este pacote, uma sessão nova consegue responder:
 | Quais regras não podem ser violadas?         | `TECHNICAL_HANDOFF.md` + governança obrigatória |
 | Como concluir uma entrega?                   | `TECHNICAL_HANDOFF.md` + Definition of Done     |
 
-Resultado: o pacote é operacional sem memória da conversa, com uma exceção
-explícita e não ocultada: a fonte `IATRON_CONSTITUTION.md` precisa ser
-restaurada antes de validar a autoridade constitucional da prioridade.
+Resultado: o pacote é operacional sem memória da conversa. Constituição,
+bootstrap, estado, mapa, operação e backlog estão ligados pela ordem obrigatória
+de leitura.

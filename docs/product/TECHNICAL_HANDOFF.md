@@ -8,21 +8,19 @@ ambiente.
 
 1. [`AGENTS.md`](../../AGENTS.md)
 2. [`AGENT_BOOTSTRAP.md`](AGENT_BOOTSTRAP.md)
-3. `IATRON_CONSTITUTION.md` — **bloqueado:** o arquivo não existe no snapshot
-   `8707348`; registre a divergência antes de implementar.
+3. [`IATRON_CONSTITUTION.md`](IATRON_CONSTITUTION.md)
 4. [`CURRENT_STATE.md`](CURRENT_STATE.md)
 5. [`REPOSITORY_MAP.md`](REPOSITORY_MAP.md)
 6. [`OPERATIONS_RUNBOOK.md`](OPERATIONS_RUNBOOK.md)
 7. RFC ou tarefa vigente
 8. ADRs relacionadas em [`../adr/`](../adr/)
 
-Enquanto a Constituição estiver ausente, use como fontes existentes, sem
-presumir equivalência: [`PRODUCT_VISION.md`](PRODUCT_VISION.md),
+Use a Constituição como fonte do ciclo central, das regras absolutas e do
+fechamento do MVP. Leia-a em conjunto com [`PRODUCT_VISION.md`](PRODUCT_VISION.md),
 [`PRODUCT_PRINCIPLES.md`](PRODUCT_PRINCIPLES.md),
 [`ARCHITECTURAL_PRINCIPLES.md`](ARCHITECTURAL_PRINCIPLES.md) e
-[`PRODUCT_BIBLE.md`](PRODUCT_BIBLE.md). A prioridade de MVP deste snapshot foi
-fornecida pela tarefa de handoff e está registrada no
-[`ACTIVE_BACKLOG.md`](ACTIVE_BACKLOG.md).
+[`PRODUCT_BIBLE.md`](PRODUCT_BIBLE.md). O backlog deste snapshot deriva do
+artigo 22 e está registrado no [`ACTIVE_BACKLOG.md`](ACTIVE_BACKLOG.md).
 
 ## Primeiro minuto
 

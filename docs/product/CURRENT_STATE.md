@@ -8,7 +8,7 @@ ambiente staging acessível.
 | Item                 | Estado                                                              | Evidência                                                |
 | -------------------- | ------------------------------------------------------------------- | -------------------------------------------------------- |
 | Branch documentada   | `main`                                                              | clone limpo da remota                                    |
-| HEAD / `origin/main` | `870734861258e63a01559434aa3cad0822108de9`                          | `git rev-parse`                                          |
+| Base Git auditada    | `0cf86553a595be7b4c365ad7568cd16a90864750`                          | handoff anterior na `main`                               |
 | Frontend publicado   | `8707348`                                                           | deployment Vercel da branch `main`                       |
 | API publicada        | `7d67d78`                                                           | `GET /v1/meta`                                           |
 | Compatibilidade      | compatíveis neste snapshot                                          | commits entre `7d67d78` e `8707348` alteram documentação |
@@ -99,11 +99,10 @@ Ocultado/indisponível:
 
 ## Bloqueios e limitações
 
-1. `IATRON_CONSTITUTION.md` não existe no repositório.
-2. A cadeia remota de banco falha no seed por conectividade IPv6 do runner.
-3. pgTAP remoto e E2E autenticado precisam ser reexecutados após resolver o item 2.
-4. A main local original está divergente e suja; trabalhos devem preservar essa cópia.
-5. A cobertura acadêmica é um piloto AMRIGS, não um catálogo amplo revisado.
+1. A cadeia remota de banco falha no seed por conectividade IPv6 do runner.
+2. pgTAP remoto e E2E autenticado precisam ser reexecutados após resolver o item 1.
+3. A main local original está divergente e suja; trabalhos devem preservar essa cópia.
+4. A cobertura acadêmica é um piloto AMRIGS, não um catálogo amplo revisado.
 
 ## Próxima prioridade oficial do MVP
 
@@ -115,16 +114,15 @@ Conforme a ordem fornecida na tarefa de handoff:
 4. consolidação;
 5. beta controlado.
 
-O primeiro item é a próxima prioridade. Sua autorização detalhada continua
-dependente de uma tarefa/RFC vigente e da restauração da Constituição.
+O primeiro item é a próxima prioridade conforme o artigo 22 da
+[`IATRON_CONSTITUTION.md`](IATRON_CONSTITUTION.md). Sua implementação continua
+dependente de uma tarefa/RFC vigente.
 
 ## Divergências encontradas
 
-| Documento/expectativa                                     | Código/ambiente                                            | Impacto                                                | Fonte atual                                  | Decisão necessária                                     |
-| --------------------------------------------------------- | ---------------------------------------------------------- | ------------------------------------------------------ | -------------------------------------------- | ------------------------------------------------------ |
-| A tarefa afirma que `IATRON_CONSTITUTION.md` existe       | nenhum arquivo com esse nome na `main`                     | ordem normativa incompleta                             | `AGENTS.md` e governança versionada          | restaurar/adicionar o documento por tarefa autorizada  |
-| Bootstrap diz que os quatro workspaces estão operacionais | E2E autenticado atual não fechou na cadeia automática      | estado operacional não foi revalidado no SHA atual     | código + último CI verde + ambiente saudável | reexecutar cadeia remota                               |
-| Fluxo de deploy prevê seed → pgTAP → API → E2E            | seed remoto falha por rede; etapas seguintes são ignoradas | pipeline incompleto                                    | logs do workflow                             | corrigir acesso do runner ao pooler/host IPv4 aprovado |
-| Baseline da API é `202607270002`                          | workflow remoto não confirmou pgTAP após essa baseline     | schema publicado existe, validação remota incompleta   | `/v1/meta`                                   | executar pgTAP remoto                                  |
-| Frontend `8707348` e API `7d67d78`                        | SHAs diferentes                                            | rastreabilidade exige compatibilidade explícita        | diff Git documental                          | realinhar no próximo deploy de código                  |
-| Ordem de MVP é chamada constitucional                     | Constituição ausente                                       | prioridade não pode ser validada contra a fonte citada | diretiva desta tarefa                        | Founder deve confirmar/restaurar fonte normativa       |
+| Documento/expectativa                                     | Código/ambiente                                            | Impacto                                              | Fonte atual                                  | Decisão necessária                                     |
+| --------------------------------------------------------- | ---------------------------------------------------------- | ---------------------------------------------------- | -------------------------------------------- | ------------------------------------------------------ |
+| Bootstrap diz que os quatro workspaces estão operacionais | E2E autenticado atual não fechou na cadeia automática      | estado operacional não foi revalidado no SHA atual   | código + último CI verde + ambiente saudável | reexecutar cadeia remota                               |
+| Fluxo de deploy prevê seed → pgTAP → API → E2E            | seed remoto falha por rede; etapas seguintes são ignoradas | pipeline incompleto                                  | logs do workflow                             | corrigir acesso do runner ao pooler/host IPv4 aprovado |
+| Baseline da API é `202607270002`                          | workflow remoto não confirmou pgTAP após essa baseline     | schema publicado existe, validação remota incompleta | `/v1/meta`                                   | executar pgTAP remoto                                  |
+| Frontend `8707348` e API `7d67d78`                        | SHAs diferentes                                            | rastreabilidade exige compatibilidade explícita      | diff Git documental                          | realinhar no próximo deploy de código                  |
