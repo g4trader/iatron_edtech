@@ -1,8 +1,10 @@
 import {
+  competencyWorkspaceSchema,
   medicalSpecialtyDashboardSchema,
   medicalSpecialtySummarySchema,
   learningContentVersionSchema,
   type AppRole,
+  type CompetencyWorkspace,
   type LearningContentVersion,
   type KnowledgeLibraryItem,
   type KnowledgeLibraryOverview,
@@ -45,6 +47,10 @@ export interface EditorialRepository {
     mentorId: string,
     specialtyId: string,
   ): Promise<MedicalSpecialtyDashboard | null>;
+  competency(
+    mentorId: string | null,
+    competencyId: string,
+  ): Promise<CompetencyWorkspace | null>;
   managedSpecialties(): Promise<MedicalSpecialtyDashboard[]>;
   ownershipHistory(
     specialtyId: string,
@@ -928,6 +934,248 @@ export function createEditorialRepository(
     },
     async specialty(mentorId, specialtyId) {
       return (await specialtyDashboards(mentorId, specialtyId))[0] ?? null;
+    },
+    async competency(mentorId, competencyId) {
+      const competencyRows = rows(
+        await get(
+          `competencies?select=id,code,name,description,subthemes(id,name,themes(id,name,medical_areas(id,name))),competency_objectives(position,description),competency_specialties(relationship,specialty_id,specialties(id,name,medical_specialty_owners(owner_role,status,ends_at,mentor_profiles(professional_name))))&id=eq.${encodeURIComponent(competencyId)}`,
+        ),
+      );
+      const competency = competencyRows[0];
+      if (!competency) return null;
+      const specialtyLinks = rows(competency.competency_specialties);
+      if (mentorId) {
+        const ownedIds = new Set(
+          rows(
+            await get(
+              `medical_specialty_owners?select=specialty_id&mentor_id=eq.${encodeURIComponent(mentorId)}&status=in.(active,temporarily_unavailable)&ends_at=is.null`,
+            ),
+          ).map((row) => text(row, 'specialty_id')),
+        );
+        if (
+          !specialtyLinks.some((link) =>
+            ownedIds.has(text(link, 'specialty_id')),
+          )
+        )
+          return null;
+      }
+      const [
+        contentResponse,
+        questionResponse,
+        referenceResponse,
+        blueprintResponse,
+      ] = await Promise.all([
+        get(
+          `learning_contents?select=id,slug,learning_content_versions(id,title,editorial_status,video,reviewed_at,published_at,learning_content_version_references(is_required,content_references(id,title,url,verification_status)))&competency_id=eq.${encodeURIComponent(competencyId)}`,
+        ),
+        get(
+          `question_version_competencies?select=question_versions(id,stem,status,difficulty,question_version_provenance(external_identifier,source_title,editorial_status))&competency_id=eq.${encodeURIComponent(competencyId)}`,
+        ),
+        get(
+          `competency_references?select=academic_references(id,title,authors,publication_year,url)&competency_id=eq.${encodeURIComponent(competencyId)}`,
+        ),
+        get(
+          `diagnostic_blueprint_competencies?select=exam_blueprints(id,version,is_active,editorial_status,exam_profiles(name))&competency_id=eq.${encodeURIComponent(competencyId)}`,
+        ),
+      ]);
+      const contentRows = rows(contentResponse);
+      const versions = contentRows.flatMap((content) =>
+        rows(content.learning_content_versions).map((version) => ({
+          content,
+          version,
+        })),
+      );
+      const published = versions.filter(
+        ({ version }) => text(version, 'editorial_status') === 'published',
+      );
+      const questionRows = rows(questionResponse).map((link) =>
+        object(link.question_versions),
+      );
+      const eligibleQuestions = questionRows.filter((question) =>
+        ['homologated', 'published'].includes(text(question, 'status')),
+      );
+      const academicReferences = rows(referenceResponse).map((link) =>
+        object(link.academic_references),
+      );
+      const contentReferenceLinks = versions.flatMap(({ version }) =>
+        rows(version.learning_content_version_references),
+      );
+      const verifiedContentReferences = contentReferenceLinks
+        .map((link) => object(link.content_references))
+        .filter(
+          (reference) => text(reference, 'verification_status') === 'verified',
+        );
+      const referenceMap = new Map<string, Row>();
+      for (const reference of [
+        ...academicReferences,
+        ...verifiedContentReferences,
+      ])
+        referenceMap.set(text(reference, 'id'), reference);
+      const blueprintRows = rows(blueprintResponse).map((link) =>
+        object(link.exam_blueprints),
+      );
+      const activeBlueprints = blueprintRows.filter(
+        (blueprint) =>
+          boolean(blueprint, 'is_active') &&
+          ['approved', 'published'].includes(
+            text(blueprint, 'editorial_status'),
+          ),
+      );
+      const videos = published.filter(
+        ({ version }) => version.video !== null && version.video !== undefined,
+      );
+      const lastReviewedAt =
+        published
+          .map(({ version }) => nullableText(version, 'reviewed_at'))
+          .filter((value): value is string => value !== null)
+          .sort()
+          .at(-1) ?? null;
+      const pending: string[] = [];
+      if (!published.length) pending.push('Sem conteúdo publicado');
+      if (!eligibleQuestions.length) pending.push('Sem questão elegível');
+      if (!referenceMap.size) pending.push('Sem referência verificada');
+      const needsUpdate =
+        lastReviewedAt !== null &&
+        Date.parse(lastReviewedAt) < Date.now() - 365 * 24 * 60 * 60 * 1000;
+      if (needsUpdate) pending.push('Revisão científica desatualizada');
+      const coverageStatus =
+        published.length && eligibleQuestions.length && referenceMap.size
+          ? needsUpdate
+            ? 'needs_update'
+            : 'covered'
+          : published.length || eligibleQuestions.length || referenceMap.size
+            ? 'partially_covered'
+            : 'uncovered';
+      const subtheme = object(competency.subthemes);
+      const theme = object(subtheme.themes);
+      const area = object(theme.medical_areas);
+      const resource = (
+        row: Row,
+        title: string,
+        status: string,
+        detail: string | null,
+        href: string | null = null,
+      ) => ({ id: text(row, 'id'), title, status, detail, href });
+      return competencyWorkspaceSchema.parse({
+        id: text(competency, 'id'),
+        code: text(competency, 'code'),
+        name: text(competency, 'name'),
+        description: text(competency, 'description'),
+        hierarchy: {
+          area: text(area, 'name'),
+          theme: text(theme, 'name'),
+          subtheme: text(subtheme, 'name'),
+        },
+        objectives: rows(competency.competency_objectives)
+          .sort(
+            (left, right) =>
+              number(left, 'position') - number(right, 'position'),
+          )
+          .map((objective) => text(objective, 'description')),
+        specialties: specialtyLinks.map((link) => {
+          const specialty = object(link.specialties);
+          return {
+            id: text(specialty, 'id'),
+            name: text(specialty, 'name'),
+            relationship: text(link, 'relationship'),
+            owners: rows(specialty.medical_specialty_owners)
+              .filter(
+                (owner) =>
+                  ['active', 'temporarily_unavailable'].includes(
+                    text(owner, 'status'),
+                  ) && owner.ends_at === null,
+              )
+              .map((owner) => ({
+                name:
+                  nullableText(
+                    object(owner.mentor_profiles),
+                    'professional_name',
+                  ) ?? 'Mentor responsável',
+                role: text(owner, 'owner_role'),
+                status: text(owner, 'status'),
+              })),
+          };
+        }),
+        coverage: {
+          status: coverageStatus,
+          publishedContents: published.length,
+          eligibleQuestions: eligibleQuestions.length,
+          validReferences: referenceMap.size,
+          videos: videos.length,
+          activeBlueprints: activeBlueprints.length,
+          pending,
+          lastReviewedAt,
+        },
+        contents: published.map(({ content, version }) =>
+          resource(
+            version,
+            text(version, 'title'),
+            'published',
+            'Conteúdo científico publicado',
+            `/learning/${text(content, 'slug')}`,
+          ),
+        ),
+        questions: eligibleQuestions.map((question) =>
+          resource(
+            question,
+            text(question, 'stem'),
+            text(question, 'status'),
+            nullableText(question, 'difficulty'),
+          ),
+        ),
+        references: [...referenceMap.values()].map((reference) =>
+          resource(
+            reference,
+            text(reference, 'title'),
+            nullableText(reference, 'verification_status') ?? 'catalogued',
+            nullableText(reference, 'authors'),
+            nullableText(reference, 'url'),
+          ),
+        ),
+        videos: videos.map(({ version }) => {
+          const video = object(version.video);
+          return resource(
+            version,
+            nullableText(video, 'caption') ?? text(version, 'title'),
+            nullableText(video, 'editorialStatus') ?? 'published',
+            nullableText(video, 'provider'),
+            nullableText(video, 'url'),
+          );
+        }),
+        blueprints: activeBlueprints.map((blueprint) =>
+          resource(
+            blueprint,
+            `Blueprint ${text(blueprint, 'version')}`,
+            'active',
+            nullableText(object(blueprint.exam_profiles), 'name'),
+          ),
+        ),
+        learningUse: {
+          diagnostic: activeBlueprints.length
+            ? `Avaliada em ${activeBlueprints.length} blueprint${activeBlueprints.length === 1 ? '' : 's'} ativo${activeBlueprints.length === 1 ? '' : 's'}.`
+            : 'Ainda não participa de um blueprint diagnóstico ativo.',
+          plan: 'Pode originar atividades quando o plano identificar uma necessidade de estudo.',
+          tutor: published.length
+            ? 'O tutor pode explicar esta competência usando o conteúdo científico publicado.'
+            : 'O tutor ainda não possui conteúdo científico publicado para esta competência.',
+        },
+        gaps: pending.map((reason) => ({
+          title: text(competency, 'name'),
+          reason,
+          nextAction:
+            reason === 'Sem conteúdo publicado'
+              ? 'Priorizar a produção e revisão de um conteúdo.'
+              : reason === 'Sem questão elegível'
+                ? 'Relacionar e homologar uma questão adequada.'
+                : reason === 'Sem referência verificada'
+                  ? 'Vincular e verificar uma referência científica.'
+                  : 'Programar uma nova revisão científica.',
+        })),
+        limitations: [
+          'A cobertura indica presença de recursos validados; não representa qualidade clínica.',
+          'Diagnóstico e plano continuam sendo calculados pelos motores pedagógicos, sem alteração por esta visão.',
+        ],
+      });
     },
     async managedSpecialties() {
       return specialtyDashboards(null);

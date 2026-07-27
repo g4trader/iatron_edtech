@@ -1,5 +1,6 @@
 import {
   appRoleSchema,
+  competencyWorkspaceSchema,
   knowledgeLibraryOverviewSchema,
   knowledgeLibraryPageSchema,
   knowledgeLibraryQuerySchema,
@@ -92,6 +93,13 @@ export const editorial = {
     if (!response.ok)
       throw new Error('Esta especialidade está indisponível agora.');
     return medicalSpecialtyDashboardSchema.parse(await response.json());
+  },
+  async competency(scope: 'review' | 'editorial' | 'admin', id: string) {
+    const response = await request(`/${scope}/competencies/${id}`);
+    if (response.status === 404) return null;
+    if (!response.ok)
+      throw new Error('Esta competência está indisponível agora.');
+    return competencyWorkspaceSchema.parse(await response.json());
   },
   adminContents: () => versions('/admin/editorial/contents'),
   async version(id: string): Promise<LearningContentVersion | null> {

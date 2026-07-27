@@ -24,6 +24,7 @@ export default async function AdminLayout({
           { href: '/admin/mentors', label: 'Mentores', icon: 'M' },
           { href: '/admin/users', label: 'Usuários e acessos', icon: 'U' },
           { href: '/admin/specialties', label: 'Operação', icon: 'O' },
+          { href: '/admin/competencies', label: 'Competências', icon: 'C' },
           { href: '/admin/platform', label: 'Platform', icon: 'P' },
         ],
       }}

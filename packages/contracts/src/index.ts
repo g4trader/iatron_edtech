@@ -1302,6 +1302,76 @@ export type MedicalSpecialtyDashboard = z.infer<
   typeof medicalSpecialtyDashboardSchema
 >;
 
+const competencyResourceSchema = z.object({
+  id: uuidSchema,
+  title: z.string(),
+  status: z.string(),
+  detail: z.string().nullable(),
+  href: z.string().nullable(),
+});
+
+export const competencyWorkspaceSchema = z.object({
+  id: uuidSchema,
+  code: z.string(),
+  name: z.string(),
+  description: z.string(),
+  hierarchy: z.object({
+    area: z.string(),
+    theme: z.string(),
+    subtheme: z.string(),
+  }),
+  objectives: z.array(z.string()),
+  specialties: z.array(
+    z.object({
+      id: uuidSchema,
+      name: z.string(),
+      relationship: z.enum(['primary', 'related']),
+      owners: z.array(
+        z.object({
+          name: z.string(),
+          role: z.enum(['primary', 'co_owner']),
+          status: z.enum(['active', 'temporarily_unavailable']),
+        }),
+      ),
+    }),
+  ),
+  coverage: z.object({
+    status: z.enum([
+      'covered',
+      'partially_covered',
+      'uncovered',
+      'needs_update',
+      'insufficient_data',
+    ]),
+    publishedContents: z.number().int().nonnegative(),
+    eligibleQuestions: z.number().int().nonnegative(),
+    validReferences: z.number().int().nonnegative(),
+    videos: z.number().int().nonnegative(),
+    activeBlueprints: z.number().int().nonnegative(),
+    pending: z.array(z.string()),
+    lastReviewedAt: z.iso.datetime({ offset: true }).nullable(),
+  }),
+  contents: z.array(competencyResourceSchema),
+  questions: z.array(competencyResourceSchema),
+  references: z.array(competencyResourceSchema),
+  videos: z.array(competencyResourceSchema),
+  blueprints: z.array(competencyResourceSchema),
+  learningUse: z.object({
+    diagnostic: z.string(),
+    plan: z.string(),
+    tutor: z.string(),
+  }),
+  gaps: z.array(
+    z.object({
+      title: z.string(),
+      reason: z.string(),
+      nextAction: z.string(),
+    }),
+  ),
+  limitations: z.array(z.string()),
+});
+export type CompetencyWorkspace = z.infer<typeof competencyWorkspaceSchema>;
+
 export const medicalSpecialtyOwnershipHistorySchema = z.object({
   id: uuidSchema,
   ownershipId: uuidSchema,

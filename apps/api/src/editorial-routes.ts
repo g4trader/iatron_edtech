@@ -128,6 +128,17 @@ export async function registerEditorialRoutes(
       reply.status(404).send()
     );
   });
+  app.get('/review/competencies/:competencyId', async (request, reply) => {
+    const repo = repository(request);
+    if (!(await requireRole(request, reply, repo, ['mentor']))) return;
+    const competencyId = uuid.parse(
+      (request.params as { competencyId: string }).competencyId,
+    );
+    return (
+      (await repo.competency(request.auth.userId, competencyId)) ??
+      reply.status(404).send()
+    );
+  });
   app.post('/review/contents/:versionId/decision', async (request, reply) => {
     const repo = repository(request);
     if (!(await requireRole(request, reply, repo, ['mentor']))) return;
@@ -276,6 +287,16 @@ export async function registerEditorialRoutes(
     if (!(await requireRole(request, reply, repo, ['editor', 'admin']))) return;
     return repo.managedSpecialties();
   });
+  app.get('/editorial/competencies/:competencyId', async (request, reply) => {
+    const repo = repository(request);
+    if (!(await requireRole(request, reply, repo, ['editor', 'admin']))) return;
+    const competencyId = uuid.parse(
+      (request.params as { competencyId: string }).competencyId,
+    );
+    return (
+      (await repo.competency(null, competencyId)) ?? reply.status(404).send()
+    );
+  });
   app.get('/editorial/library/overview', async (request, reply) => {
     const repo = repository(request);
     if (!(await requireRole(request, reply, repo, ['editor', 'admin']))) return;
@@ -330,6 +351,16 @@ export async function registerEditorialRoutes(
     const repo = repository(request);
     if (!(await requireRole(request, reply, repo, ['admin']))) return;
     return repo.managedSpecialties();
+  });
+  app.get('/admin/competencies/:competencyId', async (request, reply) => {
+    const repo = repository(request);
+    if (!(await requireRole(request, reply, repo, ['admin']))) return;
+    const competencyId = uuid.parse(
+      (request.params as { competencyId: string }).competencyId,
+    );
+    return (
+      (await repo.competency(null, competencyId)) ?? reply.status(404).send()
+    );
   });
   app.get(
     '/admin/specialties/:specialtyId/ownership-history',

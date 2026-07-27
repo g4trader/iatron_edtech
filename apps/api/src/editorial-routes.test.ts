@@ -4,6 +4,7 @@ import type { EditorialRepository } from './editorial-repository.js';
 import { readEnvironment } from './config/environment.js';
 import type {
   AppRole,
+  CompetencyWorkspace,
   LearningContentVersion,
   MedicalSpecialtyDashboard,
 } from '@iatron/contracts';
@@ -96,6 +97,48 @@ const specialty: MedicalSpecialtyDashboard = {
   gaps: [],
   limitations: ['Cobertura científica ainda não estimada.'],
 };
+const competency: CompetencyWorkspace = {
+  id: '10000000-0000-4000-8000-000000000012',
+  code: 'EMERG.CHOQUE.002',
+  name: 'Ressuscitação inicial do choque séptico',
+  description: 'Reconhecer e conduzir a abordagem inicial.',
+  hierarchy: {
+    area: 'Emergências',
+    theme: 'Choque',
+    subtheme: 'Choque séptico',
+  },
+  objectives: ['Definir a abordagem inicial'],
+  specialties: [
+    {
+      id: specialty.id,
+      name: specialty.name,
+      relationship: 'primary',
+      owners: [{ name: 'Mentor E2E', role: 'primary', status: 'active' }],
+    },
+  ],
+  coverage: {
+    status: 'covered',
+    publishedContents: 1,
+    eligibleQuestions: 1,
+    validReferences: 1,
+    videos: 1,
+    activeBlueprints: 1,
+    pending: [],
+    lastReviewedAt: new Date().toISOString(),
+  },
+  contents: [],
+  questions: [],
+  references: [],
+  videos: [],
+  blueprints: [],
+  learningUse: {
+    diagnostic: 'Avaliada no diagnóstico.',
+    plan: 'Pode originar atividades.',
+    tutor: 'Pode ser explicada pelo tutor.',
+  },
+  gaps: [],
+  limitations: [],
+};
 
 const repository: EditorialRepository = {
   roles: async () => roles,
@@ -110,6 +153,7 @@ const repository: EditorialRepository = {
   }),
   specialties: async () => [specialty],
   specialty: async (_mentor, id) => (id === specialty.id ? specialty : null),
+  competency: async (_mentor, id) => (id === competency.id ? competency : null),
   managedSpecialties: async () => [specialty],
   libraryOverview: async () => ({
     publishedContents: 1,
@@ -308,6 +352,27 @@ describe('editorial routes', () => {
     });
     expect(detail.statusCode).toBe(200);
     expect(detail.json().owners[0].professionalName).toBe('Mentor E2E');
+    await server.close();
+  });
+
+  it('exposes a competency only inside the authorized operational workspace', async () => {
+    roles = ['mentor'];
+    const server = await app();
+    const response = await server.inject({
+      url: `/v1/review/competencies/${competency.id}`,
+      headers: { authorization: 'Bearer test-token' },
+    });
+    expect(response.statusCode).toBe(200);
+    expect(response.json()).toMatchObject({
+      name: competency.name,
+      coverage: { status: 'covered' },
+    });
+    roles = ['student'];
+    const denied = await server.inject({
+      url: `/v1/review/competencies/${competency.id}`,
+      headers: { authorization: 'Bearer test-token' },
+    });
+    expect(denied.statusCode).toBe(403);
     await server.close();
   });
 

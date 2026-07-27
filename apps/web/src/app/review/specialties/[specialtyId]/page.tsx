@@ -1,4 +1,6 @@
 import { notFound } from 'next/navigation';
+import Link from 'next/link';
+import type { Route } from 'next';
 import { editorial } from '@/features/editorial/server/editorial';
 
 const date = (value: string | null) =>
@@ -132,7 +134,15 @@ export default async function MentorSpecialtyDashboard({
               <tbody>
                 {specialty.coverage.map((item) => (
                   <tr key={item.competencyId}>
-                    <td>{item.competencyName}</td>
+                    <td>
+                      <Link
+                        href={
+                          `/review/competencies/${item.competencyId}` as Route
+                        }
+                      >
+                        {item.competencyName}
+                      </Link>
+                    </td>
                     <td>{item.publishedContents}</td>
                     <td>{item.eligibleQuestions}</td>
                     <td>{item.validReferences}</td>

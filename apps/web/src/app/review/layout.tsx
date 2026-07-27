@@ -23,6 +23,7 @@ export default async function ReviewLayout({
           { href: '/review/queue', label: 'Minha fila', icon: 'F' },
           { href: '/review/active', label: 'Em revisão', icon: 'R' },
           { href: '/review/history', label: 'Histórico', icon: 'H' },
+          { href: '/review/competencies', label: 'Competências', icon: 'C' },
           { href: '/review/profile', label: 'Perfil', icon: 'P' },
         ],
       }}
