@@ -966,7 +966,7 @@ export function createEditorialRepository(
         blueprintResponse,
       ] = await Promise.all([
         get(
-          `learning_contents?select=id,slug,learning_content_versions(id,title,editorial_status,video,reviewed_at,published_at,learning_content_version_references(is_required,content_references(id,title,url,verification_status)))&competency_id=eq.${encodeURIComponent(competencyId)}`,
+          `learning_contents?select=id,slug,learning_content_versions!learning_content_versions_content_id_fkey(id,title,editorial_status,video,reviewed_at,published_at,learning_content_version_references(is_required,content_references(id,title,url,verification_status)))&competency_id=eq.${encodeURIComponent(competencyId)}`,
         ),
         get(
           `question_version_competencies?select=question_versions(id,stem,status,difficulty,question_version_provenance(external_identifier,source_title,editorial_status))&competency_id=eq.${encodeURIComponent(competencyId)}`,
@@ -975,7 +975,7 @@ export function createEditorialRepository(
           `competency_references?select=academic_references(id,title,authors,publication_year,url)&competency_id=eq.${encodeURIComponent(competencyId)}`,
         ),
         get(
-          `diagnostic_blueprint_competencies?select=exam_blueprints(id,version,is_active,editorial_status,exam_profiles(name))&competency_id=eq.${encodeURIComponent(competencyId)}`,
+          `diagnostic_blueprint_competencies?select=exam_blueprints(id,version,is_active,editorial_status,exam_intelligence_profiles(display_name))&competency_id=eq.${encodeURIComponent(competencyId)}`,
         ),
       ]);
       const contentRows = rows(contentResponse);
@@ -1147,7 +1147,10 @@ export function createEditorialRepository(
             blueprint,
             `Blueprint ${text(blueprint, 'version')}`,
             'active',
-            nullableText(object(blueprint.exam_profiles), 'name'),
+            nullableText(
+              object(blueprint.exam_intelligence_profiles),
+              'display_name',
+            ),
           ),
         ),
         learningUse: {
