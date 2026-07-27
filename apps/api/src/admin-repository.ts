@@ -260,7 +260,7 @@ export function createAdminRepository(environment: ApiEnvironment) {
             } | null;
           }[]
         >(
-          `student_target_exams?select=user_id,exam_editions(year,exam_programs(name,institutions(acronym)))&user_id=${filter}`,
+          `student_target_exams?select=user_id,exam_editions(year,exam_programs(name,institutions!exam_programs_institution_id_fkey(acronym)))&user_id=${filter}`,
         ),
       ]);
     const users = new Map(authUsers.map((user) => [user.id, user]));
