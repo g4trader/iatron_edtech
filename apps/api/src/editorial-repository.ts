@@ -264,7 +264,7 @@ export function createEditorialRepository(
         `specialty_areas?select=specialty_id,medical_areas(name)&specialty_id=${inIds}`,
       ),
       get(
-        `learning_contents?select=id,specialty_id,competency_id,updated_at,learning_content_versions(id,title,editorial_status,video,created_at,reviewed_at),content_reviews(id,decision,created_at,mentor_profiles(professional_name))&specialty_id=${inIds}`,
+        `learning_contents?select=id,specialty_id,competency_id,updated_at,learning_content_versions!learning_content_versions_content_id_fkey(id,title,editorial_status,video,created_at,reviewed_at),content_reviews(id,decision,created_at,mentor_profiles(professional_name))&specialty_id=${inIds}`,
       ),
       get(
         `question_version_specialties?select=specialty_id,question_version_id,question_versions(id,status,difficulty,created_at,question_version_competencies(competency_id))&specialty_id=${inIds}`,
