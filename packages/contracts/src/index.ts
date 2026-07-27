@@ -1152,6 +1152,72 @@ export const learningContentStatusSchema = z.enum([
 ]);
 export type LearningContentStatus = z.infer<typeof learningContentStatusSchema>;
 
+export const medicalSpecialtyOwnerSchema = z.object({
+  mentorId: uuidSchema,
+  professionalName: z.string(),
+  ownerRole: z.enum(['primary', 'co_owner']),
+  status: z.enum(['active', 'suspended', 'revoked']),
+  startsAt: z.iso.datetime({ offset: true }),
+});
+export type MedicalSpecialtyOwner = z.infer<typeof medicalSpecialtyOwnerSchema>;
+export const assignMedicalSpecialtyOwnerSchema = z
+  .object({
+    mentorId: uuidSchema,
+    ownerRole: z.enum(['primary', 'co_owner']),
+    authorizationReference: z.string().trim().min(3).max(240),
+    requestId: uuidSchema,
+  })
+  .strict();
+
+const medicalSpecialtyCountSchema = z.object({
+  total: z.number().int().nonnegative(),
+  pending: z.number().int().nonnegative(),
+});
+export const medicalSpecialtySummarySchema = z.object({
+  id: uuidSchema,
+  code: z.string(),
+  name: z.string(),
+  description: z.string().nullable(),
+  owners: z.array(medicalSpecialtyOwnerSchema).min(1),
+  areas: z.array(z.string()),
+  contents: medicalSpecialtyCountSchema,
+  questions: z.number().int().nonnegative(),
+  competencies: z.number().int().nonnegative(),
+  references: medicalSpecialtyCountSchema,
+  videos: z.number().int().nonnegative(),
+  blueprints: z.number().int().nonnegative(),
+  lastScientificUpdateAt: z.iso.datetime({ offset: true }).nullable(),
+});
+export type MedicalSpecialtySummary = z.infer<
+  typeof medicalSpecialtySummarySchema
+>;
+
+export const medicalSpecialtyDashboardSchema =
+  medicalSpecialtySummarySchema.extend({
+    contentStatus: z.array(
+      z.object({
+        status: learningContentStatusSchema,
+        count: z.number().int().nonnegative(),
+      }),
+    ),
+    recentReviews: z.array(
+      z.object({
+        id: uuidSchema,
+        title: z.string(),
+        decision: z.enum(['approved', 'changes_requested', 'rejected']),
+        mentorName: z.string(),
+        reviewedAt: z.iso.datetime({ offset: true }),
+      }),
+    ),
+    competencyNames: z.array(z.string()),
+    referenceNames: z.array(z.string()),
+    blueprintVersions: z.array(z.string()),
+    limitations: z.array(z.string()),
+  });
+export type MedicalSpecialtyDashboard = z.infer<
+  typeof medicalSpecialtyDashboardSchema
+>;
+
 export const learningContentVideoSchema = z
   .object({
     url: z.url().nullable().default(null),
@@ -1306,7 +1372,7 @@ export const createLearningContentDraftSchema = z.object({
   commonMistakes: z.array(z.string()).default([]),
   quickReview: z.array(z.string()).default([]),
   conclusion: z.string().nullable().default(null),
-  specialtyId: uuidSchema.nullable().default(null),
+  specialtyId: uuidSchema,
   competencyId: uuidSchema.nullable().default(null),
   aiAssisted: z.boolean().default(false),
   aiModel: z.string().nullable().default(null),

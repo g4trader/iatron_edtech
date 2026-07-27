@@ -1,5 +1,8 @@
 # Modelo acadêmico
 
+> A responsabilidade científica das especialidades está detalhada em
+> [Domínio de especialidades médicas](medical-specialty-domain.md).
+
 O pipeline mínimo de conteúdo da banca-piloto está documentado em
 [Content Intelligence MVP — AMRIGS](content-intelligence-mvp.md). Ele reutiliza
 este modelo e adiciona apenas lote de importação, proveniência e estados

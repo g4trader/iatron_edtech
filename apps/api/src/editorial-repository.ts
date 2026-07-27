@@ -1,7 +1,11 @@
 import {
+  medicalSpecialtyDashboardSchema,
+  medicalSpecialtySummarySchema,
   learningContentVersionSchema,
   type AppRole,
   type LearningContentVersion,
+  type MedicalSpecialtyDashboard,
+  type MedicalSpecialtySummary,
   type MentorReviewHistory,
 } from '@iatron/contracts';
 import type { ApiEnvironment } from './config/environment.js';
@@ -30,6 +34,20 @@ export interface EditorialRepository {
     versionNumber: number,
   ): Promise<LearningContentVersion | null>;
   reviewHistory(page: number, pageSize: number): Promise<MentorReviewHistory>;
+  specialties(mentorId: string): Promise<MedicalSpecialtySummary[]>;
+  specialty(
+    mentorId: string,
+    specialtyId: string,
+  ): Promise<MedicalSpecialtyDashboard | null>;
+  assignSpecialtyOwner(
+    specialtyId: string,
+    input: {
+      mentorId: string;
+      ownerRole: 'primary' | 'co_owner';
+      authorizationReference: string;
+      requestId: string;
+    },
+  ): Promise<string>;
   createDraft(input: Record<string, unknown>): Promise<string>;
   createVersion(input: {
     contentId: string;
@@ -173,6 +191,190 @@ export function createEditorialRepository(
       }),
     });
   };
+
+  const specialtyDashboards = async (
+    mentorId: string,
+    requestedSpecialtyId?: string,
+  ): Promise<MedicalSpecialtyDashboard[]> => {
+    const ownershipFilter = requestedSpecialtyId
+      ? `&specialty_id=eq.${encodeURIComponent(requestedSpecialtyId)}`
+      : '';
+    const ownRows = rows(
+      await get(
+        `medical_specialty_owners?select=specialty_id&mentor_id=eq.${encodeURIComponent(mentorId)}&status=eq.active${ownershipFilter}`,
+      ),
+    );
+    const specialtyIds = ownRows.map((row) => text(row, 'specialty_id'));
+    if (!specialtyIds.length) return [];
+    const inIds = `in.(${specialtyIds.join(',')})`;
+    const [
+      specialtyRows,
+      ownerRows,
+      areaRows,
+      contentRows,
+      questionRows,
+      competencyRows,
+      referenceRows,
+      blueprintRows,
+    ] = await Promise.all([
+      get(
+        `specialties?select=id,code,name,description&id=${inIds}&order=name.asc`,
+      ),
+      get(
+        `medical_specialty_owners?select=specialty_id,mentor_id,owner_role,status,starts_at,mentor_profiles(professional_name)&specialty_id=${inIds}&status=eq.active&order=owner_role.asc`,
+      ),
+      get(
+        `specialty_areas?select=specialty_id,medical_areas(name)&specialty_id=${inIds}`,
+      ),
+      get(
+        `learning_contents?select=id,specialty_id,updated_at,learning_content_versions(id,title,editorial_status,video,created_at),content_reviews(id,decision,created_at,mentor_profiles(professional_name))&specialty_id=${inIds}`,
+      ),
+      get(
+        `question_version_specialties?select=specialty_id,question_version_id&specialty_id=${inIds}`,
+      ),
+      get(
+        `competency_specialties?select=specialty_id,competencies(name)&specialty_id=${inIds}`,
+      ),
+      get(
+        `content_reference_specialties?select=specialty_id,content_references(title,verification_status)&specialty_id=${inIds}`,
+      ),
+      get(
+        `exam_blueprint_areas?select=specialty_id,exam_blueprints(version)&specialty_id=${inIds}`,
+      ),
+    ]);
+
+    return rows(specialtyRows).map((specialtyRow) => {
+      const specialtyId = text(specialtyRow, 'id');
+      const ownedContents = rows(contentRows).filter(
+        (row) => text(row, 'specialty_id') === specialtyId,
+      );
+      const versions = ownedContents.flatMap((row) =>
+        rows(row.learning_content_versions),
+      );
+      const reviews = ownedContents
+        .flatMap((row) =>
+          rows(row.content_reviews).map((review) => ({
+            review,
+            title:
+              rows(row.learning_content_versions)
+                .sort(
+                  (left, right) =>
+                    Date.parse(text(right, 'created_at')) -
+                    Date.parse(text(left, 'created_at')),
+                )
+                .at(0)?.title ?? 'Conteúdo da especialidade',
+          })),
+        )
+        .sort(
+          (left, right) =>
+            Date.parse(text(right.review, 'created_at')) -
+            Date.parse(text(left.review, 'created_at')),
+        );
+      const references = rows(referenceRows).filter(
+        (row) => text(row, 'specialty_id') === specialtyId,
+      );
+      const blueprints = rows(blueprintRows).filter(
+        (row) => text(row, 'specialty_id') === specialtyId,
+      );
+      const statusCounts = new Map<string, number>();
+      for (const version of versions) {
+        const status = text(version, 'editorial_status');
+        statusCounts.set(status, (statusCounts.get(status) ?? 0) + 1);
+      }
+      const lastUpdate = [
+        ...ownedContents.map((row) => nullableText(row, 'updated_at')),
+        ...reviews.map(({ review }) => nullableText(review, 'created_at')),
+      ]
+        .filter((value): value is string => value !== null)
+        .sort()
+        .at(-1);
+      return medicalSpecialtyDashboardSchema.parse({
+        id: specialtyId,
+        code: text(specialtyRow, 'code'),
+        name: text(specialtyRow, 'name'),
+        description: nullableText(specialtyRow, 'description'),
+        owners: rows(ownerRows)
+          .filter((row) => text(row, 'specialty_id') === specialtyId)
+          .map((row) => ({
+            mentorId: text(row, 'mentor_id'),
+            professionalName: text(
+              object(row.mentor_profiles),
+              'professional_name',
+            ),
+            ownerRole: text(row, 'owner_role'),
+            status: text(row, 'status'),
+            startsAt: text(row, 'starts_at'),
+          })),
+        areas: rows(areaRows)
+          .filter((row) => text(row, 'specialty_id') === specialtyId)
+          .map((row) => text(object(row.medical_areas), 'name'))
+          .sort(),
+        contents: {
+          total: ownedContents.length,
+          pending: versions.filter(({ editorial_status }) =>
+            [
+              'editorial_review',
+              'awaiting_mentor_assignment',
+              'awaiting_mentor_review',
+              'mentor_changes_requested',
+            ].includes(String(editorial_status)),
+          ).length,
+        },
+        questions: new Set(
+          rows(questionRows)
+            .filter((row) => text(row, 'specialty_id') === specialtyId)
+            .map((row) => text(row, 'question_version_id')),
+        ).size,
+        competencies: rows(competencyRows).filter(
+          (row) => text(row, 'specialty_id') === specialtyId,
+        ).length,
+        references: {
+          total: references.length,
+          pending: references.filter(
+            (row) =>
+              text(object(row.content_references), 'verification_status') !==
+              'verified',
+          ).length,
+        },
+        videos: versions.filter((row) => row.video != null).length,
+        blueprints: new Set(
+          blueprints.map((row) => text(object(row.exam_blueprints), 'version')),
+        ).size,
+        lastScientificUpdateAt: lastUpdate ?? null,
+        contentStatus: [...statusCounts.entries()].map(([status, count]) => ({
+          status,
+          count,
+        })),
+        recentReviews: reviews.slice(0, 8).map(({ review, title }) => ({
+          id: text(review, 'id'),
+          title: String(title),
+          decision: text(review, 'decision'),
+          mentorName:
+            nullableText(object(review.mentor_profiles), 'professional_name') ??
+            'Mentor responsável',
+          reviewedAt: text(review, 'created_at'),
+        })),
+        competencyNames: rows(competencyRows)
+          .filter((row) => text(row, 'specialty_id') === specialtyId)
+          .map((row) => text(object(row.competencies), 'name'))
+          .sort(),
+        referenceNames: references
+          .map((row) => text(object(row.content_references), 'title'))
+          .sort(),
+        blueprintVersions: [
+          ...new Set(
+            blueprints.map((row) =>
+              text(object(row.exam_blueprints), 'version'),
+            ),
+          ),
+        ].sort(),
+        limitations: [
+          'Vídeos são contabilizados a partir das versões de conteúdo.',
+          'A cobertura científica não é estimada sem critérios estatísticos aprovados.',
+        ],
+      });
+    });
+  };
   return {
     async roles() {
       return rows(await get('user_roles?select=role')).map(
@@ -275,6 +477,25 @@ export function createEditorialRepository(
         pageSize,
         total: totalRows.length,
       };
+    },
+    async specialties(mentorId) {
+      return (await specialtyDashboards(mentorId)).map((item) =>
+        medicalSpecialtySummarySchema.parse(item),
+      );
+    },
+    async specialty(mentorId, specialtyId) {
+      return (await specialtyDashboards(mentorId, specialtyId))[0] ?? null;
+    },
+    async assignSpecialtyOwner(specialtyId, input) {
+      return String(
+        await rpc('assign_medical_specialty_owner', {
+          p_specialty_id: specialtyId,
+          p_mentor_id: input.mentorId,
+          p_owner_role: input.ownerRole,
+          p_authorization_reference: input.authorizationReference,
+          p_request_id: input.requestId,
+        }),
+      );
     },
     async createDraft(input) {
       return String(await rpc('create_learning_content_draft', snake(input)));

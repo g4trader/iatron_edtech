@@ -1,4 +1,5 @@
 import {
+  assignMedicalSpecialtyOwnerSchema,
   createLearningContentDraftSchema,
   reviewLearningContentSchema,
   type AppRole,
@@ -107,6 +108,22 @@ export async function registerEditorialRoutes(
       })
       .parse(request.query);
     return repo.reviewHistory(query.page, query.pageSize);
+  });
+  app.get('/review/specialties', async (request, reply) => {
+    const repo = repository(request);
+    if (!(await requireRole(request, reply, repo, ['mentor']))) return;
+    return repo.specialties(request.auth.userId);
+  });
+  app.get('/review/specialties/:specialtyId', async (request, reply) => {
+    const repo = repository(request);
+    if (!(await requireRole(request, reply, repo, ['mentor']))) return;
+    const specialtyId = uuid.parse(
+      (request.params as { specialtyId: string }).specialtyId,
+    );
+    return (
+      (await repo.specialty(request.auth.userId, specialtyId)) ??
+      reply.status(404).send()
+    );
   });
   app.post('/review/contents/:versionId/decision', async (request, reply) => {
     const repo = repository(request);
@@ -250,5 +267,29 @@ export async function registerEditorialRoutes(
   );
   app.get('/editorial/notifications', async (request) =>
     repository(request).notifications(),
+  );
+  app.post(
+    '/editorial/specialties/:specialtyId/owners',
+    async (request, reply) => {
+      const repo = repository(request);
+      if (!(await requireRole(request, reply, repo, ['editor', 'admin'])))
+        return;
+      const specialtyId = uuid.parse(
+        (request.params as { specialtyId: string }).specialtyId,
+      );
+      const input = assignMedicalSpecialtyOwnerSchema.parse(request.body);
+      const id = await repo.assignSpecialtyOwner(specialtyId, input);
+      request.log.info(
+        {
+          event: 'specialty_owner_assigned',
+          actor: safeUserIdentifier(request.auth.userId),
+          specialtyId,
+          mentorId: input.mentorId,
+          requestId: input.requestId,
+        },
+        'editorial_action_completed',
+      );
+      return reply.status(201).send({ id });
+    },
   );
 }

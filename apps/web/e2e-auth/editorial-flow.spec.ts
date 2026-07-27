@@ -128,6 +128,13 @@ test('editor → mentor → admin → estudante: conteúdo versionado e revisão
     authorization_status: 'authorized',
     mfa_required: true,
   });
+  await upsert('medical_specialty_owners', {
+    specialty_id: specialtyId,
+    mentor_id: mentorId,
+    owner_role: 'primary',
+    status: 'active',
+    authorization_reference: 'e2e:documented-beta-authorization',
+  });
   await service(
     `/rest/v1/profiles?id=in.(${editorId},${mentorId},${adminId},${studentId})`,
     {
@@ -223,6 +230,10 @@ test('editor → mentor → admin → estudante: conteúdo versionado e revisão
     is_required: true,
     position: 1,
   });
+  await upsert('content_reference_specialties', {
+    reference_id: referenceId,
+    specialty_id: specialtyId,
+  });
   await page.getByLabel('ID do mentor autorizado').first().fill(mentorId);
   await page
     .getByRole('button', { name: 'Enviar para revisão' })
@@ -245,6 +256,14 @@ test('editor → mentor → admin → estudante: conteúdo versionado e revisão
   await page.goto('/admin');
   await expect(page).toHaveURL(/\/app$/);
   await page.goto('/review');
+  await page.getByRole('link', { name: 'Especialidades' }).click();
+  await expect(
+    page.getByRole('heading', { name: 'Suas especialidades' }),
+  ).toBeVisible();
+  await page.getByRole('link', { name: 'Abrir especialidade' }).click();
+  await expect(
+    page.getByText('Responsáveis científicos:', { exact: false }),
+  ).toBeVisible();
   await page.getByRole('link', { name: 'Minha fila' }).click();
   await page.getByRole('link', { name: 'Revisar esta versão' }).click();
   await expect(

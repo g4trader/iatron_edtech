@@ -32,7 +32,7 @@ jobs:
       NEXT_PUBLIC_SUPABASE_URL: ${{ vars.SUPABASE_STAGING_URL }}
       NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: ${{ secrets.SUPABASE_STAGING_PUBLISHABLE_KEY }}
       EXPECTED_BUILD_SHA: ${{ github.event.workflow_run.head_sha || github.sha }}
-      EXPECTED_MIGRATION_BASELINE: '202607250005'
+      EXPECTED_MIGRATION_BASELINE: '202607260001'
     steps:
       - uses: actions/checkout@v4
         with:

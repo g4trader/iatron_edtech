@@ -16,13 +16,22 @@ insert into public.user_roles(user_id,role) values
 ('e1000000-0000-4000-8000-000000000001','editor'),
 ('e1000000-0000-4000-8000-000000000002','mentor'),
 ('e1000000-0000-4000-8000-000000000003','admin');
-insert into public.mentor_profiles(user_id,professional_name,authorization_status)
-values('e1000000-0000-4000-8000-000000000002','Mentor E2E','authorized');
+insert into public.mentor_profiles(user_id,specialty_id,professional_name,authorization_status)
+select 'e1000000-0000-4000-8000-000000000002',id,'Mentor E2E','authorized'
+from public.specialties order by name limit 1;
+insert into public.medical_specialty_owners(
+  specialty_id,mentor_id,owner_role,authorization_reference
+)
+select specialty_id,user_id,'co_owner','test:editorial-intelligence'
+from public.mentor_profiles
+where user_id='e1000000-0000-4000-8000-000000000002';
 
 insert into public.learning_contents(
-  id,canonical_key,slug,assigned_mentor_id,created_by
+  id,canonical_key,slug,specialty_id,assigned_mentor_id,created_by
 ) values(
   'e2000000-0000-4000-8000-000000000001','demo.sepsis','demo-sepsis',
+  (select specialty_id from public.mentor_profiles
+   where user_id='e1000000-0000-4000-8000-000000000002'),
   'e1000000-0000-4000-8000-000000000002',
   'e1000000-0000-4000-8000-000000000001'
 );
@@ -52,6 +61,10 @@ insert into public.content_references(
 );
 insert into public.learning_content_version_references(version_id,reference_id,is_required)
 values('e3000000-0000-4000-8000-000000000001','e4000000-0000-4000-8000-000000000001',true);
+insert into public.content_reference_specialties(reference_id,specialty_id)
+select 'e4000000-0000-4000-8000-000000000001',specialty_id
+from public.mentor_profiles
+where user_id='e1000000-0000-4000-8000-000000000002';
 
 select extensions.is(
   (select count(*) from public.user_roles where role='student' and user_id in (

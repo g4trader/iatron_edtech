@@ -2,7 +2,11 @@ import { beforeEach, describe, expect, it } from 'vitest';
 import { buildApp } from './app.js';
 import type { EditorialRepository } from './editorial-repository.js';
 import { readEnvironment } from './config/environment.js';
-import type { AppRole, LearningContentVersion } from '@iatron/contracts';
+import type {
+  AppRole,
+  LearningContentVersion,
+  MedicalSpecialtyDashboard,
+} from '@iatron/contracts';
 
 const versionId = '10000000-0000-4000-8000-000000000001';
 const contentId = '10000000-0000-4000-8000-000000000002';
@@ -55,6 +59,35 @@ const material: LearningContentVersion = {
   requestCount: 0,
   references: [],
 };
+const specialty: MedicalSpecialtyDashboard = {
+  id: '10000000-0000-4000-8000-000000000010',
+  code: 'CLINICA_MEDICA',
+  name: 'Clínica Médica',
+  description: 'Conhecimento científico de Clínica Médica.',
+  owners: [
+    {
+      mentorId,
+      professionalName: 'Mentor E2E',
+      ownerRole: 'primary',
+      status: 'active',
+      startsAt: new Date().toISOString(),
+    },
+  ],
+  areas: ['Emergências'],
+  contents: { total: 1, pending: 1 },
+  questions: 10,
+  competencies: 4,
+  references: { total: 2, pending: 1 },
+  videos: 1,
+  blueprints: 1,
+  lastScientificUpdateAt: new Date().toISOString(),
+  contentStatus: [{ status: 'awaiting_mentor_review', count: 1 }],
+  recentReviews: [],
+  competencyNames: ['Reconhecer instabilidade'],
+  referenceNames: ['Diretriz demonstrativa'],
+  blueprintVersions: ['1'],
+  limitations: ['Cobertura científica ainda não estimada.'],
+};
 
 const repository: EditorialRepository = {
   roles: async () => roles,
@@ -67,6 +100,9 @@ const repository: EditorialRepository = {
     pageSize,
     total: 0,
   }),
+  specialties: async () => [specialty],
+  specialty: async (_mentor, id) => (id === specialty.id ? specialty : null),
+  assignSpecialtyOwner: async (id) => id,
   createDraft: async () => versionId,
   createVersion: async () => versionId,
   submit: async () => contentId,
@@ -219,6 +255,46 @@ describe('editorial routes', () => {
     });
     expect(history.statusCode).toBe(200);
     expect(history.json()).toMatchObject({ page: 1, pageSize: 20, total: 0 });
+    await server.close();
+  });
+
+  it('exposes only the mentor specialty workspace through authenticated ownership', async () => {
+    roles = ['mentor'];
+    const server = await app();
+    const list = await server.inject({
+      url: '/v1/review/specialties',
+      headers: { authorization: 'Bearer test-token' },
+    });
+    expect(list.statusCode).toBe(200);
+    expect(list.json()[0]).toMatchObject({
+      name: 'Clínica Médica',
+      questions: 10,
+    });
+    const detail = await server.inject({
+      url: `/v1/review/specialties/${specialty.id}`,
+      headers: { authorization: 'Bearer test-token' },
+    });
+    expect(detail.statusCode).toBe(200);
+    expect(detail.json().owners[0].professionalName).toBe('Mentor E2E');
+    await server.close();
+  });
+
+  it('allows editorial staff to register auditable ownership', async () => {
+    roles = ['editor'];
+    const server = await app();
+    const response = await server.inject({
+      method: 'POST',
+      url: `/v1/editorial/specialties/${specialty.id}/owners`,
+      headers: { authorization: 'Bearer test-token' },
+      payload: {
+        mentorId,
+        ownerRole: 'primary',
+        authorizationReference: 'authorization:test-record',
+        requestId: crypto.randomUUID(),
+      },
+    });
+    expect(response.statusCode).toBe(201);
+    expect(response.json()).toEqual({ id: specialty.id });
     await server.close();
   });
 });

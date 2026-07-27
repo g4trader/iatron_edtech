@@ -22,6 +22,7 @@ import {
   reviewLearningContentSchema,
   adminInviteUserSchema,
   adminOverviewSchema,
+  medicalSpecialtyDashboardSchema,
 } from './index.js';
 
 describe('serviceStatusSchema', () => {
@@ -450,6 +451,32 @@ describe('learning DNA contracts', () => {
 });
 
 describe('editorial intelligence contracts', () => {
+  it('requires a scientific owner for every medical specialty dashboard', () => {
+    expect(() =>
+      medicalSpecialtyDashboardSchema.parse({
+        id: crypto.randomUUID(),
+        code: 'CLINICA_MEDICA',
+        name: 'Clínica Médica',
+        description: null,
+        owners: [],
+        areas: [],
+        contents: { total: 0, pending: 0 },
+        questions: 0,
+        competencies: 0,
+        references: { total: 0, pending: 0 },
+        videos: 0,
+        blueprints: 0,
+        lastScientificUpdateAt: null,
+        contentStatus: [],
+        recentReviews: [],
+        competencyNames: [],
+        referenceNames: [],
+        blueprintVersions: [],
+        limitations: [],
+      }),
+    ).toThrow();
+  });
+
   it('requires an explicit mentor declaration tied to an approval', () => {
     expect(() =>
       reviewLearningContentSchema.parse({

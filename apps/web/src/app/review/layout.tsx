@@ -15,6 +15,7 @@ export default async function ReviewLayout({
       area="Mentoria médica"
       homeHref="/review"
       links={[
+        { href: '/review/specialties', label: 'Especialidades' },
         { href: '/review/queue', label: 'Minha fila' },
         { href: '/review/active', label: 'Em revisão' },
         { href: '/review/history', label: 'Histórico' },

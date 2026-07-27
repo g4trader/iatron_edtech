@@ -1,6 +1,8 @@
 import {
   appRoleSchema,
   learningContentVersionSchema,
+  medicalSpecialtyDashboardSchema,
+  medicalSpecialtySummarySchema,
   mentorReviewHistorySchema,
   type LearningContentVersion,
 } from '@iatron/contracts';
@@ -41,6 +43,19 @@ export const editorial = {
   },
   studentContents: () => versions('/learning-content'),
   reviewQueue: () => versions('/review/contents'),
+  async specialties() {
+    const response = await request('/review/specialties');
+    if (!response.ok)
+      throw new Error('Suas especialidades estão indisponíveis agora.');
+    return z.array(medicalSpecialtySummarySchema).parse(await response.json());
+  },
+  async specialty(id: string) {
+    const response = await request(`/review/specialties/${id}`);
+    if (response.status === 404) return null;
+    if (!response.ok)
+      throw new Error('Esta especialidade está indisponível agora.');
+    return medicalSpecialtyDashboardSchema.parse(await response.json());
+  },
   adminContents: () => versions('/admin/editorial/contents'),
   async version(id: string): Promise<LearningContentVersion | null> {
     const response = await request(`/learning-content/versions/${id}`);
