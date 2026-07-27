@@ -12,6 +12,7 @@ import type { ApiEnvironment } from './config/environment.js';
 import {
   createAuthenticate,
   createTokenVerifier,
+  safeUserIdentifier,
   type TokenVerifier,
 } from './auth.js';
 import { registerMeRoutes } from './me-routes.js';
@@ -70,6 +71,12 @@ import {
   type AdminRepository,
 } from './admin-repository.js';
 import { registerAdminRoutes } from './admin-routes.js';
+import {
+  classifyError,
+  OperationalState,
+  requestId,
+  safeErrorLog,
+} from './observability.js';
 
 export interface BuildAppOptions {
   environment: ApiEnvironment;
@@ -94,6 +101,8 @@ export interface BuildAppOptions {
   editorialRepositoryFactory?: (token: string) => EditorialRepository;
   editorialEmailGateway?: EditorialEmailGateway;
   adminRepositoryFactory?: () => AdminRepository;
+  operationalState?: OperationalState;
+  readinessCheck?: () => Promise<boolean>;
 }
 
 function isFastifyValidationError(error: unknown): boolean {
@@ -109,12 +118,72 @@ function isFastifyValidationError(error: unknown): boolean {
 export async function buildApp(
   options: BuildAppOptions,
 ): Promise<FastifyInstance> {
+  const operations = options.operationalState ?? new OperationalState();
   const app = Fastify({
     logger:
       options.logger === false
         ? false
-        : { level: options.environment.LOG_LEVEL },
-    requestIdHeader: 'x-request-id',
+        : {
+            level: options.environment.LOG_LEVEL,
+            redact: {
+              paths: [
+                'req.headers.authorization',
+                'req.headers.cookie',
+                'headers.authorization',
+                'headers.cookie',
+                '*.password',
+                '*.token',
+                '*.secret',
+              ],
+              censor: '[REDACTED]',
+            },
+          },
+    requestIdHeader: false,
+    genReqId: (request) =>
+      requestId(
+        typeof request.headers['x-request-id'] === 'string'
+          ? request.headers['x-request-id']
+          : undefined,
+      ),
+  });
+  app.addHook('onRequest', async (request, reply) => {
+    reply.header('x-request-id', request.id);
+  });
+  app.addHook('onResponse', async (request, reply) => {
+    const duration = Math.round(reply.elapsedTime);
+    const statusCode = reply.statusCode;
+    operations.recordResponse({
+      requestId: request.id,
+      route: request.routeOptions.url ?? request.url,
+      statusCode,
+      frontendSha:
+        typeof request.headers['x-frontend-sha'] === 'string'
+          ? request.headers['x-frontend-sha']
+          : undefined,
+    });
+    request.log.info(
+      {
+        event: 'request_completed',
+        timestamp: new Date().toISOString(),
+        environment: options.environment.APP_ENV,
+        service: 'iatron-api',
+        request_id: request.id,
+        route: request.routeOptions.url,
+        method: request.method,
+        status_code: statusCode,
+        duration_ms: duration,
+        actor_id: request.auth?.userId
+          ? safeUserIdentifier(request.auth.userId)
+          : undefined,
+        frontend_sha:
+          typeof request.headers['x-frontend-sha'] === 'string' &&
+          /^[a-f0-9]{7,40}$/i.test(request.headers['x-frontend-sha'])
+            ? request.headers['x-frontend-sha']
+            : undefined,
+        api_sha: options.environment.BUILD_SHA,
+      },
+      'request_completed',
+    );
   });
 
   const allowedOrigins = new Set(
@@ -126,7 +195,13 @@ export async function buildApp(
     origin: (origin, callback) =>
       callback(null, !origin || allowedOrigins.has(origin)),
     credentials: true,
-    allowedHeaders: ['authorization', 'content-type', 'x-request-id'],
+    allowedHeaders: [
+      'authorization',
+      'content-type',
+      'x-request-id',
+      'x-frontend-sha',
+    ],
+    exposedHeaders: ['x-request-id'],
     methods: ['GET', 'POST', 'PATCH', 'PUT', 'OPTIONS'],
   });
 
@@ -169,25 +244,38 @@ export async function buildApp(
     request: FastifyRequest,
     reply: FastifyReply,
   ) => {
-    request.log.error({ err: error }, 'request_failed');
+    const classification = classifyError(error);
+    request.log.error(
+      safeErrorLog(error, request, classification),
+      'request_failed',
+    );
     if (error instanceof RepositoryError) {
+      operations.dependencyFailure('supabase');
       return reply.status(502).send({
         error: {
-          code: 'UPSTREAM_DATABASE_ERROR',
+          code: 'DATABASE_ERROR',
           message: 'Não foi possível acessar os dados.',
           requestId: request.id,
+          retryable: true,
         },
       });
     }
     const isValidationError =
       isFastifyValidationError(error) || error instanceof ZodError;
-    return reply.status(isValidationError ? 400 : 500).send({
+    const mapped = isValidationError
+      ? {
+          code: 'VALIDATION_ERROR',
+          status: 400,
+          retryable: false,
+          message: 'Dados de entrada inválidos.',
+        }
+      : classification;
+    return reply.status(mapped.status).send({
       error: {
-        code: isValidationError ? 'VALIDATION_ERROR' : 'INTERNAL_ERROR',
-        message: isValidationError
-          ? 'Dados de entrada inválidos.'
-          : 'Erro interno do servidor.',
+        code: mapped.code,
+        message: mapped.message,
         requestId: request.id,
+        retryable: mapped.retryable,
       },
     });
   };
@@ -208,15 +296,36 @@ export async function buildApp(
 
   app.get(
     '/ready',
-    { schema: { tags: ['operations'], response: { 200: statusSchema } } },
-    async () => ({
-      status: 'ready' as const,
-      service: 'iatron-api',
-      timestamp: new Date().toISOString(),
-      buildSha: options.environment.BUILD_SHA,
-      contractVersion: 'journey-v1',
-      migrationBaseline: options.environment.MIGRATION_BASELINE,
-    }),
+    { schema: { tags: ['operations'] } },
+    async (_request, reply) => {
+      let ready = true;
+      try {
+        ready =
+          (await options.readinessCheck?.()) ??
+          (options.environment.APP_ENV === 'local'
+            ? true
+            : (
+                await fetch(`${options.environment.SUPABASE_URL}/rest/v1/`, {
+                  method: 'HEAD',
+                  headers: {
+                    apikey: options.environment.SUPABASE_PUBLISHABLE_KEY,
+                  },
+                  signal: AbortSignal.timeout(2_000),
+                })
+              ).ok);
+      } catch {
+        ready = false;
+      }
+      if (!ready) operations.dependencyFailure('supabase');
+      return reply.status(ready ? 200 : 503).send({
+        status: ready ? 'ready' : 'unavailable',
+        service: 'iatron-api',
+        timestamp: new Date().toISOString(),
+        buildSha: options.environment.BUILD_SHA,
+        contractVersion: 'journey-v1',
+        migrationBaseline: options.environment.MIGRATION_BASELINE,
+      });
+    },
   );
 
   await app.register(
@@ -225,6 +334,18 @@ export async function buildApp(
         name: 'iatron-api',
         version: 'v1',
       }));
+      versionedApi.get(
+        '/meta',
+        { schema: { tags: ['operations'] } },
+        async () => ({
+          service: 'iatron-api',
+          environment: options.environment.APP_ENV,
+          apiSha: options.environment.BUILD_SHA,
+          schemaVersion: options.environment.MIGRATION_BASELINE,
+          cloudRunRevision: options.environment.CLOUD_RUN_REVISION ?? null,
+          buildTimestamp: options.environment.BUILD_TIMESTAMP,
+        }),
+      );
       await versionedApi.register(async (protectedApi) => {
         protectedApi.setErrorHandler(handleError);
         protectedApi.addHook(
@@ -289,6 +410,7 @@ export async function buildApp(
               timeoutMs: options.environment.OPENAI_REQUEST_TIMEOUT_MS,
             }),
           clock: options.tutorClock,
+          onDependencyFailure: () => operations.dependencyFailure('openai'),
         });
         await registerExamIntelligenceRoutes(
           protectedApi,
@@ -302,12 +424,23 @@ export async function buildApp(
           options.editorialRepositoryFactory ??
             ((token) => createEditorialRepository(options.environment, token)),
           options.editorialEmailGateway ??
-            createResendEditorialEmailGateway(options.environment),
+            createResendEditorialEmailGateway(options.environment, (event) => {
+              if (!event.success) operations.dependencyFailure('email');
+              app.log.info(
+                {
+                  event: 'dependency_call',
+                  request_id: 'background',
+                  ...event,
+                },
+                'dependency_call',
+              );
+            }),
         );
         await registerAdminRoutes(
           protectedApi,
           options.adminRepositoryFactory ??
             (() => createAdminRepository(options.environment)),
+          operations,
         );
       });
     },
@@ -320,6 +453,7 @@ export async function buildApp(
         code: 'NOT_FOUND',
         message: 'Recurso não encontrado.',
         requestId: request.id,
+        retryable: false,
       },
     }),
   );

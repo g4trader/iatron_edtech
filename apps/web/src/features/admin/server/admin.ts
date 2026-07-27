@@ -1,4 +1,5 @@
 import {
+  adminOperationsSchema,
   adminMentorListSchema,
   adminMentorSummarySchema,
   adminMutationResultSchema,
@@ -6,6 +7,8 @@ import {
   adminStudentDetailSchema,
   adminStudentListSchema,
   adminUserListSchema,
+  apiErrorSchema,
+  releaseMetaSchema,
 } from '@iatron/contracts';
 import { z } from 'zod';
 import { createClient } from '@/lib/supabase/server';
@@ -17,22 +20,31 @@ async function request(path: string, init?: RequestInit) {
   const client = await createClient();
   const { data } = await client.auth.getSession();
   if (!data.session) throw new Error('Sessão administrativa indisponível.');
+  const correlationId = crypto.randomUUID();
   const response = await fetch(`${baseUrl()}${path}`, {
     ...init,
     headers: {
       authorization: `Bearer ${data.session.access_token}`,
       'content-type': 'application/json',
-      'x-request-id': crypto.randomUUID(),
+      'x-request-id': correlationId,
+      'x-frontend-sha': process.env.VERCEL_GIT_COMMIT_SHA ?? 'local',
       ...init?.headers,
     },
     cache: 'no-store',
   });
-  if (!response.ok)
+  if (!response.ok) {
+    const body = apiErrorSchema.safeParse(
+      await response.json().catch(() => null),
+    );
+    const supportCode = body.success
+      ? body.data.error.requestId
+      : (response.headers.get('x-request-id') ?? correlationId);
     throw new Error(
       response.status === 403
         ? 'Você não possui permissão para esta operação.'
-        : `Operação administrativa indisponível (${response.status}).`,
+        : `Não foi possível concluir esta ação. Código de suporte: ${supportCode.slice(0, 12)}.`,
     );
+  }
   return response;
 }
 
@@ -54,6 +66,14 @@ export const admin = {
     return adminOverviewSchema.parse(
       await (await request('/admin/overview')).json(),
     );
+  },
+  async operations() {
+    return adminOperationsSchema.parse(
+      await (await request('/admin/operations')).json(),
+    );
+  },
+  async meta() {
+    return releaseMetaSchema.parse(await (await request('/meta')).json());
   },
   async students(query = '') {
     return adminStudentListSchema.parse(

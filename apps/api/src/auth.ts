@@ -60,9 +60,10 @@ export function createAuthenticate(verifier: TokenVerifier) {
     if (!token) {
       return reply.status(401).send({
         error: {
-          code: 'UNAUTHORIZED',
+          code: 'AUTHENTICATION_ERROR',
           message: 'Autenticação necessária.',
           requestId: request.id,
+          retryable: false,
         },
       });
     }
@@ -81,9 +82,10 @@ export function createAuthenticate(verifier: TokenVerifier) {
       );
       return reply.status(401).send({
         error: {
-          code: 'INVALID_TOKEN',
+          code: 'AUTHENTICATION_ERROR',
           message: 'Sessão inválida ou expirada.',
           requestId: request.id,
+          retryable: false,
         },
       });
     }

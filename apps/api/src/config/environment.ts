@@ -10,6 +10,8 @@ const apiEnvironmentSchema = z.object({
     .enum(['fatal', 'error', 'warn', 'info', 'debug', 'trace', 'silent'])
     .default('info'),
   BUILD_SHA: z.string().min(1).default('local'),
+  BUILD_TIMESTAMP: z.iso.datetime(),
+  CLOUD_RUN_REVISION: z.string().min(1).optional(),
   MIGRATION_BASELINE: z
     .string()
     .regex(/^\d{12}$/)
@@ -75,5 +77,10 @@ export function readEnvironment(
       throw new Error('Production runtime cannot use APP_ENV=local');
     }
   }
-  return parseEnvironment(apiEnvironmentSchema, environment);
+  return parseEnvironment(apiEnvironmentSchema, {
+    ...environment,
+    BUILD_TIMESTAMP: environment.BUILD_TIMESTAMP ?? new Date().toISOString(),
+    CLOUD_RUN_REVISION:
+      environment.CLOUD_RUN_REVISION ?? environment.K_REVISION,
+  });
 }

@@ -13,10 +13,21 @@ export const apiErrorSchema = z.object({
     code: z.string(),
     message: z.string(),
     requestId: z.string(),
+    retryable: z.boolean().optional(),
   }),
 });
 
 export type ApiError = z.infer<typeof apiErrorSchema>;
+
+export const releaseMetaSchema = z.object({
+  service: z.literal('iatron-api'),
+  environment: z.enum(['local', 'staging', 'production']),
+  apiSha: z.string().min(1),
+  schemaVersion: z.string().min(1),
+  cloudRunRevision: z.string().nullable(),
+  buildTimestamp: z.iso.datetime(),
+});
+export type ReleaseMeta = z.infer<typeof releaseMetaSchema>;
 
 export const uuidSchema = z.uuid();
 
@@ -1046,6 +1057,36 @@ export const adminOverviewSchema = z.object({
   }),
 });
 export type AdminOverview = z.infer<typeof adminOverviewSchema>;
+
+export const adminOperationsSchema = z.object({
+  generatedAt: z.iso.datetime(),
+  frontendSha: z.string().nullable(),
+  errors5xxLastHour: z.number().int().nonnegative(),
+  recentErrors: z.array(
+    z.object({
+      requestId: z.string(),
+      route: z.string(),
+      errorCode: z.string(),
+      occurredAt: z.iso.datetime(),
+    }),
+  ),
+  dependencies: z.array(
+    z.object({
+      name: z.enum(['supabase', 'openai', 'email']),
+      status: z.enum(['ok', 'degraded']),
+      lastFailureAt: z.iso.datetime().nullable(),
+    }),
+  ),
+  lastIncident: z
+    .object({
+      requestId: z.string(),
+      route: z.string(),
+      errorCode: z.string(),
+      occurredAt: z.iso.datetime(),
+    })
+    .nullable(),
+});
+export type AdminOperations = z.infer<typeof adminOperationsSchema>;
 
 export const adminStudentSummarySchema = z.object({
   id: uuidSchema,

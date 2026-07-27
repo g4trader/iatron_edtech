@@ -1,8 +1,17 @@
 'use client';
-import type { ChatTransport, ChatTransportEvent, SendMessageInput, TutorReference } from '@iatron/contracts';
+import type {
+  ChatTransport,
+  ChatTransportEvent,
+  SendMessageInput,
+  TutorReference,
+} from '@iatron/contracts';
 import { createClient } from '@/lib/supabase/browser';
 
-const apiUrl = () => (process.env.NEXT_PUBLIC_API_URL ?? 'http://127.0.0.1:8080/v1').replace(/\/$/, '');
+const apiUrl = () =>
+  (process.env.NEXT_PUBLIC_API_URL ?? 'http://127.0.0.1:8080/v1').replace(
+    /\/$/,
+    '',
+  );
 
 const referenceTypeLabel: Record<string, string> = {
   profile: 'Seu perfil',
@@ -17,9 +26,7 @@ const referenceTypeLabel: Record<string, string> = {
 
 function referenceTitle(source: TutorReference) {
   const label = source.label.replace(/^Mastery:\s*/i, '');
-  return label === source.label
-    ? label
-    : `Seu progresso em ${label}`;
+  return label === source.label ? label : `Seu progresso em ${label}`;
 }
 
 async function token() {
@@ -29,16 +36,34 @@ async function token() {
 }
 
 export class RealTutorTransport implements ChatTransport {
-  async *sendMessage(input: SendMessageInput): AsyncIterable<ChatTransportEvent> {
+  async *sendMessage(
+    input: SendMessageInput,
+  ): AsyncIterable<ChatTransportEvent> {
     const accessToken = await token();
-    const response = await fetch(`${apiUrl()}/tutor/conversations/${input.conversationId}/messages`, {
-      method: 'POST',
-      headers: { authorization: `Bearer ${accessToken}`, 'content-type': 'application/json' },
-      body: JSON.stringify({ requestId: input.requestId, text: input.text }),
-    });
+    const response = await fetch(
+      `${apiUrl()}/tutor/conversations/${input.conversationId}/messages`,
+      {
+        method: 'POST',
+        headers: {
+          authorization: `Bearer ${accessToken}`,
+          'content-type': 'application/json',
+          'x-request-id': input.requestId,
+          'x-frontend-sha': process.env.NEXT_PUBLIC_BUILD_SHA ?? 'local',
+        },
+        body: JSON.stringify({ requestId: input.requestId, text: input.text }),
+      },
+    );
     if (!response.ok || !response.body) {
-      const payload = await response.json().catch(() => null) as { error?: { message?: string } } | null;
-      yield { type: 'error', requestId: input.requestId, message: payload?.error?.message ?? 'Não foi possível acessar seu mentor agora.' };
+      const payload = (await response.json().catch(() => null)) as {
+        error?: { message?: string };
+      } | null;
+      yield {
+        type: 'error',
+        requestId: input.requestId,
+        message:
+          payload?.error?.message ??
+          'Não foi possível acessar seu mentor agora.',
+      };
       return;
     }
     const reader = response.body.getReader();
@@ -54,8 +79,14 @@ export class RealTutorTransport implements ChatTransport {
         const dataText = frame.match(/^data: (.+)$/m)?.[1];
         if (!event || !dataText) continue;
         const data = JSON.parse(dataText) as Record<string, unknown>;
-        if (event === 'start') yield { type: 'start', requestId: input.requestId };
-        if (event === 'text-delta') yield { type: 'text-delta', requestId: input.requestId, delta: String(data.delta ?? '') };
+        if (event === 'start')
+          yield { type: 'start', requestId: input.requestId };
+        if (event === 'text-delta')
+          yield {
+            type: 'text-delta',
+            requestId: input.requestId,
+            delta: String(data.delta ?? ''),
+          };
         if (event === 'source') {
           const source = data as unknown as TutorReference;
           yield {
@@ -63,18 +94,28 @@ export class RealTutorTransport implements ChatTransport {
             requestId: input.requestId,
             part: {
               type: 'references',
-              items: [{
-                id: source.entityId ?? `${source.type}-${source.label}`,
-                title: referenceTitle(source),
-                source: referenceTypeLabel[source.type] ?? 'Informação da sua preparação',
-                version: 'atual',
-                reviewStatus: 'reviewed',
-              }],
+              items: [
+                {
+                  id: source.entityId ?? `${source.type}-${source.label}`,
+                  title: referenceTitle(source),
+                  source:
+                    referenceTypeLabel[source.type] ??
+                    'Informação da sua preparação',
+                  version: 'atual',
+                  reviewStatus: 'reviewed',
+                },
+              ],
             },
           };
         }
-        if (event === 'complete') yield { type: 'complete', requestId: input.requestId };
-        if (event === 'error') yield { type: 'error', requestId: input.requestId, message: String(data.message ?? 'Resposta interrompida.') };
+        if (event === 'complete')
+          yield { type: 'complete', requestId: input.requestId };
+        if (event === 'error')
+          yield {
+            type: 'error',
+            requestId: input.requestId,
+            message: String(data.message ?? 'Resposta interrompida.'),
+          };
       }
       if (done) return;
     }

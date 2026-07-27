@@ -26,6 +26,9 @@ if (process.env.VERCEL === '1') {
 
 const nextConfig: NextConfig = {
   output: 'standalone',
+  env: {
+    NEXT_PUBLIC_BUILD_SHA: process.env.VERCEL_GIT_COMMIT_SHA ?? 'local',
+  },
   transpilePackages: ['@iatron/ui'],
   turbopack: { root: path.resolve(appDirectory, '../..') },
   typedRoutes: true,

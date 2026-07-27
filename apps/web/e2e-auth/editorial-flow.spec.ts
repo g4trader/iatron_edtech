@@ -467,7 +467,7 @@ test('editor → mentor → admin → estudante: conteúdo versionado e revisão
   });
   expect(expiredSession.status()).toBe(401);
   await expect(expiredSession.json()).resolves.toMatchObject({
-    error: { code: 'INVALID_TOKEN' },
+    error: { code: 'AUTHENTICATION_ERROR' },
   });
   const recovery = await request.post(`${supabaseUrl}/auth/v1/recover`, {
     headers: { apikey: publishableKey },

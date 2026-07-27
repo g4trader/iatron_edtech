@@ -8,6 +8,7 @@ import {
   AdminRepositoryError,
   type AdminRepository,
 } from './admin-repository.js';
+import type { OperationalState } from './observability.js';
 
 const uuid = z.uuid();
 const requestId = (request: FastifyRequest) =>
@@ -63,9 +64,22 @@ function sendAdminError(
             : 503;
   return reply.status(status).send({
     error: {
-      code: error.code,
-      message: error.message,
+      code:
+        status === 403
+          ? 'AUTHORIZATION_ERROR'
+          : status === 404
+            ? 'NOT_FOUND'
+            : status === 429
+              ? 'RATE_LIMITED'
+              : status === 409
+                ? 'CONFLICT'
+                : 'DEPENDENCY_UNAVAILABLE',
+      message:
+        status === 503
+          ? 'Não foi possível concluir esta ação agora.'
+          : error.message,
       requestId: request.id,
+      retryable: status === 429 || status === 503,
     },
   });
 }
@@ -73,6 +87,7 @@ function sendAdminError(
 export async function registerAdminRoutes(
   app: FastifyInstance,
   factory: () => AdminRepository,
+  operations: OperationalState,
 ) {
   const repository = () => factory();
   const execute = async <T>(
@@ -89,6 +104,12 @@ export async function registerAdminRoutes(
 
   app.get('/admin/overview', (request, reply) =>
     execute(request, reply, (repo) => repo.overview(request.auth.userId)),
+  );
+  app.get('/admin/operations', (request, reply) =>
+    execute(request, reply, async (repo) => {
+      await repo.authorize(request.auth.userId);
+      return operations.snapshot();
+    }),
   );
   app.get('/admin/students', (request, reply) =>
     execute(request, reply, (repo) => {

@@ -130,6 +130,49 @@ describe('administrative routes', () => {
     },
   );
 
+  it.each(['student', 'mentor', 'editor'])(
+    'blocks the %s role from operational data',
+    async (role) => {
+      const app = await server(
+        repository({
+          authorize: vi.fn(async () => {
+            throw new AdminRepositoryError(
+              'ADMIN_FORBIDDEN',
+              `${role} forbidden`,
+            );
+          }),
+        }),
+      );
+      expect(
+        (
+          await app.inject({
+            url: '/v1/admin/operations',
+            headers: { authorization: 'Bearer valid' },
+          })
+        ).statusCode,
+      ).toBe(403);
+      await app.close();
+    },
+  );
+
+  it('returns minimized operational data to an admin', async () => {
+    const app = await server(repository());
+    const response = await app.inject({
+      url: '/v1/admin/operations',
+      headers: {
+        authorization: 'Bearer valid',
+        'x-frontend-sha': '068a522',
+      },
+    });
+    expect(response.statusCode).toBe(200);
+    expect(response.json()).toMatchObject({
+      errors5xxLastHour: 0,
+      recentErrors: [],
+    });
+    expect(response.body).not.toMatch(/authorization|cookie|service.?role/i);
+    await app.close();
+  });
+
   it('returns real overview data to an active admin', async () => {
     const app = await server(repository());
     const response = await app.inject({

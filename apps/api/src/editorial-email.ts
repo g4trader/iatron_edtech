@@ -21,9 +21,17 @@ export interface EditorialEmailGateway {
 
 export function createResendEditorialEmailGateway(
   environment: ApiEnvironment,
+  observe: (event: {
+    dependency: 'email';
+    operation: 'send_review_assignment';
+    duration_ms: number;
+    success: boolean;
+    provider_id?: string;
+  }) => void = () => undefined,
 ): EditorialEmailGateway {
   return {
     async sendReviewAssignment(input) {
+      const startedAt = Date.now();
       if (!environment.RESEND_API_KEY)
         throw new Error('RESEND_API_KEY_NOT_CONFIGURED');
       const response = await fetch('https://api.resend.com/emails', {
@@ -46,9 +54,24 @@ export function createResendEditorialEmailGateway(
           ].join(''),
         }),
       });
-      if (!response.ok) throw new Error(`RESEND_${response.status}`);
+      if (!response.ok) {
+        observe({
+          dependency: 'email',
+          operation: 'send_review_assignment',
+          duration_ms: Date.now() - startedAt,
+          success: false,
+        });
+        throw new Error(`RESEND_${response.status}`);
+      }
       const body = (await response.json()) as { id?: string };
       if (!body.id) throw new Error('RESEND_INVALID_RESPONSE');
+      observe({
+        dependency: 'email',
+        operation: 'send_review_assignment',
+        duration_ms: Date.now() - startedAt,
+        success: true,
+        provider_id: body.id,
+      });
       return { providerId: body.id };
     },
   };

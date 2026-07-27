@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
+  adminOperationsSchema,
   answerAssessmentInputSchema,
   availabilityInputSchema,
   competencyCatalogSchema,
@@ -23,6 +24,7 @@ import {
   adminInviteUserSchema,
   adminOverviewSchema,
   medicalSpecialtyDashboardSchema,
+  releaseMetaSchema,
 } from './index.js';
 
 describe('serviceStatusSchema', () => {
@@ -503,5 +505,33 @@ describe('editorial intelligence contracts', () => {
         editorialStatus: 'published',
       }),
     ).toThrow();
+  });
+});
+
+describe('operational contracts', () => {
+  it('accepts public release metadata', () => {
+    expect(
+      releaseMetaSchema.parse({
+        service: 'iatron-api',
+        environment: 'staging',
+        apiSha: 'abc1234',
+        schemaVersion: '202607260001',
+        cloudRunRevision: 'iatron-api-staging-00034-g5b',
+        buildTimestamp: '2026-07-27T10:00:00.000Z',
+      }).environment,
+    ).toBe('staging');
+  });
+
+  it('accepts a minimized operational snapshot', () => {
+    expect(
+      adminOperationsSchema.parse({
+        generatedAt: '2026-07-27T10:00:00.000Z',
+        frontendSha: 'abc1234',
+        errors5xxLastHour: 0,
+        recentErrors: [],
+        dependencies: [{ name: 'supabase', status: 'ok', lastFailureAt: null }],
+        lastIncident: null,
+      }).errors5xxLastHour,
+    ).toBe(0);
   });
 });

@@ -10,10 +10,16 @@ const actions: Record<string, string> = {
 };
 
 export default async function AdminPlatformPage() {
-  const [overview, audit] = await Promise.all([
+  const [overview, operations, meta, audit] = await Promise.all([
     admin.overview(),
+    admin.operations(),
+    admin.meta(),
     admin.audit(),
   ]);
+  const frontendSha =
+    operations.frontendSha ??
+    process.env.VERCEL_GIT_COMMIT_SHA ??
+    'indisponível';
   return (
     <main className="experience-page mx-auto w-full max-w-6xl space-y-7 px-4 py-8 sm:p-8">
       <header>
@@ -29,27 +35,59 @@ export default async function AdminPlatformPage() {
       <section className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
         <div className="state-card">
           <h2>Health</h2>
-          <p>Operacional</p>
+          <p>{overview.platform.health === 'ok' ? 'Operacional' : 'Atenção'}</p>
         </div>
         <div className="state-card">
           <h2>Ready</h2>
-          <p>Pronta para receber tráfego</p>
+          <p>
+            {overview.platform.ready === 'ready'
+              ? 'Pronta para receber tráfego'
+              : 'Indisponível'}
+          </p>
         </div>
         <div className="state-card">
-          <h2>Versão</h2>
-          <p>{overview.platform.buildSha.slice(0, 12)}</p>
+          <h2>Frontend</h2>
+          <p>{frontendSha.slice(0, 12)}</p>
         </div>
         <div className="state-card">
-          <h2>Banco</h2>
-          <p>{overview.platform.migrationBaseline}</p>
+          <h2>API</h2>
+          <p>{meta.apiSha.slice(0, 12)}</p>
+        </div>
+      </section>
+      <section className="grid gap-3 sm:grid-cols-2">
+        <div className="state-card">
+          <h2>Release atual</h2>
+          <p>Ambiente: {meta.environment}</p>
+          <p>Banco: {meta.schemaVersion}</p>
+          <p>Revisão: {meta.cloudRunRevision ?? 'execução local'}</p>
+          <p>
+            Build:{' '}
+            {new Intl.DateTimeFormat('pt-BR', {
+              dateStyle: 'short',
+              timeStyle: 'short',
+            }).format(new Date(meta.buildTimestamp))}
+          </p>
+        </div>
+        <div className="state-card">
+          <h2>Erros recentes</h2>
+          <p>{operations.errors5xxLastHour} respostas 5xx na última hora</p>
+          <p>
+            {operations.lastIncident
+              ? `Último código de suporte: ${operations.lastIncident.requestId.slice(0, 12)}`
+              : 'Nenhum incidente registrado nesta instância.'}
+          </p>
         </div>
       </section>
       <section className="state-card">
-        <h2>Indicadores ainda não disponíveis</h2>
-        <p>
-          Falhas agregadas e latência média dependem de uma fonte consolidada de
-          telemetria. Nenhum número foi estimado para preencher esta tela.
-        </p>
+        <h2>Dependências</h2>
+        <ul>
+          {operations.dependencies.map((dependency) => (
+            <li key={dependency.name}>
+              {dependency.name}:{' '}
+              {dependency.status === 'ok' ? 'operacional' : 'atenção recente'}
+            </li>
+          ))}
+        </ul>
       </section>
       <section className="space-y-3">
         <h2>Auditoria administrativa recente</h2>

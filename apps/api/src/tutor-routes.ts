@@ -19,7 +19,11 @@ const activeRequests = new Map<string, AbortController>();
 let consecutiveFailures = 0;
 let circuitOpenedAt = 0;
 
-function sse(reply: { raw: NodeJS.WritableStream }, event: string, data: unknown) {
+function sse(
+  reply: { raw: NodeJS.WritableStream },
+  event: string,
+  data: unknown,
+) {
   reply.raw.write(`event: ${event}\ndata: ${JSON.stringify(data)}\n\n`);
 }
 
@@ -30,23 +34,34 @@ export async function registerTutorRoutes(
     repositoryFactory: (token: string) => TutorRepository;
     gateway: AiGateway;
     clock?: () => number;
+    onDependencyFailure?: () => void;
   },
 ) {
   const now = options.clock ?? Date.now;
   app.post('/tutor/conversations', async (request, reply) => {
     const body = createTutorConversationSchema.parse(request.body);
-    const id = await options.repositoryFactory(request.auth.accessToken).create(
-      body.mode, body.originType, body.originId,
-    );
+    const id = await options
+      .repositoryFactory(request.auth.accessToken)
+      .create(body.mode, body.originType, body.originId);
     return reply.status(201).send({ id });
   });
   app.get('/tutor/conversations', async (request) =>
-    options.repositoryFactory(request.auth.accessToken).list());
+    options.repositoryFactory(request.auth.accessToken).list(),
+  );
   app.get('/tutor/conversations/:id', async (request, reply) => {
     const id = uuidSchema.parse((request.params as { id: string }).id);
     const repository = options.repositoryFactory(request.auth.accessToken);
     const conversation = await repository.get(id);
-    if (!conversation) return reply.status(404).send({ error: { code: 'NOT_FOUND', message: 'Conversa não encontrada.', requestId: request.id } });
+    if (!conversation)
+      return reply
+        .status(404)
+        .send({
+          error: {
+            code: 'NOT_FOUND',
+            message: 'Conversa não encontrada.',
+            requestId: request.id,
+          },
+        });
     return { ...conversation, messages: await repository.messages(id) };
   });
   app.get('/tutor/conversations/:id/messages', async (request) => {
@@ -59,26 +74,60 @@ export async function registerTutorRoutes(
     return reply.status(204).send();
   });
   app.post('/tutor/generations/:requestId/cancel', async (request, reply) => {
-    const requestId = uuidSchema.parse((request.params as { requestId: string }).requestId);
+    const requestId = uuidSchema.parse(
+      (request.params as { requestId: string }).requestId,
+    );
     activeRequests.get(requestId)?.abort();
     return reply.status(202).send({ cancelled: true });
   });
   app.post('/tutor/conversations/:id/messages', async (request, reply) => {
-    const conversationId = uuidSchema.parse((request.params as { id: string }).id);
+    const conversationId = uuidSchema.parse(
+      (request.params as { id: string }).id,
+    );
     const body = sendTutorMessageSchema.parse(request.body);
     const guardrail = evaluateTutorInput(body.text);
     if (!guardrail.allowed)
-      return reply.status(422).send({ error: { code: guardrail.code, message: guardrail.message, requestId: request.id } });
+      return reply
+        .status(422)
+        .send({
+          error: {
+            code: guardrail.code,
+            message: guardrail.message,
+            requestId: request.id,
+          },
+        });
     if (circuitOpenedAt && now() - circuitOpenedAt < 30_000)
-      return reply.status(503).send({ error: { code: 'AI_CIRCUIT_OPEN', message: 'Tutor temporariamente indisponível.', requestId: request.id } });
+      return reply
+        .status(503)
+        .send({
+          error: {
+            code: 'AI_CIRCUIT_OPEN',
+            message: 'Tutor temporariamente indisponível.',
+            requestId: request.id,
+          },
+        });
 
     const repository = options.repositoryFactory(request.auth.accessToken);
     const conversation = await repository.get(conversationId);
     if (!conversation)
-      return reply.status(404).send({ error: { code: 'NOT_FOUND', message: 'Conversa não encontrada.', requestId: request.id } });
+      return reply
+        .status(404)
+        .send({
+          error: {
+            code: 'NOT_FOUND',
+            message: 'Conversa não encontrada.',
+            requestId: request.id,
+          },
+        });
     const history = await repository.messages(conversationId, 12);
     const context = await repository.context(conversation);
-    await repository.begin(conversationId, body.requestId, body.text, options.environment.OPENAI_MODEL, TUTOR_PROMPT_VERSION);
+    await repository.begin(
+      conversationId,
+      body.requestId,
+      body.text,
+      options.environment.OPENAI_MODEL,
+      TUTOR_PROMPT_VERSION,
+    );
 
     const controller = new AbortController();
     activeRequests.set(body.requestId, controller);
@@ -115,7 +164,10 @@ export async function registerTutorRoutes(
           .filter((message) => message.status === 'complete')
           .map((message) => ({ role: message.role, content: message.content })),
         { role: 'user' as const, content: body.text },
-        { role: 'user' as const, content: `CONTEXTO CONFIÁVEL DO SISTEMA:\n${context.text}` },
+        {
+          role: 'user' as const,
+          content: `CONTEXTO CONFIÁVEL DO SISTEMA:\n${context.text}`,
+        },
       ];
       for await (const event of options.gateway.stream({
         instructions: TUTOR_SYSTEM_PROMPT,
@@ -126,7 +178,10 @@ export async function registerTutorRoutes(
       })) {
         if (event.type === 'delta') {
           content += event.delta;
-          sse(reply, 'text-delta', { requestId: body.requestId, delta: event.delta });
+          sse(reply, 'text-delta', {
+            requestId: body.requestId,
+            delta: event.delta,
+          });
         } else if (event.type === 'completed') {
           responseId = event.responseId;
           usage = event.usage;
@@ -136,6 +191,18 @@ export async function registerTutorRoutes(
         }
       }
       consecutiveFailures = 0;
+      request.log.info(
+        {
+          event: 'dependency_call',
+          dependency: 'openai',
+          operation: 'responses_stream',
+          duration_ms: now() - startedAt,
+          success: true,
+          request_id: request.id,
+          provider_id: responseId,
+        },
+        'dependency_call',
+      );
     } catch (error) {
       if (controller.signal.aborted) {
         status = 'cancelled';
@@ -143,20 +210,44 @@ export async function registerTutorRoutes(
       } else {
         status = content ? 'partial' : 'failed';
         errorCode = 'AI_UPSTREAM_ERROR';
+        options.onDependencyFailure?.();
         consecutiveFailures += 1;
         if (consecutiveFailures >= 3) circuitOpenedAt = now();
-        request.log.error({ err: error, event: 'tutor_generation_failed', requestId: body.requestId }, 'tutor_generation_failed');
+        request.log.error(
+          {
+            event: 'dependency_call',
+            dependency: 'openai',
+            operation: 'responses_stream',
+            duration_ms: now() - startedAt,
+            success: false,
+            request_id: request.id,
+            error_class:
+              error instanceof Error ? error.constructor.name : 'UnknownError',
+          },
+          'tutor_generation_failed',
+        );
       }
     } finally {
       activeRequests.delete(body.requestId);
       await repository.finish({
-        requestId: body.requestId, content, status, responseId, ...usage,
-        latencyMs: now() - startedAt, errorCode, references: context.references,
+        requestId: body.requestId,
+        content,
+        status,
+        responseId,
+        ...usage,
+        latencyMs: now() - startedAt,
+        errorCode,
+        references: context.references,
       });
       sse(reply, status === 'complete' ? 'complete' : 'error', {
         requestId: body.requestId,
         status,
-        message: status === 'cancelled' ? 'Geração cancelada.' : status === 'failed' ? 'Não foi possível gerar a resposta.' : undefined,
+        message:
+          status === 'cancelled'
+            ? 'Geração cancelada.'
+            : status === 'failed'
+              ? 'Não foi possível gerar a resposta.'
+              : undefined,
       });
       reply.raw.end();
     }
