@@ -122,6 +122,63 @@ export type Database = {
           },
         ]
       }
+      assessment_result_areas: {
+        Row: {
+          area_id: string
+          assessment_result_id: string
+          calibrated_safety: string
+          evidence_count: number
+          evidence_quality: string
+          observed_level: string
+          recommended_next_step: string
+          strengths: string[]
+          target_exam_influence: string
+          uncertainties: string[]
+          weaknesses: string[]
+        }
+        Insert: {
+          area_id: string
+          assessment_result_id: string
+          calibrated_safety: string
+          evidence_count: number
+          evidence_quality: string
+          observed_level: string
+          recommended_next_step: string
+          strengths?: string[]
+          target_exam_influence: string
+          uncertainties?: string[]
+          weaknesses?: string[]
+        }
+        Update: {
+          area_id?: string
+          assessment_result_id?: string
+          calibrated_safety?: string
+          evidence_count?: number
+          evidence_quality?: string
+          observed_level?: string
+          recommended_next_step?: string
+          strengths?: string[]
+          target_exam_influence?: string
+          uncertainties?: string[]
+          weaknesses?: string[]
+        }
+        Relationships: [
+          {
+            foreignKeyName: "assessment_result_areas_area_id_fkey"
+            columns: ["area_id"]
+            isOneToOne: false
+            referencedRelation: "specialties"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "assessment_result_areas_assessment_result_id_fkey"
+            columns: ["assessment_result_id"]
+            isOneToOne: false
+            referencedRelation: "assessment_results"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       assessment_result_competencies: {
         Row: {
           assessment_result_id: string
@@ -167,72 +224,15 @@ export type Database = {
           },
         ]
       }
-      assessment_result_areas: {
-        Row: {
-          area_id: string
-          assessment_result_id: string
-          calibrated_safety: string
-          evidence_count: number
-          evidence_quality: string
-          observed_level: string
-          recommended_next_step: string
-          strengths: string[]
-          target_exam_influence: string
-          uncertainties: string[]
-          weaknesses: string[]
-        }
-        Insert: {
-          area_id: string
-          assessment_result_id: string
-          calibrated_safety: string
-          evidence_count: number
-          evidence_quality: string
-          observed_level: string
-          recommended_next_step: string
-          strengths?: string[]
-          target_exam_influence: string
-          uncertainties?: string[]
-          weaknesses?: string[]
-        }
-        Update: {
-          area_id?: string
-          assessment_result_id?: string
-          calibrated_safety?: string
-          evidence_count?: number
-          evidence_quality?: string
-          observed_level?: string
-          recommended_next_step?: string
-          strengths?: string[]
-          target_exam_influence?: string
-          uncertainties?: string[]
-          weaknesses?: string[]
-        }
-        Relationships: [
-          {
-            foreignKeyName: "assessment_result_areas_assessment_result_id_fkey"
-            columns: ["assessment_result_id"]
-            isOneToOne: false
-            referencedRelation: "assessment_results"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "assessment_result_areas_area_id_fkey"
-            columns: ["area_id"]
-            isOneToOne: false
-            referencedRelation: "specialties"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
       assessment_results: {
         Row: {
           algorithm_version: string
           answered_count: number
           assessment_id: string
+          completion_reason: string | null
           correct_count: number
           created_at: string
           diagnostic_coverage: number
-          completion_reason: string | null
           evidence_sufficient: boolean
           id: string
           overall_confidence: number
@@ -242,10 +242,10 @@ export type Database = {
           algorithm_version: string
           answered_count: number
           assessment_id: string
+          completion_reason?: string | null
           correct_count: number
           created_at?: string
           diagnostic_coverage: number
-          completion_reason?: string | null
           evidence_sufficient?: boolean
           id?: string
           overall_confidence: number
@@ -255,10 +255,10 @@ export type Database = {
           algorithm_version?: string
           answered_count?: number
           assessment_id?: string
+          completion_reason?: string | null
           correct_count?: number
           created_at?: string
           diagnostic_coverage?: number
-          completion_reason?: string | null
           evidence_sufficient?: boolean
           id?: string
           overall_confidence?: number
@@ -396,18 +396,398 @@ export type Database = {
           },
         ]
       }
+      competency_specialties: {
+        Row: {
+          competency_id: string
+          created_at: string
+          relationship: string
+          specialty_id: string
+        }
+        Insert: {
+          competency_id: string
+          created_at?: string
+          relationship?: string
+          specialty_id: string
+        }
+        Update: {
+          competency_id?: string
+          created_at?: string
+          relationship?: string
+          specialty_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "competency_specialties_competency_id_fkey"
+            columns: ["competency_id"]
+            isOneToOne: false
+            referencedRelation: "competencies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "competency_specialties_specialty_id_fkey"
+            columns: ["specialty_id"]
+            isOneToOne: false
+            referencedRelation: "specialties"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      content_generation_jobs: {
+        Row: {
+          briefing: Json
+          briefing_hash: string
+          completed_at: string | null
+          content_id: string | null
+          created_at: string
+          error_code: string | null
+          estimated_cost: number | null
+          id: string
+          input_tokens: number | null
+          model: string
+          output_tokens: number | null
+          prompt_version: string
+          requested_by: string
+          retry_count: number
+          status: string
+        }
+        Insert: {
+          briefing: Json
+          briefing_hash: string
+          completed_at?: string | null
+          content_id?: string | null
+          created_at?: string
+          error_code?: string | null
+          estimated_cost?: number | null
+          id?: string
+          input_tokens?: number | null
+          model: string
+          output_tokens?: number | null
+          prompt_version: string
+          requested_by: string
+          retry_count?: number
+          status: string
+        }
+        Update: {
+          briefing?: Json
+          briefing_hash?: string
+          completed_at?: string | null
+          content_id?: string | null
+          created_at?: string
+          error_code?: string | null
+          estimated_cost?: number | null
+          id?: string
+          input_tokens?: number | null
+          model?: string
+          output_tokens?: number | null
+          prompt_version?: string
+          requested_by?: string
+          retry_count?: number
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "content_generation_jobs_content_id_fkey"
+            columns: ["content_id"]
+            isOneToOne: false
+            referencedRelation: "learning_contents"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "content_generation_jobs_requested_by_fkey"
+            columns: ["requested_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      content_import_batches: {
+        Row: {
+          board_code: string
+          completed_at: string | null
+          created_by: string
+          error_message: string | null
+          id: string
+          import_key: string
+          payload_hash: string
+          question_count: number
+          source_kind: string
+          started_at: string
+          status: string
+        }
+        Insert: {
+          board_code: string
+          completed_at?: string | null
+          created_by: string
+          error_message?: string | null
+          id?: string
+          import_key: string
+          payload_hash: string
+          question_count?: number
+          source_kind: string
+          started_at?: string
+          status?: string
+        }
+        Update: {
+          board_code?: string
+          completed_at?: string | null
+          created_by?: string
+          error_message?: string | null
+          id?: string
+          import_key?: string
+          payload_hash?: string
+          question_count?: number
+          source_kind?: string
+          started_at?: string
+          status?: string
+        }
+        Relationships: []
+      }
+      content_reference_specialties: {
+        Row: {
+          created_at: string
+          reference_id: string
+          specialty_id: string
+        }
+        Insert: {
+          created_at?: string
+          reference_id: string
+          specialty_id: string
+        }
+        Update: {
+          created_at?: string
+          reference_id?: string
+          specialty_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "content_reference_specialties_reference_id_fkey"
+            columns: ["reference_id"]
+            isOneToOne: false
+            referencedRelation: "content_references"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "content_reference_specialties_specialty_id_fkey"
+            columns: ["specialty_id"]
+            isOneToOne: false
+            referencedRelation: "specialties"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      content_references: {
+        Row: {
+          accessed_on: string | null
+          authors_or_organization: string | null
+          created_at: string
+          doi: string | null
+          edition: string | null
+          id: string
+          isbn: string | null
+          notes: string | null
+          origin: string
+          pmid: string | null
+          publication_year: number | null
+          publisher: string | null
+          reference_type: string
+          title: string
+          url: string | null
+          verification_status: string
+          verified_at: string | null
+          verified_by: string | null
+        }
+        Insert: {
+          accessed_on?: string | null
+          authors_or_organization?: string | null
+          created_at?: string
+          doi?: string | null
+          edition?: string | null
+          id?: string
+          isbn?: string | null
+          notes?: string | null
+          origin: string
+          pmid?: string | null
+          publication_year?: number | null
+          publisher?: string | null
+          reference_type: string
+          title: string
+          url?: string | null
+          verification_status: string
+          verified_at?: string | null
+          verified_by?: string | null
+        }
+        Update: {
+          accessed_on?: string | null
+          authors_or_organization?: string | null
+          created_at?: string
+          doi?: string | null
+          edition?: string | null
+          id?: string
+          isbn?: string | null
+          notes?: string | null
+          origin?: string
+          pmid?: string | null
+          publication_year?: number | null
+          publisher?: string | null
+          reference_type?: string
+          title?: string
+          url?: string | null
+          verification_status?: string
+          verified_at?: string | null
+          verified_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "content_references_verified_by_fkey"
+            columns: ["verified_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      content_review_requests: {
+        Row: {
+          active: boolean
+          content_id: string
+          id: string
+          last_requested_at: string
+          requested_at: string
+          student_id: string
+          version_id: string
+          withdrawn_at: string | null
+        }
+        Insert: {
+          active?: boolean
+          content_id: string
+          id?: string
+          last_requested_at?: string
+          requested_at?: string
+          student_id: string
+          version_id: string
+          withdrawn_at?: string | null
+        }
+        Update: {
+          active?: boolean
+          content_id?: string
+          id?: string
+          last_requested_at?: string
+          requested_at?: string
+          student_id?: string
+          version_id?: string
+          withdrawn_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "content_review_requests_content_id_fkey"
+            columns: ["content_id"]
+            isOneToOne: false
+            referencedRelation: "learning_contents"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "content_review_requests_student_id_fkey"
+            columns: ["student_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "content_review_requests_version_id_fkey"
+            columns: ["version_id"]
+            isOneToOne: false
+            referencedRelation: "learning_content_versions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      content_reviews: {
+        Row: {
+          comment: string | null
+          content_id: string
+          created_at: string
+          decision: string
+          declaration: string | null
+          id: string
+          issue_category: string | null
+          mentor_id: string
+          observed_references: Json
+          request_id: string
+          safe_context: Json
+          version_hash: string
+          version_id: string
+        }
+        Insert: {
+          comment?: string | null
+          content_id: string
+          created_at?: string
+          decision: string
+          declaration?: string | null
+          id?: string
+          issue_category?: string | null
+          mentor_id: string
+          observed_references?: Json
+          request_id: string
+          safe_context?: Json
+          version_hash: string
+          version_id: string
+        }
+        Update: {
+          comment?: string | null
+          content_id?: string
+          created_at?: string
+          decision?: string
+          declaration?: string | null
+          id?: string
+          issue_category?: string | null
+          mentor_id?: string
+          observed_references?: Json
+          request_id?: string
+          safe_context?: Json
+          version_hash?: string
+          version_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "content_reviews_content_id_fkey"
+            columns: ["content_id"]
+            isOneToOne: false
+            referencedRelation: "learning_contents"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "content_reviews_mentor_id_fkey"
+            columns: ["mentor_id"]
+            isOneToOne: false
+            referencedRelation: "mentor_profiles"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "content_reviews_version_id_fkey"
+            columns: ["version_id"]
+            isOneToOne: false
+            referencedRelation: "learning_content_versions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       diagnostic_assessments: {
         Row: {
           algorithm: string
           algorithm_version: string
+          blueprint_version: string | null
           completed_at: string | null
           created_at: string
+          current_block: number
           diagnostic_coverage: number | null
           duration_minutes: number
           exam_program_id: string | null
           id: string
+          mode: string
           objective: string
           overall_confidence: number | null
+          paused_at: string | null
           policy_version: string
           question_count: number
           specialty_id: string | null
@@ -418,14 +798,18 @@ export type Database = {
         Insert: {
           algorithm?: string
           algorithm_version?: string
+          blueprint_version?: string | null
           completed_at?: string | null
           created_at?: string
+          current_block?: number
           diagnostic_coverage?: number | null
           duration_minutes: number
           exam_program_id?: string | null
           id?: string
+          mode?: string
           objective: string
           overall_confidence?: number | null
+          paused_at?: string | null
           policy_version?: string
           question_count: number
           specialty_id?: string | null
@@ -436,14 +820,18 @@ export type Database = {
         Update: {
           algorithm?: string
           algorithm_version?: string
+          blueprint_version?: string | null
           completed_at?: string | null
           created_at?: string
+          current_block?: number
           diagnostic_coverage?: number | null
           duration_minutes?: number
           exam_program_id?: string | null
           id?: string
+          mode?: string
           objective?: string
           overall_confidence?: number | null
+          paused_at?: string | null
           policy_version?: string
           question_count?: number
           specialty_id?: string | null
@@ -478,6 +866,460 @@ export type Database = {
             columns: ["student_id"]
             isOneToOne: false
             referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      diagnostic_blueprint_competencies: {
+        Row: {
+          blueprint_id: string
+          competency_id: string
+          expected_difficulties: number[]
+          is_required: boolean
+          minimum_evidence: number
+          notes: string | null
+          question_styles: string[]
+          specialty_id: string
+          weight: number
+        }
+        Insert: {
+          blueprint_id: string
+          competency_id: string
+          expected_difficulties?: number[]
+          is_required?: boolean
+          minimum_evidence?: number
+          notes?: string | null
+          question_styles?: string[]
+          specialty_id: string
+          weight?: number
+        }
+        Update: {
+          blueprint_id?: string
+          competency_id?: string
+          expected_difficulties?: number[]
+          is_required?: boolean
+          minimum_evidence?: number
+          notes?: string | null
+          question_styles?: string[]
+          specialty_id?: string
+          weight?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "diagnostic_blueprint_competencies_blueprint_id_fkey"
+            columns: ["blueprint_id"]
+            isOneToOne: false
+            referencedRelation: "exam_blueprints"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "diagnostic_blueprint_competencies_competency_id_fkey"
+            columns: ["competency_id"]
+            isOneToOne: false
+            referencedRelation: "competencies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "diagnostic_blueprint_competencies_specialty_id_fkey"
+            columns: ["specialty_id"]
+            isOneToOne: false
+            referencedRelation: "specialties"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      diagnostic_coverage_policies: {
+        Row: {
+          duration_minutes: number
+          is_synthetic: boolean
+          limitations: string[]
+          maximum_questions_per_session: number
+          maximum_total_questions: number
+          minimum_competencies_per_area: number
+          minimum_difficulty_levels_per_area: number
+          minimum_questions_per_area: number
+          minimum_sufficiency: number
+          mode: string
+          pause_allowed: boolean
+          valid_from: string
+          valid_until: string | null
+          version: string
+        }
+        Insert: {
+          duration_minutes: number
+          is_synthetic: boolean
+          limitations?: string[]
+          maximum_questions_per_session: number
+          maximum_total_questions: number
+          minimum_competencies_per_area: number
+          minimum_difficulty_levels_per_area: number
+          minimum_questions_per_area: number
+          minimum_sufficiency: number
+          mode: string
+          pause_allowed: boolean
+          valid_from: string
+          valid_until?: string | null
+          version: string
+        }
+        Update: {
+          duration_minutes?: number
+          is_synthetic?: boolean
+          limitations?: string[]
+          maximum_questions_per_session?: number
+          maximum_total_questions?: number
+          minimum_competencies_per_area?: number
+          minimum_difficulty_levels_per_area?: number
+          minimum_questions_per_area?: number
+          minimum_sufficiency?: number
+          mode?: string
+          pause_allowed?: boolean
+          valid_from?: string
+          valid_until?: string | null
+          version?: string
+        }
+        Relationships: []
+      }
+      diagnostic_editorial_gaps: {
+        Row: {
+          area_id: string | null
+          assessment_id: string
+          created_at: string
+          id: string
+          missing_evidence: number
+          reason: string
+        }
+        Insert: {
+          area_id?: string | null
+          assessment_id: string
+          created_at?: string
+          id?: string
+          missing_evidence: number
+          reason: string
+        }
+        Update: {
+          area_id?: string | null
+          assessment_id?: string
+          created_at?: string
+          id?: string
+          missing_evidence?: number
+          reason?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "diagnostic_editorial_gaps_area_id_fkey"
+            columns: ["area_id"]
+            isOneToOne: false
+            referencedRelation: "specialties"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "diagnostic_editorial_gaps_assessment_id_fkey"
+            columns: ["assessment_id"]
+            isOneToOne: false
+            referencedRelation: "diagnostic_assessments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      diagnostic_question_eligibility: {
+        Row: {
+          answer_key_validated: boolean
+          diagnostic_eligible: boolean
+          editorial_note: string
+          provenance_kind: string
+          question_version_id: string
+          validated_at: string | null
+        }
+        Insert: {
+          answer_key_validated?: boolean
+          diagnostic_eligible?: boolean
+          editorial_note: string
+          provenance_kind: string
+          question_version_id: string
+          validated_at?: string | null
+        }
+        Update: {
+          answer_key_validated?: boolean
+          diagnostic_eligible?: boolean
+          editorial_note?: string
+          provenance_kind?: string
+          question_version_id?: string
+          validated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "diagnostic_question_eligibility_question_version_id_fkey"
+            columns: ["question_version_id"]
+            isOneToOne: true
+            referencedRelation: "question_versions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      editorial_audit_events: {
+        Row: {
+          action: string
+          actor_id: string
+          actor_role: string
+          created_at: string
+          id: string
+          metadata: Json
+          next_state: string | null
+          previous_state: string | null
+          request_id: string
+          resource_id: string
+          resource_type: string
+          resource_version_id: string | null
+        }
+        Insert: {
+          action: string
+          actor_id: string
+          actor_role: string
+          created_at?: string
+          id?: string
+          metadata?: Json
+          next_state?: string | null
+          previous_state?: string | null
+          request_id: string
+          resource_id: string
+          resource_type: string
+          resource_version_id?: string | null
+        }
+        Update: {
+          action?: string
+          actor_id?: string
+          actor_role?: string
+          created_at?: string
+          id?: string
+          metadata?: Json
+          next_state?: string | null
+          previous_state?: string | null
+          request_id?: string
+          resource_id?: string
+          resource_type?: string
+          resource_version_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "editorial_audit_events_actor_id_fkey"
+            columns: ["actor_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      editorial_email_events: {
+        Row: {
+          content_id: string | null
+          created_at: string
+          error_code: string | null
+          event_type: string
+          id: string
+          idempotency_key: string
+          provider_id: string | null
+          recipient_id: string
+          version_id: string | null
+        }
+        Insert: {
+          content_id?: string | null
+          created_at?: string
+          error_code?: string | null
+          event_type: string
+          id?: string
+          idempotency_key: string
+          provider_id?: string | null
+          recipient_id: string
+          version_id?: string | null
+        }
+        Update: {
+          content_id?: string | null
+          created_at?: string
+          error_code?: string | null
+          event_type?: string
+          id?: string
+          idempotency_key?: string
+          provider_id?: string | null
+          recipient_id?: string
+          version_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "editorial_email_events_content_id_fkey"
+            columns: ["content_id"]
+            isOneToOne: false
+            referencedRelation: "learning_contents"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "editorial_email_events_recipient_id_fkey"
+            columns: ["recipient_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "editorial_email_events_version_id_fkey"
+            columns: ["version_id"]
+            isOneToOne: false
+            referencedRelation: "learning_content_versions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      editorial_notifications: {
+        Row: {
+          body: string
+          created_at: string
+          id: string
+          notification_type: string
+          read_at: string | null
+          recipient_id: string
+          resource_id: string | null
+          title: string
+        }
+        Insert: {
+          body: string
+          created_at?: string
+          id?: string
+          notification_type: string
+          read_at?: string | null
+          recipient_id: string
+          resource_id?: string | null
+          title: string
+        }
+        Update: {
+          body?: string
+          created_at?: string
+          id?: string
+          notification_type?: string
+          read_at?: string | null
+          recipient_id?: string
+          resource_id?: string | null
+          title?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "editorial_notifications_recipient_id_fkey"
+            columns: ["recipient_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      exam_blueprint_areas: {
+        Row: {
+          blueprint_id: string
+          expected_proportion: number
+          expected_question_count: number | null
+          notes: string | null
+          position: number
+          specialty_id: string
+          weight: number | null
+        }
+        Insert: {
+          blueprint_id: string
+          expected_proportion: number
+          expected_question_count?: number | null
+          notes?: string | null
+          position: number
+          specialty_id: string
+          weight?: number | null
+        }
+        Update: {
+          blueprint_id?: string
+          expected_proportion?: number
+          expected_question_count?: number | null
+          notes?: string | null
+          position?: number
+          specialty_id?: string
+          weight?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "exam_blueprint_areas_blueprint_id_fkey"
+            columns: ["blueprint_id"]
+            isOneToOne: false
+            referencedRelation: "exam_blueprints"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "exam_blueprint_areas_specialty_id_fkey"
+            columns: ["specialty_id"]
+            isOneToOne: false
+            referencedRelation: "specialties"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      exam_blueprints: {
+        Row: {
+          confidence: string
+          correction_rules: string
+          created_at: string
+          duration_minutes: number | null
+          editorial_status: string
+          expected_question_count: number | null
+          format_description: string
+          id: string
+          is_active: boolean
+          is_synthetic: boolean
+          notes: string | null
+          period_end: string | null
+          period_start: string | null
+          profile_id: string
+          source_title: string
+          source_url: string | null
+          updated_at: string
+          version: number
+        }
+        Insert: {
+          confidence: string
+          correction_rules: string
+          created_at?: string
+          duration_minutes?: number | null
+          editorial_status: string
+          expected_question_count?: number | null
+          format_description: string
+          id?: string
+          is_active?: boolean
+          is_synthetic: boolean
+          notes?: string | null
+          period_end?: string | null
+          period_start?: string | null
+          profile_id: string
+          source_title: string
+          source_url?: string | null
+          updated_at?: string
+          version: number
+        }
+        Update: {
+          confidence?: string
+          correction_rules?: string
+          created_at?: string
+          duration_minutes?: number | null
+          editorial_status?: string
+          expected_question_count?: number | null
+          format_description?: string
+          id?: string
+          is_active?: boolean
+          is_synthetic?: boolean
+          notes?: string | null
+          period_end?: string | null
+          period_start?: string | null
+          profile_id?: string
+          source_title?: string
+          source_url?: string | null
+          updated_at?: string
+          version?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "exam_blueprints_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "exam_intelligence_profiles"
             referencedColumns: ["id"]
           },
         ]
@@ -592,6 +1434,101 @@ export type Database = {
           },
           {
             foreignKeyName: "exam_editions_exam_program_id_fkey"
+            columns: ["exam_program_id"]
+            isOneToOne: false
+            referencedRelation: "exam_programs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      exam_intelligence_profiles: {
+        Row: {
+          analysis_period_end: string | null
+          analysis_period_start: string | null
+          confidence: string
+          coverage: number
+          created_at: string
+          display_name: string
+          editorial_status: string
+          exam_program_id: string
+          exams_analyzed: number
+          id: string
+          is_active: boolean
+          is_synthetic: boolean
+          last_updated_at: string
+          limitations: string[]
+          method_version: string
+          notes: string | null
+          questions_analyzed: number
+          responsible_editorial: string
+          responsible_statistical: string | null
+          source_origin: string
+          source_title: string
+          source_url: string | null
+          updated_at: string
+          valid_from: string
+          valid_until: string | null
+          version: number
+        }
+        Insert: {
+          analysis_period_end?: string | null
+          analysis_period_start?: string | null
+          confidence: string
+          coverage?: number
+          created_at?: string
+          display_name: string
+          editorial_status: string
+          exam_program_id: string
+          exams_analyzed?: number
+          id?: string
+          is_active?: boolean
+          is_synthetic: boolean
+          last_updated_at: string
+          limitations?: string[]
+          method_version: string
+          notes?: string | null
+          questions_analyzed?: number
+          responsible_editorial: string
+          responsible_statistical?: string | null
+          source_origin: string
+          source_title: string
+          source_url?: string | null
+          updated_at?: string
+          valid_from: string
+          valid_until?: string | null
+          version: number
+        }
+        Update: {
+          analysis_period_end?: string | null
+          analysis_period_start?: string | null
+          confidence?: string
+          coverage?: number
+          created_at?: string
+          display_name?: string
+          editorial_status?: string
+          exam_program_id?: string
+          exams_analyzed?: number
+          id?: string
+          is_active?: boolean
+          is_synthetic?: boolean
+          last_updated_at?: string
+          limitations?: string[]
+          method_version?: string
+          notes?: string | null
+          questions_analyzed?: number
+          responsible_editorial?: string
+          responsible_statistical?: string | null
+          source_origin?: string
+          source_title?: string
+          source_url?: string | null
+          updated_at?: string
+          valid_from?: string
+          valid_until?: string | null
+          version?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "exam_intelligence_profiles_exam_program_id_fkey"
             columns: ["exam_program_id"]
             isOneToOne: false
             referencedRelation: "exam_programs"
@@ -722,6 +1659,13 @@ export type Database = {
             foreignKeyName: "exam_questions_exam_edition_id_fkey"
             columns: ["exam_edition_id"]
             isOneToOne: false
+            referencedRelation: "amrigs_content_metadata"
+            referencedColumns: ["exam_edition_id"]
+          },
+          {
+            foreignKeyName: "exam_questions_exam_edition_id_fkey"
+            columns: ["exam_edition_id"]
+            isOneToOne: false
             referencedRelation: "exam_editions"
             referencedColumns: ["id"]
           },
@@ -738,6 +1682,132 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "question_versions"
             referencedColumns: ["id", "question_id"]
+          },
+        ]
+      }
+      exam_recurrence_statistics: {
+        Row: {
+          area_id: string | null
+          competency_id: string | null
+          confidence: string
+          coverage: number
+          created_at: string
+          denominator: number
+          dimension_key: string | null
+          dimension_type: string
+          editorial_status: string
+          id: string
+          is_synthetic: boolean
+          last_updated_at: string
+          limitations: string[]
+          method_version: string
+          missing_data: string[]
+          occurrences: number
+          origin: string
+          period_end: string | null
+          period_start: string | null
+          profile_id: string
+          relevance: string
+          responsible_statistical: string | null
+          sample_size: number
+          sample_unit: string
+          subtheme_id: string | null
+          theme_id: string | null
+          version: number
+        }
+        Insert: {
+          area_id?: string | null
+          competency_id?: string | null
+          confidence: string
+          coverage: number
+          created_at?: string
+          denominator: number
+          dimension_key?: string | null
+          dimension_type: string
+          editorial_status: string
+          id?: string
+          is_synthetic: boolean
+          last_updated_at: string
+          limitations?: string[]
+          method_version: string
+          missing_data?: string[]
+          occurrences: number
+          origin: string
+          period_end?: string | null
+          period_start?: string | null
+          profile_id: string
+          relevance: string
+          responsible_statistical?: string | null
+          sample_size: number
+          sample_unit: string
+          subtheme_id?: string | null
+          theme_id?: string | null
+          version: number
+        }
+        Update: {
+          area_id?: string | null
+          competency_id?: string | null
+          confidence?: string
+          coverage?: number
+          created_at?: string
+          denominator?: number
+          dimension_key?: string | null
+          dimension_type?: string
+          editorial_status?: string
+          id?: string
+          is_synthetic?: boolean
+          last_updated_at?: string
+          limitations?: string[]
+          method_version?: string
+          missing_data?: string[]
+          occurrences?: number
+          origin?: string
+          period_end?: string | null
+          period_start?: string | null
+          profile_id?: string
+          relevance?: string
+          responsible_statistical?: string | null
+          sample_size?: number
+          sample_unit?: string
+          subtheme_id?: string | null
+          theme_id?: string | null
+          version?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "exam_recurrence_statistics_area_id_fkey"
+            columns: ["area_id"]
+            isOneToOne: false
+            referencedRelation: "medical_areas"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "exam_recurrence_statistics_competency_id_fkey"
+            columns: ["competency_id"]
+            isOneToOne: false
+            referencedRelation: "competencies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "exam_recurrence_statistics_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "exam_intelligence_profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "exam_recurrence_statistics_subtheme_id_fkey"
+            columns: ["subtheme_id"]
+            isOneToOne: false
+            referencedRelation: "subthemes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "exam_recurrence_statistics_theme_id_fkey"
+            columns: ["theme_id"]
+            isOneToOne: false
+            referencedRelation: "themes"
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -913,6 +1983,309 @@ export type Database = {
           updated_at?: string
         }
         Relationships: []
+      }
+      learning_content_version_references: {
+        Row: {
+          is_required: boolean
+          position: number
+          reference_id: string
+          version_id: string
+        }
+        Insert: {
+          is_required?: boolean
+          position?: number
+          reference_id: string
+          version_id: string
+        }
+        Update: {
+          is_required?: boolean
+          position?: number
+          reference_id?: string
+          version_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "learning_content_version_references_reference_id_fkey"
+            columns: ["reference_id"]
+            isOneToOne: false
+            referencedRelation: "content_references"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "learning_content_version_references_version_id_fkey"
+            columns: ["version_id"]
+            isOneToOne: false
+            referencedRelation: "learning_content_versions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      learning_content_versions: {
+        Row: {
+          ai_assisted: boolean
+          ai_model: string | null
+          author_id: string
+          clinical_reasoning: string | null
+          common_mistakes: Json
+          conclusion: string | null
+          content_hash: string
+          content_id: string
+          created_at: string
+          editorial_reviewer_id: string | null
+          editorial_status: string
+          estimated_cost: number | null
+          estimated_minutes: number
+          exam_application: string | null
+          generation_id: string | null
+          id: string
+          input_tokens: number | null
+          is_synthetic: boolean
+          key_points: Json
+          language: string
+          objectives: Json
+          output_tokens: number | null
+          prompt_version: string | null
+          provenance: Json
+          published_at: string | null
+          quick_review: Json
+          reviewed_at: string | null
+          schema_version: number
+          sections: Json
+          subtitle: string | null
+          summary: string
+          title: string
+          valid_from: string | null
+          valid_until: string | null
+          version_number: number
+          video: Json | null
+        }
+        Insert: {
+          ai_assisted?: boolean
+          ai_model?: string | null
+          author_id: string
+          clinical_reasoning?: string | null
+          common_mistakes?: Json
+          conclusion?: string | null
+          content_hash: string
+          content_id: string
+          created_at?: string
+          editorial_reviewer_id?: string | null
+          editorial_status: string
+          estimated_cost?: number | null
+          estimated_minutes: number
+          exam_application?: string | null
+          generation_id?: string | null
+          id?: string
+          input_tokens?: number | null
+          is_synthetic?: boolean
+          key_points?: Json
+          language?: string
+          objectives?: Json
+          output_tokens?: number | null
+          prompt_version?: string | null
+          provenance?: Json
+          published_at?: string | null
+          quick_review?: Json
+          reviewed_at?: string | null
+          schema_version?: number
+          sections?: Json
+          subtitle?: string | null
+          summary: string
+          title: string
+          valid_from?: string | null
+          valid_until?: string | null
+          version_number: number
+          video?: Json | null
+        }
+        Update: {
+          ai_assisted?: boolean
+          ai_model?: string | null
+          author_id?: string
+          clinical_reasoning?: string | null
+          common_mistakes?: Json
+          conclusion?: string | null
+          content_hash?: string
+          content_id?: string
+          created_at?: string
+          editorial_reviewer_id?: string | null
+          editorial_status?: string
+          estimated_cost?: number | null
+          estimated_minutes?: number
+          exam_application?: string | null
+          generation_id?: string | null
+          id?: string
+          input_tokens?: number | null
+          is_synthetic?: boolean
+          key_points?: Json
+          language?: string
+          objectives?: Json
+          output_tokens?: number | null
+          prompt_version?: string | null
+          provenance?: Json
+          published_at?: string | null
+          quick_review?: Json
+          reviewed_at?: string | null
+          schema_version?: number
+          sections?: Json
+          subtitle?: string | null
+          summary?: string
+          title?: string
+          valid_from?: string | null
+          valid_until?: string | null
+          version_number?: number
+          video?: Json | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "learning_content_versions_author_id_fkey"
+            columns: ["author_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "learning_content_versions_content_id_fkey"
+            columns: ["content_id"]
+            isOneToOne: false
+            referencedRelation: "learning_contents"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "learning_content_versions_editorial_reviewer_id_fkey"
+            columns: ["editorial_reviewer_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      learning_contents: {
+        Row: {
+          archived_at: string | null
+          area_id: string | null
+          assigned_mentor_id: string | null
+          canonical_key: string
+          competency_id: string | null
+          created_at: string
+          created_by: string
+          current_published_version_id: string | null
+          exam_program_id: string | null
+          guideline_id: string | null
+          id: string
+          slug: string
+          specialty_id: string
+          subtheme_id: string | null
+          theme_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          archived_at?: string | null
+          area_id?: string | null
+          assigned_mentor_id?: string | null
+          canonical_key: string
+          competency_id?: string | null
+          created_at?: string
+          created_by: string
+          current_published_version_id?: string | null
+          exam_program_id?: string | null
+          guideline_id?: string | null
+          id?: string
+          slug: string
+          specialty_id: string
+          subtheme_id?: string | null
+          theme_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          archived_at?: string | null
+          area_id?: string | null
+          assigned_mentor_id?: string | null
+          canonical_key?: string
+          competency_id?: string | null
+          created_at?: string
+          created_by?: string
+          current_published_version_id?: string | null
+          exam_program_id?: string | null
+          guideline_id?: string | null
+          id?: string
+          slug?: string
+          specialty_id?: string
+          subtheme_id?: string | null
+          theme_id?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "learning_contents_area_id_fkey"
+            columns: ["area_id"]
+            isOneToOne: false
+            referencedRelation: "medical_areas"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "learning_contents_assigned_mentor_id_fkey"
+            columns: ["assigned_mentor_id"]
+            isOneToOne: false
+            referencedRelation: "mentor_profiles"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "learning_contents_competency_id_fkey"
+            columns: ["competency_id"]
+            isOneToOne: false
+            referencedRelation: "competencies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "learning_contents_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "learning_contents_current_version_fk"
+            columns: ["current_published_version_id", "id"]
+            isOneToOne: false
+            referencedRelation: "learning_content_versions"
+            referencedColumns: ["id", "content_id"]
+          },
+          {
+            foreignKeyName: "learning_contents_exam_program_id_fkey"
+            columns: ["exam_program_id"]
+            isOneToOne: false
+            referencedRelation: "exam_programs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "learning_contents_guideline_id_fkey"
+            columns: ["guideline_id"]
+            isOneToOne: false
+            referencedRelation: "guidelines"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "learning_contents_specialty_id_fkey"
+            columns: ["specialty_id"]
+            isOneToOne: false
+            referencedRelation: "specialties"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "learning_contents_subtheme_id_fkey"
+            columns: ["subtheme_id"]
+            isOneToOne: false
+            referencedRelation: "subthemes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "learning_contents_theme_id_fkey"
+            columns: ["theme_id"]
+            isOneToOne: false
+            referencedRelation: "themes"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       learning_dna_policies: {
         Row: {
@@ -1096,8 +2469,6 @@ export type Database = {
           difficulty: number
           id: string
           is_correct: boolean
-          evidence_algorithm_version: string | null
-          evidence_signal: string | null
           observed_at: string
           response_time_ms: number | null
           source_event_id: string
@@ -1248,6 +2619,158 @@ export type Database = {
         }
         Relationships: []
       }
+      medical_specialty_owners: {
+        Row: {
+          authorization_reference: string
+          authorized_by: string | null
+          created_at: string
+          ends_at: string | null
+          mentor_id: string
+          owner_role: string
+          specialty_id: string
+          starts_at: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          authorization_reference: string
+          authorized_by?: string | null
+          created_at?: string
+          ends_at?: string | null
+          mentor_id: string
+          owner_role: string
+          specialty_id: string
+          starts_at?: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          authorization_reference?: string
+          authorized_by?: string | null
+          created_at?: string
+          ends_at?: string | null
+          mentor_id?: string
+          owner_role?: string
+          specialty_id?: string
+          starts_at?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "medical_specialty_owners_authorized_by_fkey"
+            columns: ["authorized_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "medical_specialty_owners_mentor_id_fkey"
+            columns: ["mentor_id"]
+            isOneToOne: false
+            referencedRelation: "mentor_profiles"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "medical_specialty_owners_specialty_id_fkey"
+            columns: ["specialty_id"]
+            isOneToOne: false
+            referencedRelation: "specialties"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      mentor_profiles: {
+        Row: {
+          authorization_status: string
+          created_at: string
+          mfa_required: boolean
+          professional_name: string
+          professional_registration: string | null
+          specialty_id: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          authorization_status?: string
+          created_at?: string
+          mfa_required?: boolean
+          professional_name: string
+          professional_registration?: string | null
+          specialty_id?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          authorization_status?: string
+          created_at?: string
+          mfa_required?: boolean
+          professional_name?: string
+          professional_registration?: string | null
+          specialty_id?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "mentor_profiles_specialty_id_fkey"
+            columns: ["specialty_id"]
+            isOneToOne: false
+            referencedRelation: "specialties"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "mentor_profiles_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: true
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      plan_item_material_versions: {
+        Row: {
+          assigned_at: string
+          content_id: string
+          plan_item_id: string
+          version_id: string
+        }
+        Insert: {
+          assigned_at?: string
+          content_id: string
+          plan_item_id: string
+          version_id: string
+        }
+        Update: {
+          assigned_at?: string
+          content_id?: string
+          plan_item_id?: string
+          version_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "plan_item_material_versions_content_id_fkey"
+            columns: ["content_id"]
+            isOneToOne: false
+            referencedRelation: "learning_contents"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "plan_item_material_versions_plan_item_id_fkey"
+            columns: ["plan_item_id"]
+            isOneToOne: true
+            referencedRelation: "study_plan_items"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "plan_item_material_versions_version_id_fkey"
+            columns: ["version_id"]
+            isOneToOne: false
+            referencedRelation: "learning_content_versions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           created_at: string
@@ -1350,6 +2873,8 @@ export type Database = {
         Row: {
           answered_at: string
           assessment_id: string
+          evidence_algorithm_version: string | null
+          evidence_signal: string | null
           id: string
           is_correct: boolean
           learning_event_id: string
@@ -1363,10 +2888,10 @@ export type Database = {
         Insert: {
           answered_at?: string
           assessment_id: string
-          id?: string
-          is_correct: boolean
           evidence_algorithm_version?: string | null
           evidence_signal?: string | null
+          id?: string
+          is_correct: boolean
           learning_event_id: string
           origin?: string
           question_version_id: string
@@ -1378,10 +2903,10 @@ export type Database = {
         Update: {
           answered_at?: string
           assessment_id?: string
-          id?: string
-          is_correct?: boolean
           evidence_algorithm_version?: string | null
           evidence_signal?: string | null
+          id?: string
+          is_correct?: boolean
           learning_event_id?: string
           origin?: string
           question_version_id?: string
@@ -1551,6 +3076,102 @@ export type Database = {
             foreignKeyName: "question_version_programs_question_version_id_fkey"
             columns: ["question_version_id"]
             isOneToOne: false
+            referencedRelation: "question_versions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      question_version_provenance: {
+        Row: {
+          author_name: string | null
+          authorship_kind: string
+          content_type: string
+          correction_history: Json
+          created_at: string
+          editorial_status: string
+          effective_from: string | null
+          effective_until: string | null
+          external_identifier: string
+          homologator_name: string | null
+          id: string
+          import_batch_id: string | null
+          legal_basis: string
+          obtained_on: string
+          origin: string
+          provenance_version: number
+          question_version_id: string
+          responsible_party: string
+          reviewer_name: string | null
+          rights_holder: string
+          source_title: string
+          source_url: string | null
+          updated_at: string
+          usage_restrictions: string[]
+        }
+        Insert: {
+          author_name?: string | null
+          authorship_kind: string
+          content_type?: string
+          correction_history?: Json
+          created_at?: string
+          editorial_status: string
+          effective_from?: string | null
+          effective_until?: string | null
+          external_identifier: string
+          homologator_name?: string | null
+          id?: string
+          import_batch_id?: string | null
+          legal_basis: string
+          obtained_on: string
+          origin: string
+          provenance_version?: number
+          question_version_id: string
+          responsible_party: string
+          reviewer_name?: string | null
+          rights_holder: string
+          source_title: string
+          source_url?: string | null
+          updated_at?: string
+          usage_restrictions?: string[]
+        }
+        Update: {
+          author_name?: string | null
+          authorship_kind?: string
+          content_type?: string
+          correction_history?: Json
+          created_at?: string
+          editorial_status?: string
+          effective_from?: string | null
+          effective_until?: string | null
+          external_identifier?: string
+          homologator_name?: string | null
+          id?: string
+          import_batch_id?: string | null
+          legal_basis?: string
+          obtained_on?: string
+          origin?: string
+          provenance_version?: number
+          question_version_id?: string
+          responsible_party?: string
+          reviewer_name?: string | null
+          rights_holder?: string
+          source_title?: string
+          source_url?: string | null
+          updated_at?: string
+          usage_restrictions?: string[]
+        }
+        Relationships: [
+          {
+            foreignKeyName: "question_version_provenance_import_batch_id_fkey"
+            columns: ["import_batch_id"]
+            isOneToOne: false
+            referencedRelation: "content_import_batches"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "question_version_provenance_question_version_id_fkey"
+            columns: ["question_version_id"]
+            isOneToOne: true
             referencedRelation: "question_versions"
             referencedColumns: ["id"]
           },
@@ -1959,6 +3580,13 @@ export type Database = {
             foreignKeyName: "student_target_exams_exam_edition_id_fkey"
             columns: ["exam_edition_id"]
             isOneToOne: false
+            referencedRelation: "amrigs_content_metadata"
+            referencedColumns: ["exam_edition_id"]
+          },
+          {
+            foreignKeyName: "student_target_exams_exam_edition_id_fkey"
+            columns: ["exam_edition_id"]
+            isOneToOne: false
             referencedRelation: "exam_editions"
             referencedColumns: ["id"]
           },
@@ -2207,6 +3835,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "study_plans_target_exam_edition_id_fkey"
+            columns: ["target_exam_edition_id"]
+            isOneToOne: false
+            referencedRelation: "amrigs_content_metadata"
+            referencedColumns: ["exam_edition_id"]
           },
           {
             foreignKeyName: "study_plans_target_exam_edition_id_fkey"
@@ -2573,8 +4208,58 @@ export type Database = {
         }
         Relationships: []
       }
+      user_roles: {
+        Row: {
+          granted_at: string
+          granted_by: string | null
+          role: string
+          user_id: string
+        }
+        Insert: {
+          granted_at?: string
+          granted_by?: string | null
+          role: string
+          user_id: string
+        }
+        Update: {
+          granted_at?: string
+          granted_by?: string | null
+          role?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_roles_granted_by_fkey"
+            columns: ["granted_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "user_roles_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
+      amrigs_content_metadata: {
+        Row: {
+          competency_count: number | null
+          edition: string | null
+          exam_edition_id: string | null
+          non_published_count: number | null
+          program_code: string | null
+          provenance_count: number | null
+          published_count: number | null
+          question_count: number | null
+          year: number | null
+        }
+        Relationships: []
+      }
       current_mastery: {
         Row: {
           algorithm_version: string | null
@@ -2625,9 +4310,29 @@ export type Database = {
         }
         Returns: string
       }
+      answer_diagnostic_question_once: {
+        Args: {
+          p_assessment_id: string
+          p_question_version_id: string
+          p_response_time_ms: number
+          p_selected_option_id: string
+          p_stated_confidence?: string
+        }
+        Returns: string
+      }
       archive_tutor_conversation: {
         Args: { p_conversation_id: string }
         Returns: undefined
+      }
+      assign_medical_specialty_owner: {
+        Args: {
+          p_authorization_reference: string
+          p_mentor_id: string
+          p_owner_role: string
+          p_request_id: string
+          p_specialty_id: string
+        }
+        Returns: string
       }
       begin_tutor_generation: {
         Args: {
@@ -2643,8 +4348,61 @@ export type Database = {
         Args: { p_as_of: string; p_competency_id: string; p_student_id: string }
         Returns: number
       }
+      can_manage_editorial: { Args: never; Returns: boolean }
+      create_learning_content_draft: {
+        Args: {
+          p_ai_assisted?: boolean
+          p_ai_model?: string
+          p_canonical_key: string
+          p_common_mistakes: Json
+          p_competency_id?: string
+          p_conclusion: string
+          p_estimated_minutes: number
+          p_exam_application: string
+          p_is_synthetic?: boolean
+          p_key_points: Json
+          p_objectives: Json
+          p_prompt_version?: string
+          p_quick_review: Json
+          p_request_id?: string
+          p_sections: Json
+          p_slug: string
+          p_specialty_id?: string
+          p_summary: string
+          p_title: string
+        }
+        Returns: string
+      }
+      create_learning_content_version: {
+        Args: {
+          p_content_id: string
+          p_request_id: string
+          p_sections: Json
+          p_source_version_id: string
+          p_summary: string
+          p_title: string
+        }
+        Returns: string
+      }
       create_tutor_conversation: {
         Args: { p_mode: string; p_origin_id?: string; p_origin_type?: string }
+        Returns: string
+      }
+      editorial_version_hash: {
+        Args: {
+          p_clinical_reasoning: string
+          p_common_mistakes: Json
+          p_conclusion: string
+          p_exam_application: string
+          p_key_points: Json
+          p_objectives: Json
+          p_quick_review: Json
+          p_sections: Json
+          p_subtitle: string
+          p_summary: string
+          p_title: string
+          p_video: Json
+        }
         Returns: string
       }
       finish_diagnostic_assessment: {
@@ -2674,6 +4432,32 @@ export type Database = {
         }
         Returns: undefined
       }
+      has_app_role: { Args: { p_role: string }; Returns: boolean }
+      import_amrigs_content: { Args: { p_payload: Json }; Returns: string }
+      learning_dna_indicator_json: {
+        Args: {
+          p_area_ids: string[]
+          p_competency_ids: string[]
+          p_event_count: number
+          p_limitations: string[]
+          p_message: string
+          p_period_end: string
+          p_period_start: string
+          p_rule: string
+          p_state: string
+          p_sufficient: boolean
+          p_type: string
+        }
+        Returns: Json
+      }
+      owns_medical_specialty: {
+        Args: { p_specialty_id: string }
+        Returns: boolean
+      }
+      pause_diagnostic_assessment: {
+        Args: { p_assessment_id: string }
+        Returns: undefined
+      }
       persist_study_plan: {
         Args: {
           p_availability_snapshot: Json
@@ -2686,6 +4470,19 @@ export type Database = {
           p_target_exam_edition_id: string
           p_total_available_minutes: number
           p_trigger_reason: string
+        }
+        Returns: string
+      }
+      publish_learning_content: {
+        Args: { p_request_id: string; p_version_id: string }
+        Returns: string
+      }
+      record_editorial_email_event: {
+        Args: {
+          p_error_code?: string
+          p_event_type: string
+          p_idempotency_key: string
+          p_provider_id?: string
         }
         Returns: string
       }
@@ -2721,6 +4518,29 @@ export type Database = {
         }
         Returns: string
       }
+      request_content_review_priority: {
+        Args: { p_request_id: string; p_version_id: string }
+        Returns: string
+      }
+      resume_diagnostic_assessment: {
+        Args: { p_assessment_id: string }
+        Returns: undefined
+      }
+      review_assignment_email_payload: {
+        Args: { p_version_id: string }
+        Returns: Json
+      }
+      review_learning_content: {
+        Args: {
+          p_comment: string
+          p_decision: string
+          p_declaration: string
+          p_issue_category: string
+          p_request_id: string
+          p_version_id: string
+        }
+        Returns: string
+      }
       save_onboarding: {
         Args: {
           p_assessment_preference?: string
@@ -2753,6 +4573,26 @@ export type Database = {
           p_objective: string
           p_question_count: number
           p_specialty_id: string
+        }
+        Returns: string
+      }
+      start_diagnostic_assessment_v3: {
+        Args: {
+          p_competency_ids: string[]
+          p_duration_minutes: number
+          p_exam_program_id: string
+          p_mode: string
+          p_objective: string
+          p_question_count: number
+          p_specialty_id: string
+        }
+        Returns: string
+      }
+      submit_content_for_review: {
+        Args: {
+          p_mentor_id: string
+          p_request_id: string
+          p_version_id: string
         }
         Returns: string
       }
