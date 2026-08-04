@@ -351,11 +351,10 @@ test('editor → mentor → admin → estudante: conteúdo versionado e revisão
   await page.goto('/admin');
   await expect(page).toHaveURL(/\/app$/);
   await page.goto('/editorial/library');
+  await expect(page).toHaveURL(/\/editorial$/);
   await expect(
-    page.getByRole('heading', { name: 'Conhecimento em um só lugar' }),
+    page.getByRole('heading', { name: 'Conteúdo médico em operação' }),
   ).toBeVisible();
-  await page.getByLabel('Buscar na seção').fill('choque');
-  await page.getByRole('button', { name: 'Buscar' }).click();
   await page.goto('/editorial/content');
   await expect(
     page.getByRole('heading', { name: 'Criar conteúdo estruturado' }),
@@ -449,9 +448,8 @@ test('editor → mentor → admin → estudante: conteúdo versionado e revisão
   await page.goto('/admin');
   await expect(page).toHaveURL(/\/app$/);
   await page.goto('/review/library');
-  await expect(
-    page.getByRole('heading', { name: 'Conhecimento em um só lugar' }),
-  ).toBeVisible();
+  await expect(page).toHaveURL(/\/review$/);
+  await expect(page.getByRole('heading', { name: 'Bom dia' })).toBeVisible();
   await page.goto('/review');
   await page.getByRole('link', { name: 'Especialidades' }).click();
   await expect(
@@ -496,8 +494,9 @@ test('editor → mentor → admin → estudante: conteúdo versionado e revisão
     page.getByRole('heading', { name: 'Console administrativo' }),
   ).toBeVisible();
   await page.goto('/admin/library');
+  await expect(page).toHaveURL(/\/admin$/);
   await expect(
-    page.getByRole('heading', { name: 'Conhecimento em um só lugar' }),
+    page.getByRole('heading', { name: 'Como está o Iatron hoje' }),
   ).toBeVisible();
   await page.goto('/admin');
   await expect(page.getByText('Fila editorial')).toHaveCount(0);

@@ -88,7 +88,7 @@ test('admin opera o cockpit e os demais papéis permanecem isolados', async ({
     const token = await accessToken(persona, password);
     expect(
       (
-        await request.get(`${apiBaseUrl}/admin/overview`, {
+        await request.get(`${apiBaseUrl}/v1/admin/overview`, {
           headers: { authorization: `Bearer ${token}` },
         })
       ).status(),
