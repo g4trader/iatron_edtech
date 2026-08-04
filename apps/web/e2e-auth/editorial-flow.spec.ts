@@ -455,8 +455,7 @@ test('editor → mentor → admin → estudante: conteúdo versionado e revisão
   await page.goto('/review/library');
   await expect(page).toHaveURL(/\/review$/);
   await expect(page.getByRole('heading', { name: 'Bom dia' })).toBeVisible();
-  await page.goto('/review');
-  await page.getByRole('link', { name: 'Especialidades' }).click();
+  await page.goto('/review/specialties');
   await expect(
     page.getByRole('heading', { name: 'Suas especialidades' }),
   ).toBeVisible();
