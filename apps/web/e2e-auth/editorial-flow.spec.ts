@@ -10,20 +10,20 @@ const canonicalKey = 'demo.sepsis.editorial-mvp';
 
 const personas = {
   editor: {
-    email: 'iatron.edtech+editorial-beta@gmail.com',
-    name: 'Editorial Beta',
+    email: 'iatron.edtech+e2e-editorial-editor@gmail.com',
+    name: 'Editorial E2E',
   },
   mentor: {
-    email: 'iatron.edtech+mentor-beta@gmail.com',
-    name: 'Mentor Beta',
+    email: 'iatron.edtech+e2e-editorial-mentor@gmail.com',
+    name: 'Mentor E2E',
   },
   admin: {
-    email: 'iatron.edtech+admin-beta@gmail.com',
-    name: 'Admin Beta',
+    email: 'iatron.edtech+e2e-editorial-admin@gmail.com',
+    name: 'Admin E2E',
   },
   student: {
-    email: 'iatron.edtech+student-beta@gmail.com',
-    name: 'Student Beta',
+    email: 'iatron.edtech+e2e-editorial-student@gmail.com',
+    name: 'Student E2E',
   },
 } as const;
 

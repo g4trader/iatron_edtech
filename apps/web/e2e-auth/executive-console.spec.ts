@@ -5,10 +5,10 @@ const publishableKey = process.env.E2E_SUPABASE_PUBLISHABLE_KEY!;
 const serviceRoleKey = process.env.E2E_SUPABASE_SERVICE_ROLE_KEY!;
 const apiBaseUrl = process.env.E2E_API_BASE_URL!;
 const personas = {
-  student: 'iatron.edtech+student-beta@gmail.com',
-  mentor: 'iatron.edtech+mentor-beta@gmail.com',
-  editor: 'iatron.edtech+editorial-beta@gmail.com',
-  admin: 'iatron.edtech+admin-beta@gmail.com',
+  student: 'iatron.edtech+e2e-executive-student@gmail.com',
+  mentor: 'iatron.edtech+e2e-executive-mentor@gmail.com',
+  editor: 'iatron.edtech+e2e-executive-editor@gmail.com',
+  admin: 'iatron.edtech+e2e-executive-admin@gmail.com',
 } as const;
 type Persona = keyof typeof personas;
 
@@ -30,8 +30,17 @@ async function ensurePersona(persona: Persona, password: string) {
   const listing = (await service(
     '/auth/v1/admin/users?page=1&per_page=1000',
   )) as { users: { id: string; email?: string }[] };
-  const user = listing.users.find(({ email }) => email === personas[persona]);
-  if (!user) throw new Error(`Persona ${persona} ausente`);
+  let user = listing.users.find(({ email }) => email === personas[persona]);
+  if (!user) {
+    user = (await service('/auth/v1/admin/users', {
+      method: 'POST',
+      body: JSON.stringify({
+        email: personas[persona],
+        password,
+        email_confirm: true,
+      }),
+    })) as { id: string; email?: string };
+  }
   await service(`/auth/v1/admin/users/${user.id}`, {
     method: 'PUT',
     body: JSON.stringify({
