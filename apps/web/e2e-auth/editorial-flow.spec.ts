@@ -461,10 +461,14 @@ test('editor → mentor → admin → estudante: conteúdo versionado e revisão
   ).toBeVisible();
   await page.getByRole('link', { name: 'Abrir especialidade' }).click();
   await expect(
-    page.getByText('Responsáveis científicos:', { exact: false }),
+    page.getByText('Seu papel:', { exact: false }),
   ).toBeVisible();
   await page.getByRole('link', { name: 'Minha fila' }).click();
-  await page.getByRole('link', { name: 'Revisar esta versão' }).click();
+  await page
+    .getByRole('listitem')
+    .filter({ hasText: contentTitle })
+    .getByRole('link', { name: 'Revisar esta versão' })
+    .click();
   await expect(
     page.getByText(/Rascunho preparado com apoio de IA/),
   ).toBeVisible();
@@ -506,8 +510,9 @@ test('editor → mentor → admin → estudante: conteúdo versionado e revisão
   await expect(page.getByText('Fila editorial')).toHaveCount(0);
   await page.goto('/editorial');
   await page
+    .getByRole('article')
+    .filter({ hasText: contentTitle })
     .getByRole('button', { name: 'Publicar versão aprovada' })
-    .first()
     .click();
   let audit: { action: string }[] = [];
   await expect
