@@ -338,6 +338,7 @@ test('editor → mentor → admin → estudante: conteúdo versionado e revisão
 
   const runKey = crypto.randomUUID();
   const runCanonicalKey = `${canonicalKey}.${runKey}`;
+  const contentTitle = `Ressuscitação inicial do choque séptico ${runKey}`;
 
   // Editor cria rascunho sintético assistido, sem autoridade médica.
   await login(page, 'editor', password);
@@ -365,7 +366,7 @@ test('editor → mentor → admin → estudante: conteúdo versionado e revisão
     .fill(`ressuscitacao-inicial-choque-septico-${runKey}`);
   await page
     .getByLabel('Título', { exact: true })
-    .fill('Ressuscitação inicial do choque séptico');
+    .fill(contentTitle);
   await page
     .getByLabel('Resumo')
     .fill(
@@ -427,7 +428,7 @@ test('editor → mentor → admin → estudante: conteúdo versionado e revisão
   });
   const createdContent = page
     .getByRole('article')
-    .filter({ hasText: 'Ressuscitação inicial do choque séptico' });
+    .filter({ hasText: contentTitle });
   await createdContent.getByLabel('ID do mentor autorizado').fill(mentorId);
   await createdContent
     .getByRole('button', { name: 'Enviar para revisão' })
