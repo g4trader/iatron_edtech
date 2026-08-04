@@ -425,12 +425,16 @@ test('editor → mentor → admin → estudante: conteúdo versionado e revisão
     reference_id: referenceId,
     specialty_id: specialtyId,
   });
-  await page.getByLabel('ID do mentor autorizado').first().fill(mentorId);
-  await page
+  const createdContent = page
+    .getByRole('article')
+    .filter({ hasText: 'Ressuscitação inicial do choque séptico' });
+  await createdContent.getByLabel('ID do mentor autorizado').fill(mentorId);
+  await createdContent
     .getByRole('button', { name: 'Enviar para revisão' })
-    .first()
     .click();
-  await expect(page.getByText('awaiting_mentor_review')).toBeVisible();
+  await expect(
+    createdContent.getByText('awaiting_mentor_review'),
+  ).toBeVisible();
   const emailEvents = (await service(
     `/rest/v1/editorial_email_events?select=event_type,idempotency_key&version_id=eq.${version.id}`,
   )) as { event_type: string; idempotency_key: string }[];
