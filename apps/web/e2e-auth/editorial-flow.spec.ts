@@ -499,7 +499,7 @@ test('editor → mentor → admin → estudante: conteúdo versionado e revisão
   );
   await page.goto('/admin');
   await expect(
-    page.getByRole('heading', { name: 'Console administrativo' }),
+    page.getByRole('heading', { name: 'Como está o Iatron hoje' }),
   ).toBeVisible();
   await page.goto('/admin/library');
   await expect(page).toHaveURL(/\/admin$/);
