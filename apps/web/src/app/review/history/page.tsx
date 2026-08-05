@@ -1,4 +1,8 @@
 import { editorial } from '@/features/editorial/server/editorial';
+import {
+  contentDisplayTitle,
+  editorialStatusLabel,
+} from '@/features/editorial/presentation';
 
 const decisions = {
   approved: 'Aprovado',
@@ -21,9 +25,7 @@ export default async function ReviewHistoryPage({
       <header>
         <p className="text-sm text-[var(--foreground-muted)]">Histórico</p>
         <h1 className="text-3xl font-semibold">Suas revisões médicas</h1>
-        <p>
-          Cada decisão permanece vinculada à versão e ao hash que você avaliou.
-        </p>
+        <p>Consulte suas decisões anteriores e o contexto de cada revisão.</p>
       </header>
       {history.items.length ? (
         <ol className="space-y-3">
@@ -35,10 +37,10 @@ export default async function ReviewHistoryPage({
                   timeStyle: 'short',
                 }).format(new Date(item.reviewedAt))}
               </p>
-              <h2>{item.title}</h2>
+              <h2>{contentDisplayTitle(item.title)}</h2>
               <p>
                 Versão {item.versionNumber} · {decisions[item.decision]} ·{' '}
-                {item.status}
+                {editorialStatusLabel(item.status)}
               </p>
               <dl className="grid gap-2 text-sm sm:grid-cols-2">
                 <div>
@@ -67,9 +69,6 @@ export default async function ReviewHistoryPage({
                   <strong>Comentário:</strong> {item.comment}
                 </p>
               )}
-              <p className="break-all text-xs text-[var(--foreground-muted)]">
-                Hash da versão: {item.versionHash}
-              </p>
             </li>
           ))}
         </ol>

@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import { editorial } from '@/features/editorial/server/editorial';
+import { contentDisplayTitle } from '@/features/editorial/presentation';
 
 export default async function ReviewHome() {
   const [contents, history] = await Promise.all([
@@ -36,7 +37,7 @@ export default async function ReviewHome() {
           <strong>Última revisão</strong>
           <p>
             {lastReview
-              ? `${lastReview.title} · ${new Intl.DateTimeFormat('pt-BR').format(new Date(lastReview.reviewedAt))}`
+              ? `${contentDisplayTitle(lastReview.title)} · ${new Intl.DateTimeFormat('pt-BR').format(new Date(lastReview.reviewedAt))}`
               : 'Sua primeira decisão aparecerá aqui.'}
           </p>
         </section>
@@ -51,8 +52,9 @@ export default async function ReviewHome() {
       <section className="state-card">
         <h2>Conteúdo iniciado recentemente</h2>
         <p>
-          {waiting[0]?.title ??
-            'Nenhum conteúdo está em revisão neste momento.'}
+          {waiting[0]
+            ? contentDisplayTitle(waiting[0].title)
+            : 'Nenhum conteúdo está em revisão neste momento.'}
         </p>
         {waiting[0] && (
           <Link

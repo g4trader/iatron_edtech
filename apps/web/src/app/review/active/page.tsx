@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import { editorial } from '@/features/editorial/server/editorial';
+import { contentDisplayTitle } from '@/features/editorial/presentation';
 
 export default async function ActiveReviewPage() {
   const active = (await editorial.reviewQueue()).filter(
@@ -18,7 +19,7 @@ export default async function ActiveReviewPage() {
         <ul className="space-y-3">
           {active.map((item) => (
             <li className="state-card" key={item.id}>
-              <h2>{item.title}</h2>
+              <h2>{contentDisplayTitle(item.title)}</h2>
               <p>Versão {item.versionNumber}</p>
               <Link
                 className="primary-button inline-flex"

@@ -6,6 +6,7 @@ import { submitMentorDecision } from '@/features/editorial/actions';
 import { ActionSubmitButton } from '@/components/feedback/action-submit-button';
 import { ReferenceGroups } from '@/features/editorial/components/reference-groups';
 import { VersionComparison } from '@/features/editorial/components/version-comparison';
+import { contentDisplayTitle } from '@/features/editorial/presentation';
 
 export default async function ReviewVersionPage({
   params,
@@ -24,10 +25,12 @@ export default async function ReviewVersionPage({
         <p className="text-sm text-[var(--foreground-muted)]">
           Revisão médica · Versão {material.versionNumber}
         </p>
-        <h1 className="text-3xl font-semibold">{material.title}</h1>
+        <h1 className="text-3xl font-semibold">
+          {contentDisplayTitle(material.title)}
+        </h1>
         <p>
           {material.aiAssisted
-            ? `Rascunho preparado com apoio de IA (${material.aiModel}).`
+            ? 'Rascunho preparado com apoio de IA.'
             : 'Conteúdo produzido editorialmente.'}
         </p>
         <Link
@@ -142,7 +145,7 @@ export default async function ReviewVersionPage({
           <p>
             Confirmo que revisei esta versão para fins educacionais dentro da
             minha área de atuação e que minha decisão se refere exatamente ao
-            conteúdo identificado pelo hash abaixo.
+            conteúdo apresentado nesta revisão.
           </p>
           <label className="flex min-h-11 items-start gap-3">
             <input
@@ -180,8 +183,8 @@ export default async function ReviewVersionPage({
           Confirmar decisão
         </ActionSubmitButton>
         <p className="text-sm text-[var(--foreground-muted)]">
-          A aprovação fica vinculada ao hash desta versão e não publica o
-          conteúdo automaticamente.
+          A aprovação fica vinculada a esta versão e não publica o conteúdo
+          automaticamente.
         </p>
       </form>
     </main>

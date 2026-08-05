@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import type { Route } from 'next';
 import { editorial } from '@/features/editorial/server/editorial';
+import { contentDisplayTitle } from '@/features/editorial/presentation';
 
 export default async function MentorQueuePage() {
   const contents = (await editorial.reviewQueue())
@@ -26,7 +27,7 @@ export default async function MentorQueuePage() {
                 {item.requestCount > 0 ? 'Prioridade alta' : 'Fila regular'} ·
                 versão {item.versionNumber} · {item.estimatedMinutes} min
               </p>
-              <h2>{item.title}</h2>
+              <h2>{contentDisplayTitle(item.title)}</h2>
               <p>{item.summary}</p>
               <Link
                 className="primary-button inline-flex"
