@@ -4,6 +4,10 @@ import {
   publishContent,
 } from '@/features/editorial/actions';
 import { ActionSubmitButton } from '@/components/feedback/action-submit-button';
+import {
+  contentDisplayTitle,
+  editorialStatusLabel,
+} from '@/features/editorial/presentation';
 
 export default async function EditorialHome() {
   const [contents, roles] = await Promise.all([
@@ -55,10 +59,10 @@ export default async function EditorialHome() {
         {contents.map((item) => (
           <article className="state-card space-y-3" key={item.id}>
             <p className="text-sm text-[var(--foreground-muted)]">
-              {item.editorialStatus} · versão {item.versionNumber} ·{' '}
-              {item.requestCount} solicitações
+              {editorialStatusLabel(item.editorialStatus)} · versão{' '}
+              {item.versionNumber} · {item.requestCount} solicitações
             </p>
-            <h3>{item.title}</h3>
+            <h3>{contentDisplayTitle(item.title)}</h3>
             {[
               'draft',
               'ai_draft',
@@ -67,10 +71,10 @@ export default async function EditorialHome() {
             ].includes(item.editorialStatus) && (
               <form
                 action={assignMentorForReview}
-                className="flex flex-wrap gap-2"
+                className="grid items-end gap-3 sm:grid-cols-[minmax(0,1fr)_auto]"
               >
                 <input name="versionId" type="hidden" value={item.id} />
-                <label>
+                <label className="form-field">
                   ID do mentor autorizado
                   <input className="form-control" name="mentorId" required />
                 </label>

@@ -116,7 +116,9 @@ export default async function AdminHome() {
             {overview.editorial.readyToPublish} prontos para publicação ·{' '}
             {overview.editorial.pendingReferences} referências pendentes
           </p>
-          <Link href="/editorial">Abrir workspace editorial</Link>
+          <Link className="secondary-button self-start" href="/editorial">
+            Abrir área editorial
+          </Link>
         </div>
         <div className="state-card space-y-3">
           <h2>Produção com apoio de IA</h2>

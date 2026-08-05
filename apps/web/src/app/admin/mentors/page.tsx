@@ -56,7 +56,10 @@ export default async function AdminMentorsPage() {
                   <dd>{mentor.studentRequests}</dd>
                 </div>
               </dl>
-              <Link href={`/admin/mentors/${mentor.id}`}>
+              <Link
+                className="secondary-button self-start"
+                href={`/admin/mentors/${mentor.id}`}
+              >
                 Ver responsabilidade completa
               </Link>
             </article>

@@ -26,10 +26,7 @@ export function PlanPage({
         <h1 className="text-2xl font-semibold">{title}</h1>
         <p>{description}</p>
       </header>
-      <nav
-        aria-label="Navegação do plano"
-        className="flex flex-wrap gap-x-4 gap-y-2 text-sm font-semibold text-[var(--primary)]"
-      >
+      <nav aria-label="Navegação do plano" className="section-tabs">
         <Link href="/app/plan">Visão geral</Link>
         <Link href="/app/plan/today">Hoje</Link>
         <Link href="/app/plan/week">Semana</Link>

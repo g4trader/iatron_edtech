@@ -107,10 +107,7 @@ export default async function AdminUsersPage() {
                 <legend className="font-semibold">Papéis desta conta</legend>
                 <div className="flex flex-wrap gap-4">
                   {roles.map(([value, label]) => (
-                    <label
-                      className="flex min-h-11 items-center gap-2"
-                      key={value}
-                    >
+                    <label className="check-option" key={value}>
                       <input
                         defaultChecked={user.roles.includes(value)}
                         name="roles"
@@ -122,7 +119,7 @@ export default async function AdminUsersPage() {
                   ))}
                 </div>
               </fieldset>
-              <label className="flex min-h-11 items-center gap-2">
+              <label className="check-option">
                 <input name="confirmed" required type="checkbox" value="true" />
                 Confirmo que revisei esta mudança de acesso.
               </label>

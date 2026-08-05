@@ -106,7 +106,10 @@ export default async function AdminStudentsPage({
                     <dd>{date(student.lastAccessAt)}</dd>
                   </div>
                 </dl>
-                <Link href={`/admin/students/${student.id}`}>
+                <Link
+                  className="secondary-button"
+                  href={`/admin/students/${student.id}`}
+                >
                   Ver progresso
                 </Link>
               </article>
@@ -138,7 +141,10 @@ export default async function AdminStudentsPage({
                     <td>{student.planStatus ?? 'Ainda não criado'}</td>
                     <td>{date(student.lastAccessAt)}</td>
                     <td>
-                      <Link href={`/admin/students/${student.id}`}>
+                      <Link
+                        className="action-link"
+                        href={`/admin/students/${student.id}`}
+                      >
                         Ver progresso
                       </Link>
                     </td>
