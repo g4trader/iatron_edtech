@@ -946,9 +946,15 @@ textarea.form-control {
   flex: 0 0 auto;
   min-height: 100%;
   align-self: stretch;
-  padding-bottom: calc(
-    clamp(4.5rem, 8vh, 7rem) + env(safe-area-inset-bottom)
-  ) !important;
+  padding-bottom: env(safe-area-inset-bottom) !important;
+}
+.experience-page::after {
+  content: '';
+  display: block;
+  width: 100%;
+  height: clamp(4.5rem, 8vh, 7rem);
+  flex: 0 0 auto;
+  pointer-events: none;
 }
 .experience-page > header {
   display: grid;
