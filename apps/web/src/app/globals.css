@@ -938,12 +938,14 @@ textarea.form-control {
 .page-container[data-narrow='true'] {
   max-width: 900px;
 }
-.experience-page,
 .catalog-page {
   flex: 1;
   min-height: 0;
 }
 .experience-page {
+  flex: 0 0 auto;
+  min-height: 100%;
+  align-self: stretch;
   padding-bottom: calc(
     clamp(4.5rem, 8vh, 7rem) + env(safe-area-inset-bottom)
   ) !important;
