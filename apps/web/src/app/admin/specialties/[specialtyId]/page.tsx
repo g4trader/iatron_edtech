@@ -47,9 +47,9 @@ export default async function AdminSpecialtyPage({
             className="grid gap-4 md:grid-cols-2"
           >
             <input name="specialtyId" type="hidden" value={specialty.id} />
-            <label>
+            <label className="form-field">
               Mentor autorizado
-              <select name="mentorId" required>
+              <select className="form-control" name="mentorId" required>
                 {authorizedMentors.map((mentor) => (
                   <option key={mentor.id} value={mentor.id}>
                     {mentor.professionalName}
@@ -57,16 +57,17 @@ export default async function AdminSpecialtyPage({
                 ))}
               </select>
             </label>
-            <label>
+            <label className="form-field">
               Responsabilidade
-              <select name="ownerRole" required>
+              <select className="form-control" name="ownerRole" required>
                 <option value="primary">Principal</option>
                 <option value="co_owner">Co-owner</option>
               </select>
             </label>
-            <label className="md:col-span-2">
+            <label className="form-field md:col-span-2">
               Evidência da autorização
               <input
+                className="form-control"
                 maxLength={240}
                 minLength={3}
                 name="authorizationReference"
@@ -102,9 +103,9 @@ export default async function AdminSpecialtyPage({
               >
                 <input name="specialtyId" type="hidden" value={specialty.id} />
                 <input name="ownershipId" type="hidden" value={owner.id} />
-                <label>
+                <label className="form-field">
                   Novo estado
-                  <select name="status" required>
+                  <select className="form-control" name="status" required>
                     <option value="temporarily_unavailable">
                       Indisponível temporariamente
                     </option>
@@ -112,13 +113,22 @@ export default async function AdminSpecialtyPage({
                     <option value="inactive">Encerrar responsabilidade</option>
                   </select>
                 </label>
-                <label>
+                <label className="form-field">
                   Indisponível até
-                  <input name="unavailableUntil" type="datetime-local" />
+                  <input
+                    className="form-control"
+                    name="unavailableUntil"
+                    type="datetime-local"
+                  />
                 </label>
-                <label className="md:col-span-2">
+                <label className="form-field md:col-span-2">
                   Motivo da transição
-                  <input minLength={3} name="reason" required />
+                  <input
+                    className="form-control"
+                    minLength={3}
+                    name="reason"
+                    required
+                  />
                 </label>
                 <button
                   className="secondary-button md:col-span-2"

@@ -122,11 +122,11 @@ export default async function ReviewVersionPage({
           <legend className="font-semibold">
             Sua decisão sobre esta versão
           </legend>
-          <label className="block">
+          <label className="check-option">
             <input name="decision" required type="radio" value="approved" />{' '}
             Aprovar versão
           </label>
-          <label className="block">
+          <label className="check-option">
             <input
               name="decision"
               required
@@ -135,7 +135,7 @@ export default async function ReviewVersionPage({
             />{' '}
             Solicitar ajustes
           </label>
-          <label className="block">
+          <label className="check-option">
             <input name="decision" required type="radio" value="rejected" />{' '}
             Rejeitar
           </label>
@@ -147,7 +147,7 @@ export default async function ReviewVersionPage({
             minha área de atuação e que minha decisão se refere exatamente ao
             conteúdo apresentado nesta revisão.
           </p>
-          <label className="flex min-h-11 items-start gap-3">
+          <label className="check-option items-start">
             <input
               className="mt-1"
               name="responsibilityConfirmed"
@@ -164,11 +164,15 @@ export default async function ReviewVersionPage({
         </section>
         <label className="form-field">
           Comentário ou justificativa
-          <textarea name="comment" />
+          <textarea
+            className="form-control"
+            name="comment"
+            placeholder="Explique sua decisão ou descreva os ajustes necessários."
+          />
         </label>
         <label className="form-field">
           Ponto principal
-          <select name="issueCategory">
+          <select className="form-control" name="issueCategory">
             <option value="">Não se aplica</option>
             <option value="content">Conteúdo</option>
             <option value="reference">Referência</option>
