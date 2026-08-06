@@ -3,6 +3,7 @@ import type { LearningContentVersion } from '@iatron/contracts';
 import { MentorRecommendation } from '@/features/mentors/components/mentor';
 import { defaultMentor, mentors } from '@/features/mentors/mentors';
 import { ActionSubmitButton } from '@/components/feedback/action-submit-button';
+import { contentDisplayTitle } from '@/features/editorial/presentation';
 import {
   completeLearningActivity,
   requestReviewPriority,
@@ -81,7 +82,9 @@ export function LearningContentPage({
           {material.mentorSpecialty ?? 'Preparação médica'} ·{' '}
           {material.estimatedMinutes} minutos
         </p>
-        <h1 className="text-3xl font-semibold">{material.title}</h1>
+        <h1 className="text-3xl font-semibold">
+          {contentDisplayTitle(material.title)}
+        </h1>
         {material.subtitle && <p>{material.subtitle}</p>}
         <p>
           <strong>Por que este estudo está no seu plano?</strong> {reason}

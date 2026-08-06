@@ -1,7 +1,7 @@
 import { render, screen } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
 import type { LearningContentVersion } from '@iatron/contracts';
-import { MentorReviewSeal } from './learning-content-page';
+import { LearningContentPage, MentorReviewSeal } from './learning-content-page';
 
 const material = (
   input: Partial<LearningContentVersion>,
@@ -75,5 +75,29 @@ describe('MentorReviewSeal', () => {
     expect(screen.getByText('✓ Revisado pelo Mentor')).toBeTruthy();
     expect(screen.getByText(/Mentor E2E · Clínica Médica/)).toBeTruthy();
     expect(screen.getByText(/Versão 3/)).toBeTruthy();
+  });
+});
+
+describe('LearningContentPage', () => {
+  it('never exposes the internal UUID appended to a content title', () => {
+    const internalId = '7c586f0b-94bc-473f-acce-475951291ea5';
+    render(
+      <LearningContentPage
+        itemId="preview"
+        itemStatus="planned"
+        material={material({
+          title: `Ressuscitação inicial do choque séptico ${internalId}`,
+        })}
+        preview
+        reason="Conteúdo selecionado para revisão."
+      />,
+    );
+
+    expect(
+      screen.getByRole('heading', {
+        name: 'Ressuscitação inicial do choque séptico',
+      }),
+    ).toBeTruthy();
+    expect(screen.queryByText(new RegExp(internalId))).toBeNull();
   });
 });
