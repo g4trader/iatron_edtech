@@ -364,9 +364,7 @@ test('editor → mentor → admin → estudante: conteúdo versionado e revisão
   await page
     .getByLabel('Slug')
     .fill(`ressuscitacao-inicial-choque-septico-${runKey}`);
-  await page
-    .getByLabel('Título', { exact: true })
-    .fill(contentTitle);
+  await page.getByLabel('Título', { exact: true }).fill(contentTitle);
   await page
     .getByLabel('Resumo')
     .fill(
@@ -426,15 +424,24 @@ test('editor → mentor → admin → estudante: conteúdo versionado e revisão
     reference_id: referenceId,
     specialty_id: specialtyId,
   });
-  const createdContent = page
-    .getByRole('article')
-    .filter({ hasText: contentTitle });
+  const createdContent = page.getByRole('article').filter({
+    has: page.locator(`input[name="versionId"][value="${version.id}"]`),
+  });
   await createdContent.getByLabel('ID do mentor autorizado').fill(mentorId);
   await createdContent
     .getByRole('button', { name: 'Enviar para revisão' })
     .click();
+  await expect(createdContent).toHaveCount(0);
+  await expect
+    .poll(async () => {
+      const versions = (await service(
+        `/rest/v1/learning_content_versions?select=editorial_status&id=eq.${version.id}`,
+      )) as { editorial_status: string }[];
+      return versions[0]?.editorial_status;
+    })
+    .toBe('awaiting_mentor_review');
   await expect(
-    createdContent.getByText('awaiting_mentor_review'),
+    page.getByText('Aguardando revisão médica', { exact: false }).first(),
   ).toBeVisible();
   const emailEvents = (await service(
     `/rest/v1/editorial_email_events?select=event_type,idempotency_key&version_id=eq.${version.id}`,
@@ -460,14 +467,11 @@ test('editor → mentor → admin → estudante: conteúdo versionado e revisão
     page.getByRole('heading', { name: 'Suas especialidades' }),
   ).toBeVisible();
   await page.getByRole('link', { name: 'Abrir especialidade' }).click();
-  await expect(
-    page.getByText('Seu papel:', { exact: false }),
-  ).toBeVisible();
+  await expect(page.getByText('Seu papel:', { exact: false })).toBeVisible();
   await page.getByRole('link', { name: 'Minha fila' }).click();
   await page
-    .getByRole('listitem')
-    .filter({ hasText: contentTitle })
     .getByRole('link', { name: 'Revisar esta versão' })
+    .and(page.locator(`a[href="/review/${version.id}"]`))
     .click();
   await expect(
     page.getByText(/Rascunho preparado com apoio de IA/),
@@ -511,7 +515,9 @@ test('editor → mentor → admin → estudante: conteúdo versionado e revisão
   await page.goto('/editorial');
   await page
     .getByRole('article')
-    .filter({ hasText: contentTitle })
+    .filter({
+      has: page.locator(`input[name="versionId"][value="${version.id}"]`),
+    })
     .getByRole('button', { name: 'Publicar versão aprovada' })
     .click();
   let audit: { action: string }[] = [];
