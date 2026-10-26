@@ -1,5 +1,22 @@
 # Ambiente ativo de desenvolvimento e validação
 
+> Migração GCP autorizada em 26 de outubro de 2026: destino `stg1-512818`, conta
+> `doctoravatar.app@gmail.com`, região `us-west1`, configuração CLI `iatron-stg1`.
+> Este destino substitui `stg2-512817`. Acesso Owner e faturamento ativo
+> confirmados; segredos transferidos com autorização. API implantada em
+> `https://iatron-api-staging-joadb4qnqa-uw.a.run.app`, health HTTP 200.
+> Supabase restaurado e `ACTIVE_HEALTHY`; health e ready HTTP 200.
+> Variáveis de staging no GitHub atualizadas para o novo GCP.
+> Vercel autenticada como `iatronedtech-4883`; URL da nova API configurada e
+> frontend republicado em `go.iatron.com.br` (deployment
+> `dpl_2RwpZsswgyzSC2itnx3Py2wngaGe`, login HTTP 200).
+> Smoke e gate de alinhamento aprovados no commit `9d813325752d`.
+> Quatro cenários autenticados aprovados, com repetição do editorial após
+> corrigir seus seletores. Correções da automação no PR #1, sem merge.
+> Consulte também [as evidências da validação](staging-reactivation-2026-10-26.md).
+> Consulte o estado e a sequência de retomada em
+> [prompt_ativacao.md](../prompt_ativacao.md).
+
 O ambiente atual contém somente dados fictícios e permite limpeza controlada.
 A referência oficial para desenvolvimento, validação visual e aceite do
 stakeholder é `https://go.iatron.com.br`. Um deployment em outro domínio não
@@ -17,7 +34,7 @@ projeto com dados reais.
 2. GitHub Environment `staging`: crie as variables e secrets descritas em
    [secrets-management.md](secrets-management.md). Configure reviewers se o seed
    remoto exigir aprovação humana.
-3. GCP `staging-503122`: use `us-west1`, próximo ao Supabase `us-west-2`.
+3. GCP `stg1-512818`, conta `doctoravatar.app@gmail.com`: use `us-west1`, próximo ao Supabase `us-west-2`.
    O bootstrap cria IAM, Artifact Registry, Secret Manager e WIF; confirme sempre
    o projeto explicitamente porque o projeto padrão local pode ser outro.
 4. Vercel: autentique `iatron.edtech@gmail.com`, selecione a equipe correta,

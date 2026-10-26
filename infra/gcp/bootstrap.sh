@@ -15,6 +15,8 @@ project_number=$(gcloud projects describe "$GCP_PROJECT_ID" --format='value(proj
 gcloud services enable \
   artifactregistry.googleapis.com \
   cloudbuild.googleapis.com \
+  iam.googleapis.com \
+  cloudresourcemanager.googleapis.com \
   iamcredentials.googleapis.com \
   run.googleapis.com \
   secretmanager.googleapis.com \
@@ -39,7 +41,7 @@ for account in "$deploy_account" "$runtime_account"; do
     --display-name="$account" --project="$GCP_PROJECT_ID"
 done
 
-for secret in SUPABASE_STAGING_PUBLISHABLE_KEY SUPABASE_STAGING_SERVICE_ROLE_KEY; do
+for secret in SUPABASE_STAGING_PUBLISHABLE_KEY SUPABASE_STAGING_SERVICE_ROLE_KEY OPENAI_API_KEY; do
   gcloud secrets describe "$secret" --project="$GCP_PROJECT_ID" >/dev/null 2>&1 || \
   gcloud secrets create "$secret" --replication-policy=automatic \
     --project="$GCP_PROJECT_ID"
@@ -59,9 +61,40 @@ gcloud iam service-accounts add-iam-policy-binding \
   "$runtime_account@$GCP_PROJECT_ID.iam.gserviceaccount.com" \
   --member="serviceAccount:$deploy_account@$GCP_PROJECT_ID.iam.gserviceaccount.com" \
   --role=roles/iam.serviceAccountUser --project="$GCP_PROJECT_ID" >/dev/null
-gcloud secrets add-iam-policy-binding SUPABASE_STAGING_PUBLISHABLE_KEY \
-  --member="serviceAccount:$runtime_account@$GCP_PROJECT_ID.iam.gserviceaccount.com" \
-  --role=roles/secretmanager.secretAccessor --project="$GCP_PROJECT_ID" >/dev/null
+# Permissions used by Cloud Build source upload, logging and Cloud Run deploy.
+for role in roles/serviceusage.serviceUsageConsumer roles/storage.bucketViewer; do
+  gcloud projects add-iam-policy-binding "$GCP_PROJECT_ID" \
+    --member="serviceAccount:$deploy_account@$GCP_PROJECT_ID.iam.gserviceaccount.com" \
+    --role="$role" --condition=None >/dev/null
+done
+gcloud projects add-iam-policy-binding "$GCP_PROJECT_ID" \
+  --member="serviceAccount:$cloud_build_account" \
+  --role=roles/logging.logWriter --condition=None >/dev/null
+gcloud artifacts repositories add-iam-policy-binding "$artifact_repository" \
+  --location="$GCP_REGION" --project="$GCP_PROJECT_ID" \
+  --member="serviceAccount:$deploy_account@$GCP_PROJECT_ID.iam.gserviceaccount.com" \
+  --role=roles/artifactregistry.reader --condition=None >/dev/null
+gcloud iam service-accounts add-iam-policy-binding "$cloud_build_account" \
+  --member="serviceAccount:$deploy_account@$GCP_PROJECT_ID.iam.gserviceaccount.com" \
+  --role=roles/iam.serviceAccountUser --project="$GCP_PROJECT_ID" >/dev/null
+
+source_bucket="gs://${GCP_PROJECT_ID}_cloudbuild"
+gcloud storage buckets describe "$source_bucket" --project="$GCP_PROJECT_ID" >/dev/null 2>&1 || \
+gcloud storage buckets create "$source_bucket" --project="$GCP_PROJECT_ID" \
+  --location="$GCP_REGION" --uniform-bucket-level-access
+for role in roles/storage.objectCreator roles/storage.legacyBucketReader; do
+  gcloud storage buckets add-iam-policy-binding "$source_bucket" \
+    --member="serviceAccount:$deploy_account@$GCP_PROJECT_ID.iam.gserviceaccount.com" \
+    --role="$role" >/dev/null
+done
+gcloud storage buckets add-iam-policy-binding "$source_bucket" \
+  --member="serviceAccount:$cloud_build_account" \
+  --role=roles/storage.objectViewer >/dev/null
+for secret in SUPABASE_STAGING_PUBLISHABLE_KEY SUPABASE_STAGING_SERVICE_ROLE_KEY OPENAI_API_KEY; do
+  gcloud secrets add-iam-policy-binding "$secret" \
+    --member="serviceAccount:$runtime_account@$GCP_PROJECT_ID.iam.gserviceaccount.com" \
+    --role=roles/secretmanager.secretAccessor --project="$GCP_PROJECT_ID" >/dev/null
+done
 
 gcloud iam workload-identity-pools describe "$pool" --location=global \
   --project="$GCP_PROJECT_ID" >/dev/null 2>&1 || \
