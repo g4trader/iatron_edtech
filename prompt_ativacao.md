@@ -31,96 +31,44 @@ O PR #1 reúne os ajustes permanentes de automação e as evidências dessa recu
 
 ### Reconexão de infraestrutura em 26 de outubro de 2026
 
-O destino autorizado pelo proprietário passa a ser `stg1-512818`, usando
-exclusivamente `doctoravatar.app@gmail.com`. Esta decisão substitui o destino
-GCP das instruções históricas abaixo para novos provisionamentos e deploys.
-Não executar novos deploys em `staging-503122` durante a migração.
+O destino autorizado pelo proprietário é `stg1-512818` (`252903354297`),
+com a conta `doctoravatar.app@gmail.com` e configuração CLI `iatron-stg1`.
+Esse destino substitui `staging-503122` e `stg2-512817`. Os recursos antigos
+foram preservados; não são destinos para novos deploys.
 
-- Projeto de destino confirmado: `stg1-512818` (`252903354297`).
-- Conta autenticada e Owner: `doctoravatar.app@gmail.com`.
-- Configuração CLI ativa: `iatron-stg1`, região `us-west1`.
-- Faturamento confirmado ativo: `billingEnabled=true`.
-- APIs de Cloud Run, Cloud Build, Artifact Registry, Secret Manager, IAM,
-  IAM Credentials, STS e Resource Manager habilitadas.
-- Transferência dos três segredos de runtime autorizada pelo proprietário e
-  executada entre Secret Managers, sem exibição ou gravação local dos valores.
-  Segredos: `SUPABASE_STAGING_PUBLISHABLE_KEY`,
-  `SUPABASE_STAGING_SERVICE_ROLE_KEY` e `OPENAI_API_KEY`.
-- O destino anterior `stg2-512817` foi substituído por decisão do proprietário.
-  A configuração local `iatron-stg2` foi preservada, mas não deve ser usada
-  para continuar esta migração.
-- Artifact Registry `iatron`, contas de deploy/runtime e WIF provisionados.
-- Serviço `iatron-api-staging` implantado; revisão atual `iatron-api-staging-00002-jsd`.
-- Nova URL: `https://iatron-api-staging-joadb4qnqa-uw.a.run.app`.
-- A primeira migração copiou, sem reconstruir, a imagem de digest
-  `sha256:542448e41c7d79e76fee78df76361ce1a46b908631990f768428a8dadd6362cd`,
-  correspondente à tag de origem `f355a6ca6618c24c8bb3954fe739adbbdbdd2214`.
-  O `BUILD_SHA` então herdado era `f576b689658ffa544b875fb40b52b8cb784aab71`.
-  Posteriormente a API foi reconstruída a partir de
-  `9d813325752d97e506d5c08d8bf1424b08dc2d3d`, com digest
-  `sha256:9a7ebf6a2ff452b5b26e5030709c712b3f515ca79857283015bbad9576f53281`.
-  Frontend, API e main estão alinhados nesse commit pelo gate oficial.
-- Health e meta: HTTP 200; `/v1/me` sem token: HTTP 401; preflight CORS para
-  `https://go.iatron.com.br`: HTTP 204 com origem autorizada.
-- Ready: HTTP 200 após restauração do Supabase canônico, confirmado
-  `ACTIVE_HEALTHY` em 26 de outubro de 2026.
-- A permissão temporária de leitura do registro antigo foi removida após a cópia.
+- Faturamento, APIs, Artifact Registry `iatron`, Cloud Run, Secret Manager,
+  contas de serviço e WIF foram configurados no destino.
+- Os três segredos de runtime foram transferidos com autorização explícita,
+  diretamente entre cofres, sem exibição dos valores.
+- API canônica: `https://iatron-api-staging-joadb4qnqa-uw.a.run.app`.
+- Vercel: conta `iatronedtech-4883`, team `iatron`, projeto
+  `prj_ipKgeQoQ669m29TtSUf9p8bC2Nw9`, alias `https://go.iatron.com.br`.
+- `NEXT_PUBLIC_API_URL` no ambiente Production desse projeto dedicado de
+  staging aponta para a API acima, com sufixo `/v1`.
+- Supabase: `dajdcecjaobdsgatubsb`, organização `rhrmsnsolhqoontkuupc`,
+  restaurado pelo proprietário e confirmado `ACTIVE_HEALTHY`.
+  Sempre usar `--profile iatron` na CLI; o perfil padrão não é o deste produto.
 - GitHub Environment `staging`: projeto, contas de serviço, WIF e URL da API
-  atualizados para o novo GCP; valores conferidos após a atualização.
-- Vercel autenticada como `iatronedtech-4883`, com acesso confirmado ao team
-  `iatron` e ao projeto `prj_ipKgeQoQ669m29TtSUf9p8bC2Nw9`.
-- `NEXT_PUBLIC_API_URL` atualizado para a nova API com sufixo `/v1` no ambiente
-  Production do projeto dedicado de staging.
-- Frontend republicado a partir do deployment existente, sem enviar código local:
-  `dpl_2RwpZsswgyzSC2itnx3Py2wngaGe`, status Ready, alias `go.iatron.com.br`.
-  `/login` HTTP 200, SHA `9d813325752d97e506d5c08d8bf1424b08dc2d3d`.
-- Smoke oficial da API aprovado. Build Vercel aprovado com warning de outputs
-  ausentes para `@iatron/ui#build`; nenhuma alteração de código realizada.
-- Recursos antigos preservados. Workflows foram executados: o deploy construiu
-  a imagem, mas falhou na publicação; a publicação foi concluída via CLI. O E2E
-  do GitHub falhou na instalação do navegador e foi executado localmente contra
-  staging. Consulte a evidência detalhada abaixo.
-- Supabase continua sendo `dajdcecjaobdsgatubsb`; não faz parte da migração.
+  foram atualizados e conferidos.
+- O bootstrap agora reproduz os acessos necessários ao deploy. Ele cria os
+  recipientes dos segredos, mas não transfere seus valores.
+- CI e E2E usam Ubuntu 24.04, compatível com o Playwright do repositório.
+- O deploy usa separador explícito `|` na flag do gcloud para preservar a
+  vírgula de `SUPABASE_JWT_ALGORITHMS`. Apenas colocar aspas no input
+  `env_vars` da action não foi suficiente. O workflow confere o valor
+  efetivamente gravado no Cloud Run antes de executar o smoke.
 
-As conexões de infraestrutura e o alinhamento foram validados. Os quatro cenários
-autenticados passaram: três na execução inicial e o editorial em repetição após
-corrigir seletores que dependiam de UUID oculto na interface. Lint, tipagem,
-testes e build locais passaram; E2E demonstrativo teve 108 aprovados e 22 skips.
-As correções dos workflows e do teste editorial estão no
-[PR #1](https://github.com/g4trader/iatron_edtech/pull/1), sem merge.
-CI e automação remota ainda devem ser avaliados no estado mais recente do PR;
-não declarar os workflows históricos como aprovados nem uma fase funcional
-inteira concluída. Não houve validação manual da jornada autenticada.
-Veja [evidências da reativação](docs/staging-reactivation-2026-10-26.md).
-O login Supabase foi concluído no perfil CLI `iatron` e o
-acesso ao projeto canônico foi confirmado por `supabase projects list --profile
-iatron`: nome `Iatron Edtech`, organização `rhrmsnsolhqoontkuupc`, região
-`us-west-2`. A retomada solicitada pelo proprietário terminou: status
-`ACTIVE_HEALTHY` e `/ready` HTTP 200.
+A cópia operacional recuperada está em
+`/Users/lucianoterres/Developer/iatron_edtech`, fora do iCloud e vinculada aos
+projetos Vercel e Supabase corretos. A pasta original em `Documents/GitHub 2`
+foi preservada com suas alterações; arquivos descarregados no iCloud bloqueiam
+operações Git nessa pasta. Não sobrescrevê-la nem apagar seu conteúdo.
 
-Verificação do destino, sem depender da configuração global:
-
-```bash
-gcloud projects describe stg1-512818 --account=doctoravatar.app@gmail.com
-gcloud billing projects describe stg1-512818 --account=doctoravatar.app@gmail.com
-gcloud run services describe iatron-api-staging \
-  --account=doctoravatar.app@gmail.com --project=stg1-512818 --region=us-west1
-```
-
-O último comando deve encontrar a revisão migrada.
-O projeto `staging-503122` e sua URL antiga permanecem somente como histórico
-e possibilidade de rollback; não são o destino operacional atual.
-
-Identificadores provisionados e configurados no GitHub Environment `staging`:
-
-- `GCP_PROJECT_ID=stg1-512818`
-- `GCP_DEPLOY_SERVICE_ACCOUNT=iatron-deploy@stg1-512818.iam.gserviceaccount.com`
-- `GCP_RUNTIME_SERVICE_ACCOUNT=iatron-api-staging@stg1-512818.iam.gserviceaccount.com`
-- `GCP_WORKLOAD_IDENTITY_PROVIDER=projects/252903354297/locations/global/workloadIdentityPools/github-actions/providers/github`
-- `E2E_API_BASE_URL=https://iatron-api-staging-joadb4qnqa-uw.a.run.app`
-
-Evidência da cópia de imagem:
-[Cloud Build d25c507b](https://console.cloud.google.com/cloud-build/builds/d25c507b-d9e3-40da-bfdf-11927317c611?project=stg1-512818).
+O [PR #1](https://github.com/g4trader/iatron_edtech/pull/1) integrou as correções
+iniciais. Consulte as execuções mais recentes dos workflows e compare os SHAs
+antes de continuar. Não use um SHA histórico como referência permanente.
+As evidências iniciais e as limitações estão em
+[reativação de staging](docs/staging-reactivation-2026-10-26.md).
 
 ### GitHub
 

@@ -131,3 +131,22 @@ Antes de desenvolver, comparar o SHA desses workflows, `origin/main`, o header
 `x-iatron-build-sha` do frontend e `/health` e `/ready` da API. O checkout
 original foi preservado; a integração usa uma branch isolada para evitar
 sobrescrever alterações preexistentes.
+
+## Verificação do parser após a integração
+
+O PR #1 foi integrado em `9b18125e86dfe2388089b26e761327f697f42c84`, após
+[CI aprovado](https://github.com/g4trader/iatron_edtech/actions/runs/40384613239).
+O [deploy oficial](https://github.com/g4trader/iatron_edtech/actions/runs/40386396355)
+passou, mas a inspeção da configuração revelou que as aspas no input `env_vars`
+não preservaram a vírgula: o valor JWT ficou truncado. O smoke público não
+verifica autenticação e, portanto, não era evidência suficiente para esse caso.
+
+A correção passa a variável pela flag gcloud com separador explícito `|`, já
+usado para CORS, e verifica o valor efetivamente publicado antes do smoke.
+O valor truncado e a variável espúria foram corrigidos no staging. Os workflows
+mais recentes, com esse gate adicional, são a referência para novas ativações.
+
+Para continuidade local foi criado um clone íntegro em
+`/Users/lucianoterres/Developer/iatron_edtech`, com dependências instaladas e
+vínculos Vercel/Supabase confirmados. A pasta original foi preservada devido a
+arquivos descarregados no iCloud e alterações preexistentes.
