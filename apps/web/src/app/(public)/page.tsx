@@ -1,99 +1,145 @@
-import { Button } from '@iatron/ui';
+import type { Metadata } from 'next';
 import Link from 'next/link';
-import { MentorCard } from '@/features/mentors/components/mentor';
-import { mentors } from '@/features/mentors/mentors';
+import {
+  DiagnosisPreview,
+  PlatformShowcase,
+} from '../../features/landing/platform-showcase';
+import { LandingEvents } from '../../features/landing/landing-events';
+import {
+  LearningJourney,
+  AIAndMedicalCuration,
+  MentorsSection,
+  CommunitySection,
+  CareerMentoringSection,
+  PodcastSection,
+  FAQSection,
+  FinalCTA,
+  LandingFooter,
+} from '../../features/landing/landing-sections';
+import s from '../../features/landing/landing.module.css';
+
+const title = 'Iatron | Preparação Inteligente para Residência Médica';
+const description =
+  'Organize sua preparação para a residência médica com diagnóstico de proficiência, trilhas personalizadas e explicações apoiadas por inteligência artificial.';
+export const metadata: Metadata = {
+  title: { absolute: title },
+  description,
+  alternates: { canonical: 'https://go.iatron.com.br/' },
+  openGraph: {
+    title,
+    description,
+    url: 'https://go.iatron.com.br/',
+    siteName: 'Iatron',
+    locale: 'pt_BR',
+    type: 'website',
+  },
+  twitter: { card: 'summary', title, description },
+};
 
 export default function HomePage() {
   return (
-    <main className="mentor-landing">
-      <section className="mentor-hero">
-        <div>
-          <p className="eyebrow">Preparação para residência médica</p>
-          <h1>Os melhores próximos passos começam com boa orientação.</h1>
-          <p>
-            Mentores médicos acompanham sua preparação com um plano que respeita
-            sua rotina, suas respostas e a prova que você escolheu. A tecnologia
-            trabalha nos bastidores para ampliar esse cuidado.
-          </p>
-          <Link href="/login">
-            <Button className="mt-8">Conhecer minha preparação</Button>
-          </Link>
-        </div>
-        <div className="mentor-hero-panel" aria-label="Mentores do Iatron">
-          <p className="eyebrow">Mentores do Iatron</p>
-          <h2>Especialistas presentes em cada etapa.</h2>
-          <p>
-            Do diagnóstico ao plano diário, você sempre sabe quem está
-            conduzindo a orientação e por que aquele passo importa.
-          </p>
-          <div className="mentor-avatar-stack">
-            {mentors.map((mentor) => (
-              <span
-                aria-label={`${mentor.displayName}, ${mentor.specialty}`}
-                className="mentor-avatar"
-                data-size="medium"
-                data-specialty={mentor.id}
-                key={mentor.id}
-              >
-                {mentor.initials}
+    <div className={s.page}>
+      <LandingEvents />
+      <main id="conteudo" tabIndex={-1}>
+        <section className={s.hero} aria-labelledby="hero-title">
+          <div className={`${s.container} ${s.heroGrid}`}>
+            <div className={s.heroCopy}>
+              <span className={s.eyebrow}>
+                PREPARAÇÃO INTELIGENTE PARA RESIDÊNCIA MÉDICA
               </span>
-            ))}
+              <h1 id="hero-title">
+                Sua preparação começa pelo que você precisa <em>aprender.</em>
+              </h1>
+              <p>
+                A Iatron combina inteligência artificial e uma proposta de
+                curadoria médica para identificar lacunas, organizar sua trilha
+                de estudos e acompanhar sua evolução.
+              </p>
+              <div className={s.actions}>
+                <Link
+                  href="/cadastro"
+                  className={s.button}
+                  data-lp-event="hero_primary_cta_click"
+                >
+                  Conhecer minha trilha de estudos{' '}
+                  <span aria-hidden="true">↗</span>
+                </Link>
+                <a
+                  href="#como-funciona"
+                  className={s.textLink}
+                  data-lp-event="hero_secondary_cta_click"
+                >
+                  Como funciona a Iatron
+                </a>
+              </div>
+              <p className={s.note}>
+                Crie sua conta e comece pelo diagnóstico.
+              </p>
+              <ul className={s.benefits}>
+                <li>Diagnóstico individual</li>
+                <li>Trilha personalizada</li>
+                <li>Referências médicas</li>
+              </ul>
+            </div>
+            <div className={s.heroVisual}>
+              <div className={s.visualCaption}>
+                <strong>Sua preparação, com direção.</strong>
+                <span>VISÃO DA PLATAFORMA</span>
+              </div>
+              <DiagnosisPreview />
+              <p>
+                Do que você já sabe ao que precisa revisar: cada etapa informa o
+                próximo passo.
+              </p>
+            </div>
+          </div>
+        </section>
+        <div className={s.strip}>
+          <div className={s.container}>
+            <span>Clínica Médica</span>
+            <span>Pediatria</span>
+            <span>Cirurgia Geral</span>
+            <span>Ginecologia e Obstetrícia</span>
           </div>
         </div>
-      </section>
-      <section aria-labelledby="mentor-team-title" className="mentor-team">
-        <div className="section-heading">
-          <div>
-            <p className="eyebrow">Quem orienta sua preparação</p>
-            <h2 id="mentor-team-title">Conheça seus mentores</h2>
+        <LearningJourney />
+        <AIAndMedicalCuration />
+        <section
+          id="plataforma"
+          className={s.section}
+          aria-labelledby="platform-title"
+        >
+          <div className={s.container}>
+            <span className={s.eyebrow}>CONHEÇA A EXPERIÊNCIA</span>
+            <h2 id="platform-title">
+              Visualize sua preparação. <br />
+              Entenda seu próximo passo.
+            </h2>
+            <p className={s.intro}>
+              Explore um exemplo de como diagnóstico, lacunas e atividades se
+              conectam na sua jornada.
+            </p>
+            <PlatformShowcase />
+            <div className={s.actions}>
+              <Link
+                href="/cadastro"
+                className={s.button}
+                data-lp-event="platform_cta_click"
+              >
+                Quero conhecer minha preparação{' '}
+                <span aria-hidden="true">↗</span>
+              </Link>
+            </div>
           </div>
-          <p>
-            Cada especialidade tem uma referência. O mentor mais próximo do seu
-            plano assume a condução da experiência.
-          </p>
-        </div>
-        <div className="mentor-grid">
-          {mentors.map((mentor) => (
-            <MentorCard key={mentor.id} mentor={mentor} />
-          ))}
-        </div>
-      </section>
-      <section aria-labelledby="podcast-title" className="landing-podcast">
-        <div className="landing-podcast-copy">
-          <p className="eyebrow">Podcast oficial do Iatron</p>
-          <h2 id="podcast-title">Próxima Conduta</h2>
-          <p>
-            Conheça o episódio de estreia e acompanhe o Próxima Conduta no
-            YouTube.
-          </p>
-          <div className="landing-podcast-episode">
-            <p className="landing-podcast-number">Episódio #0</p>
-            <h3>Carreira médica: como escolhemos nossos caminhos</h3>
-          </div>
-          <a
-            className="landing-podcast-link"
-            href="https://www.youtube.com/watch?v=PEKL4AgCtMQ"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Assistir no YouTube
-            <span aria-hidden="true">↗</span>
-            <span className="sr-only"> (abre em uma nova aba)</span>
-          </a>
-        </div>
-        <div className="landing-podcast-player">
-          <iframe
-            src="https://www.youtube-nocookie.com/embed/PEKL4AgCtMQ"
-            title="Próxima Conduta — Episódio #0: Carreira médica: como escolhemos nossos caminhos"
-            width="560"
-            height="315"
-            loading="lazy"
-            referrerPolicy="strict-origin-when-cross-origin"
-            allow="encrypted-media; picture-in-picture; web-share"
-            allowFullScreen
-          />
-        </div>
-      </section>
-    </main>
+        </section>
+        <MentorsSection />
+        <CommunitySection />
+        <CareerMentoringSection />
+        <PodcastSection />
+        <FAQSection />
+        <FinalCTA />
+      </main>
+      <LandingFooter />
+    </div>
   );
 }
