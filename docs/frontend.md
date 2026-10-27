@@ -62,3 +62,22 @@ Na primeira execução, instale o navegador:
 ```bash
 pnpm exec playwright install chromium
 ```
+
+## Podcast na landing page
+
+A seção **Próxima Conduta**, após os mentores, apresenta o podcast oficial do
+Iatron conforme solicitação do responsável pelo produto em 27/10/2026. O episódio
+#0 é “Carreira médica: como escolhemos nossos caminhos”, título confirmado pelo
+oEmbed público do YouTube para o vídeo `PEKL4AgCtMQ`, do canal Próxima Conduta.
+
+O player oficial usa `youtube-nocookie.com`, carregamento adiado e não configura
+reprodução automática. O link “Assistir no YouTube” permanece disponível mesmo
+quando a incorporação é bloqueada pelo provedor ou navegador. A LP não baixa,
+transcreve nem atribui revisão clínica ao vídeo. Novos episódios devem preservar
+identificação, URL de origem e título verificável.
+
+A seção se adapta a uma coluna em telas até 900 px. O iframe tem título
+acessível, e o link informa a abertura em outra aba. Nos testes locais de layout,
+apenas o iframe externo é substituído por um documento estático, evitando
+instabilidade de rede; o link e o conteúdo da LP permanecem reais. A reprodução
+no YouTube depende da disponibilidade e das regras do provedor.

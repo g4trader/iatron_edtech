@@ -28,6 +28,15 @@ async function expectNoPageOverflow(page: Page) {
 }
 
 test.describe('hardening mobile', () => {
+  test.beforeEach(async ({ page }) => {
+    // Keep layout checks independent of the external video provider.
+    await page.route('https://www.youtube-nocookie.com/**', (route) =>
+      route.fulfill({
+        contentType: 'text/html',
+        body: '<!doctype html><html lang="pt-BR"><title>Player de teste</title><body></body></html>',
+      }),
+    );
+  });
   test('não expõe linguagem interna nas jornadas principais', async ({
     page,
   }) => {
@@ -267,6 +276,7 @@ test.describe('hardening mobile', () => {
 
   test('não possui violações axe críticas ou sérias', async ({ page }) => {
     for (const route of [
+      '/',
       '/login',
       '/app/onboarding',
       '/app',

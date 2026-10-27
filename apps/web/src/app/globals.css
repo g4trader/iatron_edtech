@@ -2323,6 +2323,90 @@ textarea.form-control {
   color: var(--foreground-muted);
   font-size: 0.92rem;
 }
+.landing-podcast {
+  display: grid;
+  grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
+  align-items: center;
+  gap: clamp(1.5rem, 4vw, 3rem);
+  margin-top: clamp(2rem, 5vw, 4rem);
+  padding: clamp(1.25rem, 4vw, 3rem);
+  border-radius: 2rem;
+  background: #234436;
+  color: #fff;
+}
+.landing-podcast .eyebrow {
+  color: #d9e6df;
+}
+.landing-podcast h2 {
+  margin-block: 0.5rem 1rem;
+  font-family: Georgia, 'Times New Roman', serif;
+  font-size: clamp(2.25rem, 4vw, 3.5rem);
+  font-weight: 500;
+  line-height: 1.05;
+  letter-spacing: -0.03em;
+}
+.landing-podcast-copy > p:not(.eyebrow) {
+  max-width: 36ch;
+  color: #d9e6df;
+}
+.landing-podcast-episode {
+  margin-block: 1.75rem 1.25rem;
+  padding-top: 1.25rem;
+  border-top: 1px solid rgb(255 255 255 / 0.24);
+}
+.landing-podcast-number {
+  margin-bottom: 0.5rem;
+  color: #d9e6df;
+  font-size: 0.8rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+.landing-podcast h3 {
+  font-size: clamp(1.15rem, 2vw, 1.4rem);
+  line-height: 1.4;
+}
+.landing-podcast-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  min-height: 44px;
+  padding: 0.75rem 1rem;
+  border: 1px solid transparent;
+  border-radius: var(--radius-md);
+  background: #fff;
+  color: #234436;
+  font-weight: 600;
+}
+.landing-podcast-link:hover {
+  background: #d9e6df;
+}
+.landing-podcast-link:focus-visible {
+  outline: 3px solid #fff;
+  outline-offset: 4px;
+}
+.landing-podcast-player {
+  overflow: hidden;
+  min-width: 0;
+  aspect-ratio: 16 / 9;
+  min-height: 200px;
+  border: 1px solid rgb(255 255 255 / 0.24);
+  border-radius: 1rem;
+  background: #172e24;
+}
+.landing-podcast-player iframe {
+  display: block;
+  width: 100%;
+  height: 100%;
+  border: 0;
+}
+@media (max-width: 900px) {
+  .landing-podcast {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
 .mentor-avatar {
   display: inline-grid;
   flex: 0 0 auto;
