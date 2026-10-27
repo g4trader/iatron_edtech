@@ -49,7 +49,6 @@ jobs:
         run: google-chrome --version
       - name: Acquisition funnel with isolated local Supabase
         run: pnpm test:e2e:auth acquisition-flow.spec.ts
-      - run: pnpm test:e2e:mock
       - name: Acquisition evidence
         if: always()
         uses: actions/upload-artifact@v4
@@ -57,3 +56,4 @@ jobs:
           name: acquisition-evidence
           path: apps/web/test-results/**/*.png
           retention-days: 7
+      - run: pnpm test:e2e:mock
