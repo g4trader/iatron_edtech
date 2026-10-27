@@ -1,3 +1,4 @@
+import { AcquisitionView } from '@/features/acquisition/acquisition-view';
 import {
   PlanItemCard,
   PlanPage,
@@ -22,11 +23,12 @@ export default async function WeekPage() {
         />
       ) : (
         <div className="space-y-3">
+          <AcquisitionView name="study_path_opened" />
           {plan.items
-          .filter((item) => item.status !== 'unallocated')
-          .map((item) => (
-            <PlanItemCard item={item} key={item.id} />
-          ))}
+            .filter((item) => item.status !== 'unallocated')
+            .map((item) => (
+              <PlanItemCard item={item} key={item.id} />
+            ))}
         </div>
       )}
     </PlanPage>

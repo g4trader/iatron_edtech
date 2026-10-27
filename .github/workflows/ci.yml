@@ -54,7 +54,8 @@ jobs:
           cache: pnpm
       - run: pnpm install --frozen-lockfile
       - run: pnpm exec turbo build --filter=@iatron/api...
-      - run: pnpm db:start
+      - name: Start isolated Supabase (retry transient registry limits once)
+        run: pnpm db:start || { sleep 10; pnpm db:start; }
       - run: pnpm --filter @iatron/web exec playwright install --with-deps chromium
       - name: Acquisition funnel with isolated local Supabase
         run: pnpm test:e2e:auth acquisition-flow.spec.ts

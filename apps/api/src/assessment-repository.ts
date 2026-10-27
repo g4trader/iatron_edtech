@@ -159,11 +159,30 @@ export function createAssessmentRepository(
       return result[0] ? summary(result[0]) : null;
     },
     async listHistory() {
-      return rows(
+      const recent = rows(
         await get(
           'diagnostic_assessments?select=*,question_attempts(id)&order=started_at.desc&limit=100',
         ),
       ).map(summary);
+      const hasOpen = recent.some(
+        (item) =>
+          ['active', 'paused'].includes(item.status) &&
+          item.completedAt === null,
+      );
+      if (recent.length < 100 || hasOpen) return recent;
+      // Keep an older pending assessment reachable beyond the recent-history window.
+      // Both reads use the student's token and RLS; failures must block a new start.
+      const pending = rows(
+        await get(
+          'diagnostic_assessments?select=*,question_attempts(id)&status=in.(active,paused)&completed_at=is.null&order=started_at.desc&limit=1',
+        ),
+      ).map(summary);
+      return [
+        ...recent,
+        ...pending.filter(
+          (item) => !recent.some((saved) => saved.id === item.id),
+        ),
+      ];
     },
     async listCandidates() {
       const [candidateRows, eligibilityRows] = await Promise.all([

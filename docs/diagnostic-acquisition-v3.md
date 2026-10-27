@@ -42,7 +42,8 @@ em favor dos hosts aprovados. Autorização continua no servidor/API/RLS.
 ## C. Arquivos alterados
 
 Inventário ao final do documento. Nenhuma migration, dependência ou algoritmo
-pedagógico foi alterado.
+pedagógico foi alterado. O repositório de histórico da API inclui a pendência
+mais recente fora da janela de 100 quando necessário, com o mesmo token e RLS.
 
 ## D. CTAs
 
@@ -73,7 +74,7 @@ não persiste nem transmite dados, não cria cookies nem identificadores.
 | `diagnostic_started`       | Criação confirmada pela API, nunca no clique da LP           |
 | `diagnostic_completed`     | Conclusão confirmada pela API                                |
 | `diagnostic_result_viewed` | Resultado real carregado                                     |
-| `study_path_opened`        | Plano real carregado, não no estado vazio                    |
+| `study_path_opened`        | Plano atual ou semanal real carregado, não no estado vazio   |
 
 StrictMode não duplica visualizações por montagem. Retomadas não geram novo início.
 Uma nova visita pode gerar nova visualização; isso não representa usuário único.
@@ -88,7 +89,34 @@ consentimento, deduplicação e vínculo permitido. Nenhuma taxa foi inventada.
 
 ## F. Cenários e G. validação técnica
 
-Em validação. Os resultados finais serão registrados após a execução.
+Validação local em 27/10/2026: lint, typecheck, build de produção e testes
+aprovados (173 web, 157 API, 25 contratos, 6 IA, 9 guards). Playwright:
+139 aprovados e 26 exclusões condicionais por dispositivo. A matriz inclui
+320×812, 375×812, 390×844, 768×1024, 1024×768, 1366×768, 1440×900 e 1920×1080.
+A inspeção visual do hero desktop/mobile confirma CTA legível e composição
+preservada. Não foi feita medição de Core Web Vitals em usuários reais.
+
+A execução inicial de CI identificou uma asserção com texto antigo de recuperação,
+corrigida, e bloqueio externo de download de imagens (HTTP rate limit) antes dos
+E2E reais. A inicialização efêmera admite uma segunda tentativa, sem ignorar falhas.
+Os resultados finais de CI e o aceite integrado são registrados na
+[PR #7](https://github.com/g4trader/iatron_edtech/pull/7), associados ao commit testado.
+
+| Cenário                      | Esperado                           | Evidência local observada                                              | Resultado local                                     |
+| ---------------------------- | ---------------------------------- | ---------------------------------------------------------------------- | --------------------------------------------------- |
+| CTAs da LP                   | Mesmo destino, clique não é início | 4 destinos idênticos; evento somente de clique                         | Aprovado, navegador com bypass                      |
+| Login/cadastro e retorno     | Preservar diagnóstico              | Actions/callback/onboarding/proxy preservam retorno em testes isolados | Aprovado unitário; real no job acquisition          |
+| Sessão expirada              | Reautenticar com retorno           | Proxy/onboarding exigem login com destino sanitizado                   | Aprovado unitário, sem simular prova de sessão real |
+| Avaliação ausente            | Criar só após API confirmar        | API falha não retorna evento; sucesso retorna início                   | Aprovado unitário                                   |
+| Ativa/pausada                | Retomar sem reiniciar              | Resume somente se pausada, sem novo evento                             | Aprovado unitário                                   |
+| Pendente antiga              | Encontrar fora das últimas 100     | Consulta adicional autenticada e falha propagada                       | Aprovado unitário de repositório                    |
+| Concluída                    | Resultado sem reset                | Já concluída não repete finish/evento                                  | Aprovado unitário                                   |
+| Rede/histórico indisponível  | Erro recuperável, sem criar        | Actions e sessão bloqueiam criação/conclusão indevida                  | Aprovado com falhas injetadas                       |
+| Diagnóstico sem questões     | Não afirmar conclusão              | Zero respostas oferece retry, sem finish                               | Aprovado unitário                                   |
+| Mobile/teclado/contraste     | Sem corte, navegação utilizável    | 8 larguras, menus, tabs, forms e axe sem falhas                        | Aprovado navegador                                  |
+| Conclusão/trilha persistidas | Confirmar serviços reais           | Cobertura programada no job acquisition com fixtures exclusivas        | Ver resultado do job na PR                          |
+| Staging com V3               | Smoke após publicação autorizada   | Não houve deploy                                                       | Não testado nesta rodada                            |
+
 Os testes unitários usam serviços simulados e não comprovam autenticação real.
 `test:e2e:mock` usa bypass explícito somente no processo não produtivo.
 `acquisition-flow.spec.ts` usa Supabase/API reais em ambiente efêmero de CI,
@@ -121,7 +149,8 @@ versus trilha. Não foi criado sistema de A/B testing.
 
 ## J. Resumo executivo e operação
 
-Implementação conectada ao diagnóstico real; validação integrada ainda em andamento.
+Implementação conectada ao diagnóstico real; resultados integrados e status de
+aceite estão na PR #7 para evitar confundir validação local com publicação.
 Não declarar pronto para produção até verificar os critérios bloqueantes.
 A publicação depende de autorização explícita, merge e smoke no ambiente aprovado.
 Rollback futuro: reverter o commit da V3; não há mudança de schema para desfazer.
@@ -132,6 +161,8 @@ Nenhuma configuração de produção ou credencial foi alterada.
 ## Inventário
 
 - `.github/workflows/ci.yml`
+- `apps/api/src/assessment-repository-history.test.ts`
+- `apps/api/src/assessment-repository.ts`
 - `apps/web/e2e-auth/acquisition-flow.spec.ts`
 - `apps/web/e2e-auth/auth-flow.spec.ts`
 - `apps/web/e2e/app.spec.ts`
@@ -140,10 +171,13 @@ Nenhuma configuração de produção ou credencial foi alterada.
 - `apps/web/src/app/(authenticated)/app/assessment/entry/error.tsx`
 - `apps/web/src/app/(authenticated)/app/assessment/entry/page.tsx`
 - `apps/web/src/app/(authenticated)/app/assessment/result/page.tsx`
+- `apps/web/src/app/(authenticated)/app/assessment/session/error.test.tsx`
+- `apps/web/src/app/(authenticated)/app/assessment/session/error.tsx`
 - `apps/web/src/app/(authenticated)/app/assessment/session/page.tsx`
 - `apps/web/src/app/(authenticated)/app/assessment/start/page.tsx`
 - `apps/web/src/app/(authenticated)/app/onboarding/page.tsx`
 - `apps/web/src/app/(authenticated)/app/plan/page.tsx`
+- `apps/web/src/app/(authenticated)/app/plan/week/page.tsx`
 - `apps/web/src/app/(authenticated)/layout.tsx`
 - `apps/web/src/app/(public)/auth/actions.test.ts`
 - `apps/web/src/app/(public)/auth/actions.ts`

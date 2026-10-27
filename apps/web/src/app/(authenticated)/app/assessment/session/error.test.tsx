@@ -9,13 +9,13 @@ describe('AssessmentSessionError', () => {
 
     expect(
       screen.getByRole('heading', {
-        name: 'Não conseguimos registrar esta resposta agora',
+        name: 'Não conseguimos confirmar sua resposta agora',
       }),
     ).toBeVisible();
     expect(screen.queryByText(/resposta foi salva/i)).not.toBeInTheDocument();
     expect(
-      screen.getByRole('link', { name: 'Voltar para minha jornada' }),
-    ).toHaveAttribute('href', '/app');
+      screen.getByRole('link', { name: 'Conferir meu diagnóstico salvo' }),
+    ).toHaveAttribute('href', '/app/assessment/entry');
 
     fireEvent.click(screen.getByRole('button', { name: 'Tentar novamente' }));
     expect(reset).toHaveBeenCalledOnce();

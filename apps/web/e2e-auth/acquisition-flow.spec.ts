@@ -107,6 +107,16 @@ async function enterFromLanding(page: Page) {
   await page.locator('[data-diagnostic-cta="hero"]').click();
 }
 
+async function expectNoHorizontalOverflow(page: Page) {
+  const dimensions = await page.evaluate(() => ({
+    width: document.documentElement.clientWidth,
+    scroll: document.documentElement.scrollWidth,
+  }));
+  expect(dimensions.scroll, JSON.stringify(dimensions)).toBeLessThanOrEqual(
+    dimensions.width,
+  );
+}
+
 async function answerFirstOption(page: Page) {
   const question = page.getByRole('heading', { name: /Questão \d+ de/ });
   await expect(question).toBeVisible();
@@ -184,6 +194,7 @@ test('aquisição real preserva intenção, progresso e resultado sem criar aval
         'diagnostic_cta_click',
         'diagnostic_entry_view',
         'diagnostic_result_viewed',
+        'study_path_opened',
       ].includes(name)
     )
       events.push(name);
@@ -235,6 +246,12 @@ test('aquisição real preserva intenção, progresso e resultado sem criar aval
   await page.getByLabel('Senha', { exact: true }).fill(password);
   await page.getByRole('button', { name: 'Entrar', exact: true }).click();
   await completeOnboarding(page);
+  await expect(
+    page.getByRole('heading', { name: 'Diagnóstico inicial', level: 1 }),
+  ).toBeVisible();
+  await expect(
+    page.getByRole('button', { name: 'Começar meu diagnóstico', exact: true }),
+  ).toBeVisible();
   await page
     .locator('main')
     .screenshot({ path: testInfo.outputPath('acquisition-intro.png') });
@@ -244,6 +261,13 @@ test('aquisição real preserva intenção, progresso e resultado sem criar aval
     .click();
   await expect(page).toHaveURL(/\/app\/assessment\/session\?id=/);
   await expect.poll(() => count('diagnostic_started')).toBe(1);
+  await expect(
+    page.getByRole('heading', { name: /Questão \d+ de/, level: 1 }),
+  ).toBeVisible();
+  await expect(
+    page.locator('input[name="selectedOptionId"]').first(),
+  ).toBeVisible();
+  await expectNoHorizontalOverflow(page);
   await page.locator('main').screenshot({
     path: testInfo.outputPath('acquisition-question-mobile.png'),
   });
@@ -296,6 +320,19 @@ test('aquisição real preserva intenção, progresso e resultado sem criar aval
     new RegExp(`/app/assessment/result\\?id=${id}$`),
   );
   await expect.poll(() => count('diagnostic_completed')).toBe(1);
+  await expect(
+    page.getByRole('heading', {
+      name: 'Agora já conhecemos seu ponto de partida',
+      level: 1,
+    }),
+  ).toBeVisible();
+  await expect(
+    page.getByRole('link', {
+      name: 'Ver minha trilha de estudos',
+      exact: true,
+    }),
+  ).toBeVisible();
+  await expectNoHorizontalOverflow(page);
   await page
     .locator('main')
     .screenshot({ path: testInfo.outputPath('acquisition-result-mobile.png') });
@@ -316,12 +353,36 @@ test('aquisição real preserva intenção, progresso e resultado sem criar aval
   expect(completed[0]).toMatchObject({ id, status: 'completed' });
   expect(count('diagnostic_started')).toBe(1);
   expect(count('diagnostic_completed')).toBe(1);
+  await page
+    .getByRole('link', { name: 'Ver minha trilha de estudos', exact: true })
+    .click();
+  await expect(page).toHaveURL(/\/app\/plan$/);
+  await expect(
+    page.getByRole('heading', {
+      name: 'Seu plano está pronto para ser criado',
+    }),
+  ).toBeVisible();
+  await page.waitForLoadState('networkidle');
+  expect(count('study_path_opened')).toBe(0);
+  await page
+    .getByRole('button', { name: 'Criar meu plano', exact: true })
+    .click();
+  await expect(page).toHaveURL(/\/app\/plan\/week$/);
+  await expect(
+    page.getByRole('heading', { name: 'Próximos sete dias', level: 1 }),
+  ).toBeVisible();
+  await expect.poll(() => count('study_path_opened')).toBe(1);
+  await expectNoHorizontalOverflow(page);
+  await page
+    .locator('main')
+    .screenshot({ path: testInfo.outputPath('acquisition-plan-mobile.png') });
   await testInfo.attach('acquisition-events', {
     body: JSON.stringify(
       {
         events,
         started: count('diagnostic_started'),
         completed: count('diagnostic_completed'),
+        studyPathOpened: count('study_path_opened'),
       },
       null,
       2,
