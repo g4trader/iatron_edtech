@@ -102,7 +102,7 @@ preservada. Não foi feita medição de Core Web Vitals em usuários reais.
 
 A execução inicial de CI identificou uma asserção com texto antigo de recuperação,
 corrigida, e bloqueio externo de download de imagens (HTTP rate limit) antes dos
-E2E reais. A inicialização efêmera admite uma segunda tentativa, sem ignorar falhas.
+E2E reais. As falhas de infraestrutura não são ignoradas.
 O CI preserva a alternância de registros do Supabase e autentica a leitura no
 GHCR pelo token efêmero do job, somente com permissão de leitura de pacotes.
 O limite externo também ocorreu com autenticação; não há garantia de eliminá-lo. Não
@@ -119,10 +119,11 @@ o cliente emite o evento confirmado e faz navegação completa para o resultado,
 limpando o Router Cache. As consultas permanecem `no-store`. Início e retomada
 continuam usando navegação interna. A deduplicação considera evento e destino.
 
-O job de aquisição mantém Postgres, Auth, PostgREST, gateway e caixa de e-mail,
-mas dispensa Studio, processamento de imagens e telemetria que não participam
-desse teste. A validação geral continua executando a pilha e os testes existentes. Capturas usam `caret: initial` para evitar que a
-manipulação de caret pelo Playwright interfira na hidratação durante a evidência.
+As suites geral e de aquisição reutilizam a mesma pilha completa de Supabase no
+job `validate`, evitando que um segundo runner baixe novamente as mesmas imagens.
+Isso mantém os testes de banco, serviços reais de Auth/API e todas as verificações
+existentes. Capturas usam `caret: initial` para evitar que a manipulação de caret
+pelo Playwright interfira na hidratação durante a evidência.
 
 No CI, `E2E_BROWSER_CHANNEL=chrome` seleciona o Chrome já instalado no runner
 Ubuntu 24.04; o workflow registra sua versão. A instalação adicional do Chromium
@@ -143,7 +144,7 @@ Os resultados finais de CI e o aceite integrado são registrados na
 | Cenário                      | Esperado                           | Evidência local observada                                              | Resultado local                                     |
 | ---------------------------- | ---------------------------------- | ---------------------------------------------------------------------- | --------------------------------------------------- |
 | CTAs da LP                   | Mesmo destino, clique não é início | 4 destinos idênticos; evento somente de clique                         | Aprovado, navegador com bypass                      |
-| Login/cadastro e retorno     | Preservar diagnóstico              | Actions/callback/onboarding/proxy preservam retorno em testes isolados | Aprovado unitário; real no job acquisition          |
+| Login/cadastro e retorno     | Preservar diagnóstico              | Actions/callback/onboarding/proxy preservam retorno em testes isolados | Aprovado unitário; real no passo Acquisition funnel          |
 | Sessão expirada              | Reautenticar com retorno           | Proxy/onboarding exigem login com destino sanitizado                   | Aprovado unitário, sem simular prova de sessão real |
 | Avaliação ausente            | Criar só após API confirmar        | API falha não retorna evento; sucesso retorna início                   | Aprovado unitário                                   |
 | Ativa/pausada                | Retomar sem reiniciar              | Resume somente se pausada, sem novo evento                             | Aprovado unitário                                   |
@@ -152,7 +153,7 @@ Os resultados finais de CI e o aceite integrado são registrados na
 | Rede/histórico indisponível  | Erro recuperável, sem criar        | Actions e sessão bloqueiam criação/conclusão indevida                  | Aprovado com falhas injetadas                       |
 | Diagnóstico sem questões     | Não afirmar conclusão              | Zero respostas oferece retry, sem finish                               | Aprovado unitário                                   |
 | Mobile/teclado/contraste     | Sem corte, navegação utilizável    | 8 larguras, menus, tabs, forms e axe sem falhas                        | Aprovado navegador                                  |
-| Conclusão/trilha persistidas | Confirmar serviços reais           | Cobertura programada no job acquisition com fixtures exclusivas        | Ver resultado do job na PR                          |
+| Conclusão/trilha persistidas | Confirmar serviços reais           | Cobertura programada no passo Acquisition funnel com fixtures exclusivas        | Ver resultado do job na PR                          |
 | Staging com V3               | Smoke após publicação autorizada   | Não houve deploy                                                       | Não testado nesta rodada                            |
 
 Os testes unitários usam serviços simulados e não comprovam autenticação real.

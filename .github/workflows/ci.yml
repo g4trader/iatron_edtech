@@ -47,37 +47,9 @@ jobs:
       - run: pnpm build
       - name: Verify preinstalled Chrome
         run: google-chrome --version
-      - run: pnpm test:e2e:mock
-
-  acquisition:
-    runs-on: ubuntu-24.04
-    timeout-minutes: 20
-    steps:
-      - uses: actions/checkout@v4
-      - uses: pnpm/action-setup@v4
-        with:
-          version: 10.13.1
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 22
-          cache: pnpm
-      - run: pnpm install --frozen-lockfile
-      - name: Authenticate public image pulls with the ephemeral job token
-        env:
-          REGISTRY_TOKEN: ${{ github.token }}
-        run: printf '%s' "$REGISTRY_TOKEN" | docker login ghcr.io --username "$GITHUB_ACTOR" --password-stdin
-      - run: pnpm exec turbo build --filter=@iatron/api...
-      - name: Start isolated Supabase (retry transient registry limits once)
-        # This job tests Auth/PostgREST/Postgres/Mailpit, not Studio, image transforms or telemetry.
-        run: |
-          pnpm exec supabase start --exclude studio,imgproxy,vector,analytics,edge-runtime,realtime,meta || {
-            sleep 10
-            pnpm exec supabase start --exclude studio,imgproxy,vector,analytics,edge-runtime,realtime,meta
-          }
-      - name: Verify preinstalled Chrome
-        run: google-chrome --version
       - name: Acquisition funnel with isolated local Supabase
         run: pnpm test:e2e:auth acquisition-flow.spec.ts
+      - run: pnpm test:e2e:mock
       - name: Acquisition evidence
         if: always()
         uses: actions/upload-artifact@v4
