@@ -71,7 +71,9 @@ test('V4: escolhe prova após cadastro completo, persiste e retoma preparação 
     await expect(option).toBeVisible();
     await option.check();
     await info.attach('exam-selection-desktop', {
-      body: await page.screenshot(),
+      body: await page.screenshot({
+        path: info.outputPath('exam-selection-desktop.png'),
+      }),
       contentType: 'image/png',
     });
     await page.getByRole('button', { name: 'Confirmar escolha' }).click();
@@ -115,7 +117,9 @@ test('V4: escolhe prova após cadastro completo, persiste e retoma preparação 
         page.getByRole('link', { name: 'Iniciar diagnóstico', exact: true }),
       ).toBeVisible();
       await info.attach(`preparation-${width}`, {
-        body: await page.screenshot(),
+        body: await page.screenshot({
+          path: info.outputPath(`preparation-${width}.png`),
+        }),
         contentType: 'image/png',
       });
     }
@@ -137,7 +141,9 @@ test('V4: escolhe prova após cadastro completo, persiste e retoma preparação 
     ).toBeVisible();
     await expect(page.locator('input[type="checkbox"]:checked')).toHaveCount(1);
     await info.attach('exam-selection-mobile', {
-      body: await page.screenshot(),
+      body: await page.screenshot({
+        path: info.outputPath('exam-selection-mobile.png'),
+      }),
       contentType: 'image/png',
     });
     await page.goto('/app');
