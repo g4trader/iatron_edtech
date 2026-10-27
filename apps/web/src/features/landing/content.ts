@@ -1,26 +1,3 @@
-export const journey = [
-  [
-    'Diagnóstico',
-    'Descubra seu ponto de partida.',
-    'Responda questões e reconheça o que você já domina nas áreas avaliadas.',
-  ],
-  [
-    'Lacunas',
-    'Entenda o que precisa de atenção.',
-    'Veja os temas que pedem reforço e as prioridades calculadas pela plataforma.',
-  ],
-  [
-    'Trilha',
-    'Estude com direção.',
-    'Organize os próximos passos a partir do diagnóstico, da sua rotina e dos seus objetivos.',
-  ],
-  [
-    'Evolução',
-    'Acompanhe seu desenvolvimento.',
-    'Pratique, retome os temas e acompanhe novas evidências de aprendizagem.',
-  ],
-] as const;
-
 export const faqs = [
   [
     'O que é a Iatron?',

@@ -10,9 +10,10 @@ describe('demonstração pública da plataforma', () => {
     expect(tabs[1]).toHaveAttribute('tabindex', '-1');
     fireEvent.keyDown(tabs[0]!, { key: 'ArrowRight' });
     expect(tabs[1]).toHaveFocus();
-    expect(screen.getByRole('tabpanel')).toHaveAccessibleName('Lacunas');
+    expect(screen.getByRole('tabpanel')).toHaveAccessibleName('Minha trilha');
     fireEvent.keyDown(tabs[1]!, { key: 'End' });
     expect(tabs[2]).toHaveFocus();
+    expect(screen.getByRole('tabpanel')).toHaveAccessibleName('Minha evolução');
     fireEvent.keyDown(tabs[2]!, { key: 'ArrowRight' });
     expect(tabs[0]).toHaveFocus();
     fireEvent.keyDown(tabs[0]!, { key: 'ArrowLeft' });
@@ -22,64 +23,88 @@ describe('demonstração pública da plataforma', () => {
     expect(screen.getAllByRole('tabpanel')).toHaveLength(1);
   });
 
-  it('identifica a demonstração e emite somente nome e aba no evento local', () => {
+  it('preserva o evento local com somente nome e aba, sem duplicação', () => {
     const listener = vi.fn();
     window.addEventListener('iatron:landing-event', listener);
     render(<PlatformShowcase />);
-    expect(screen.getByText('Exemplo ilustrativo')).toBeVisible();
-    fireEvent.click(screen.getByRole('tab', { name: 'Trilha' }));
-    expect(screen.getByRole('tabpanel')).toHaveAccessibleName('Trilha');
+    fireEvent.click(screen.getByRole('tab', { name: 'Minha trilha' }));
     expect(listener).toHaveBeenCalledTimes(1);
     expect((listener.mock.calls[0]![0] as CustomEvent).detail).toEqual({
       name: 'platform_demo_interaction',
-      tab: 'Trilha',
+      tab: 'Minha trilha',
     });
-    expect(screen.getByText(/Dados e atividades fictícios/)).toBeVisible();
     window.removeEventListener('iatron:landing-event', listener);
   });
 
-  it('contextualiza temas, domínio e prioridades sem representar estudantes reais', () => {
+  it('demonstra diagnóstico, atividades e evolução com conteúdo distinto e aviso persistente', () => {
     render(<PlatformShowcase />);
-    fireEvent.click(screen.getByRole('tab', { name: 'Lacunas' }));
-    const gaps = within(screen.getByRole('tabpanel'));
-    expect(gaps.getByRole('heading', { name: 'Pré-natal' })).toBeVisible();
+    const notice = screen.getByText(
+      /dados, atividades, tempos e evolução são fictícios/,
+    );
+    expect(notice).toBeVisible();
+    const diagnosis = within(screen.getByRole('tabpanel'));
+    expect(diagnosis.getByRole('heading', { name: 'Pré-natal' })).toBeVisible();
+    expect(diagnosis.getByText('46% de domínio')).toBeVisible();
     expect(
-      gaps.getByText('Ginecologia e Obstetrícia · Domínio ilustrativo: 46%'),
+      diagnosis.getByRole('heading', { name: 'Cuidados perioperatórios' }),
     ).toBeVisible();
+    expect(diagnosis.getByText('58% de domínio')).toBeVisible();
     expect(
-      gaps.getByRole('heading', { name: 'Cuidados perioperatórios' }),
-    ).toBeVisible();
-    expect(
-      gaps.getByText('Cirurgia Geral · Domínio ilustrativo: 58%'),
-    ).toBeVisible();
-    expect(gaps.getByText('Fortalecer primeiro')).toBeVisible();
-    expect(gaps.getByText('Aprofundar na sequência')).toBeVisible();
-    expect(gaps.getByText(/Não são dados reais de estudantes/)).toBeVisible();
-    fireEvent.click(screen.getByRole('tab', { name: 'Trilha' }));
+      diagnosis.getByRole('list', { name: 'Percentuais fictícios por área' })
+        .children,
+    ).toHaveLength(4);
+    fireEvent.click(screen.getByRole('tab', { name: 'Minha trilha' }));
     const trail = within(screen.getByRole('tabpanel'));
-    expect(trail.getByText(/Tema do exemplo: Pré-natal/)).toBeVisible();
-    expect(
-      trail.getByText(/sem atividades reais nesta demonstração/),
-    ).toBeVisible();
+    expect(trail.getAllByRole('listitem')).toHaveLength(5);
+    expect(trail.getAllByText('Concluída')).toHaveLength(2);
+    expect(trail.getByText('Próxima atividade')).toBeVisible();
+    expect(trail.getByText('Tempos ilustrativos')).toBeVisible();
     for (const label of [
-      'Conteúdo recomendado · 10 min ilustrativos',
-      'Revisar · 20 min ilustrativos',
-      'Praticar · 15 min ilustrativos',
-      'Reavaliar · 10 min ilustrativos',
-    ]) {
+      'Conteúdo recomendado',
+      'Revisão',
+      'Prática',
+      'Reavaliação',
+    ])
       expect(trail.getByText(label)).toBeVisible();
-    }
-    expect(trail.getAllByRole('listitem')).toHaveLength(4);
+    expect(notice).toBeVisible();
+    fireEvent.click(screen.getByRole('tab', { name: 'Minha evolução' }));
+    const evolution = within(screen.getByRole('tabpanel'));
+    expect(evolution.getByText('Evolução fictícia')).toBeVisible();
+    const comparisons = evolution.getByRole('list', {
+      name: 'Comparação fictícia de domínio por área',
+    });
+    const rows = within(comparisons).getAllByRole('listitem');
+    expect(rows).toHaveLength(4);
+    rows.forEach((row) => {
+      expect(within(row).getByText('Antes')).toBeVisible();
+      expect(within(row).getByText('Agora')).toBeVisible();
+    });
+    expect(evolution.getByText('em 2 semanas ilustrativas')).toBeVisible();
+    expect(
+      evolution.getByRole('heading', { name: 'Consolidar Pré-natal' }),
+    ).toBeVisible();
+    expect(notice).toBeVisible();
+    expect(notice).toHaveTextContent(
+      'Não representam estudantes reais nem chance de aprovação.',
+    );
   });
 
-  it('identifica percentuais fictícios no resumo do hero', () => {
+  it('resume mapa, prioridade, atividade e progresso ilustrativos no hero', () => {
     render(<DiagnosisPreview />);
-    expect(screen.getByText('Exemplo ilustrativo')).toBeVisible();
-    expect(screen.getByText(/percentuais fictícios/)).toBeVisible();
     expect(
-      screen.getByText(/Não representa resultados de estudantes/),
+      screen.getByRole('heading', { name: 'Seu mapa de aprendizagem' }),
     ).toBeVisible();
+    expect(screen.getByText('Exemplo ilustrativo')).toBeVisible();
+    expect(screen.getByText('PRIORIDADE · PRÉ-NATAL')).toBeVisible();
+    expect(screen.getByText('Próxima atividade · 20 min')).toBeVisible();
+    expect(screen.getByText('2 de 5 etapas')).toBeVisible();
+    expect(
+      screen.getByText(/Dados, tempos e progresso fictícios/),
+    ).toBeVisible();
+    const areas = within(
+      screen.getByRole('list', { name: 'Percentuais fictícios por área' }),
+    );
     for (const percent of ['72%', '64%', '58%', '46%'])
-      expect(screen.getByText(percent)).toBeVisible();
+      expect(areas.getByText(percent)).toBeVisible();
   });
 });

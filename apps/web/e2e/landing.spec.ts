@@ -46,9 +46,7 @@ test.describe('landing premium', () => {
       await page.waitForLoadState('networkidle');
       await expectNoOverflow(page);
       if (width < 600) {
-        const cta = page.getByRole('link', {
-          name: /Conhecer minha trilha de estudos/,
-        });
+        const cta = page.locator('[data-lp-event="hero_primary_cta_click"]');
         await expect(cta).toBeVisible();
         const bounds = await cta.boundingBox();
         expect(bounds, `CTA ausente em ${width}px`).not.toBeNull();
@@ -92,6 +90,37 @@ test.describe('landing premium', () => {
             animations: 'disabled',
           });
         }
+        await page
+          .locator('section[aria-labelledby="curation-title"]')
+          .screenshot({
+            path: `/tmp/iatron-lp-curation-${device}.png`,
+            animations: 'disabled',
+          });
+        for (const [tab, slug] of [
+          ['Meu diagnóstico', 'diagnostico'],
+          ['Minha trilha', 'trilha'],
+          ['Minha evolução', 'evolucao'],
+        ] as const) {
+          await page.getByRole('tab', { name: tab, exact: true }).click();
+          await page
+            .locator('#plataforma')
+            .screenshot({
+              path: `/tmp/iatron-lp-demo-${slug}-${device}.png`,
+              animations: 'disabled',
+            });
+        }
+        for (const [section, event] of [
+          ['comunidade', 'community_cta_click'],
+          ['mentoria', 'career_mentoring_cta_click'],
+        ] as const) {
+          await page.locator(`[data-lp-event="${event}"]`).click();
+          await page
+            .locator(`#${section}`)
+            .screenshot({
+              path: `/tmp/iatron-lp-${section}-open-${device}.png`,
+              animations: 'disabled',
+            });
+        }
       }
     }
   });
@@ -127,27 +156,50 @@ test.describe('landing premium', () => {
   }) => {
     await page.goto('/');
     const diagnosis = page.getByRole('tab', {
-      name: 'Diagnóstico',
+      name: 'Meu diagnóstico',
       exact: true,
     });
     await diagnosis.focus();
     await page.keyboard.press('ArrowRight');
     await expect(
-      page.getByRole('tab', { name: 'Lacunas', exact: true }),
+      page.getByRole('tab', { name: 'Minha trilha', exact: true }),
     ).toBeFocused();
     await expect(
-      page.getByRole('tabpanel', { name: 'Lacunas', exact: true }),
+      page.getByRole('tabpanel', { name: 'Minha trilha', exact: true }),
     ).toBeVisible();
     await page.keyboard.press('End');
     await expect(
-      page.getByRole('tabpanel', { name: 'Trilha', exact: true }),
+      page.getByRole('tabpanel', { name: 'Minha evolução', exact: true }),
+    ).toBeVisible();
+    const evolution = page.getByRole('tabpanel', {
+      name: 'Minha evolução',
+      exact: true,
+    });
+    await expect(
+      evolution
+        .getByRole('list', { name: 'Comparação fictícia de domínio por área' })
+        .locator(':scope > li'),
+    ).toHaveCount(4);
+    await expect(
+      evolution.getByText('Evolução fictícia', { exact: true }),
+    ).toBeVisible();
+    await expect(
+      evolution.getByText('em 2 semanas ilustrativas'),
+    ).toBeVisible();
+    await expect(
+      evolution.getByText('Semana 1 · diagnóstico e estudo'),
+    ).toBeVisible();
+    await expect(
+      evolution.getByText('Semana 2 · prática e reavaliação'),
     ).toBeVisible();
     await page.keyboard.press('ArrowRight');
     await expect(diagnosis).toBeFocused();
     await expect(
-      page.getByRole('tabpanel', { name: 'Diagnóstico', exact: true }),
+      page.getByRole('tabpanel', { name: 'Meu diagnóstico', exact: true }),
     ).toBeVisible();
-    const faq = page.locator('details[data-faq]').first();
+    const faq = page
+      .locator('section[aria-labelledby="faq-title"] details[data-faq]')
+      .first();
     const summary = faq.locator('summary');
     await summary.focus();
     await page.keyboard.press('Enter');
@@ -157,13 +209,70 @@ test.describe('landing premium', () => {
     await expect(faq).not.toHaveAttribute('open', '');
   });
 
+  test('jornada mostra quatro etapas e ofertas planejadas abrem detalhes reais', async ({
+    page,
+  }) => {
+    await page.goto('/');
+    const journey = page
+      .locator('#como-funciona')
+      .getByRole('list', { name: 'Etapas da preparação', exact: true });
+    await expect(journey.locator(':scope > li')).toHaveCount(4);
+    for (const name of ['Diagnóstico', 'Lacunas', 'Trilha', 'Evolução']) {
+      await expect(
+        journey.getByRole('heading', { name, exact: true }),
+      ).toBeVisible();
+    }
+    await expect(
+      journey
+        .getByRole('list', { name: 'Percentuais ilustrativos por área' })
+        .locator(':scope > li'),
+    ).toHaveCount(4);
+    await expect(
+      page.getByText(
+        'Dados e atividades fictícios para demonstrar a experiência.',
+        { exact: false },
+      ),
+    ).toBeVisible();
+    for (const [id, event, expected] of [
+      [
+        'comunidade',
+        'community_cta_click',
+        /Acesso, regras e condições serão divulgados/,
+      ],
+      [
+        'mentoria',
+        'career_mentoring_cta_click',
+        /Não há contratação disponível nesta página/,
+      ],
+    ] as const) {
+      const section = page.locator(`#${id}`);
+      const details = section.locator('details');
+      const summary = section.locator(`[data-lp-event="${event}"]`);
+      await expect(details).not.toHaveAttribute('open', '');
+      await expect(section.getByText(/EM PREPARAÇÃO/)).toBeVisible();
+      await summary.focus();
+      await page.keyboard.press('Enter');
+      await expect(details).toHaveAttribute('open', '');
+      await expect(details.getByText(expected)).toBeVisible();
+      await expect(
+        section.locator('form, input, a[href="/cadastro"]'),
+      ).toHaveCount(0);
+      await expectNoOverflow(page);
+      await page.keyboard.press('Enter');
+      await expect(details).not.toHaveAttribute('open', '');
+    }
+    await expect(
+      page.getByRole('figure', {
+        name: 'Exemplo ilustrativo de conversa na comunidade',
+      }),
+    ).toBeVisible();
+  });
+
   test('conversão e acesso chegam aos formulários existentes', async ({
     page,
   }) => {
     await page.goto('/');
-    await page
-      .getByRole('link', { name: /Conhecer minha trilha de estudos/ })
-      .click();
+    await page.locator('[data-lp-event="hero_primary_cta_click"]').click();
     await expect(page).toHaveURL(/\/cadastro$/);
     await expect(
       page.getByRole('heading', { name: 'Criar conta' }),
@@ -189,7 +298,7 @@ test.describe('landing premium', () => {
   }) => {
     test.setTimeout(90_000);
     await page.goto('/');
-    for (const name of ['Diagnóstico', 'Lacunas', 'Trilha']) {
+    for (const name of ['Meu diagnóstico', 'Minha trilha', 'Minha evolução']) {
       await page.getByRole('tab', { name, exact: true }).click();
       const results = await new AxeBuilder({ page })
         .withTags(['wcag2a', 'wcag2aa', 'wcag21aa'])

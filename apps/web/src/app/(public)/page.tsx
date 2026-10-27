@@ -51,9 +51,8 @@ export default function HomePage() {
                 Sua preparação começa pelo que você precisa <em>aprender.</em>
               </h1>
               <p>
-                A Iatron combina inteligência artificial e uma proposta de
-                curadoria médica para identificar lacunas, organizar sua trilha
-                de estudos e acompanhar sua evolução.
+                Entenda suas lacunas. Organize seus estudos. Evolua com
+                explicações apoiadas por IA e uma proposta de curadoria médica.
               </p>
               <div className={s.actions}>
                 <Link
@@ -61,7 +60,7 @@ export default function HomePage() {
                   className={s.button}
                   data-lp-event="hero_primary_cta_click"
                 >
-                  Conhecer minha trilha de estudos{' '}
+                  Descobrir meu ponto de partida{' '}
                   <span aria-hidden="true">↗</span>
                 </Link>
                 <a
@@ -69,28 +68,20 @@ export default function HomePage() {
                   className={s.textLink}
                   data-lp-event="hero_secondary_cta_click"
                 >
-                  Como funciona a Iatron
+                  Entenda como funciona
                 </a>
               </div>
               <p className={s.note}>
-                Crie sua conta e comece pelo diagnóstico.
+                Crie sua conta. Depois, comece pelo diagnóstico.
               </p>
               <ul className={s.benefits}>
                 <li>Diagnóstico individual</li>
                 <li>Trilha personalizada</li>
-                <li>Referências médicas</li>
+                <li>Quatro referências médicas</li>
               </ul>
             </div>
             <div className={s.heroVisual}>
-              <div className={s.visualCaption}>
-                <strong>Sua preparação, com direção.</strong>
-                <span>VISÃO DA PLATAFORMA</span>
-              </div>
               <DiagnosisPreview />
-              <p>
-                Do que você já sabe ao que precisa revisar: cada etapa informa o
-                próximo passo.
-              </p>
             </div>
           </div>
         </section>
@@ -116,8 +107,7 @@ export default function HomePage() {
               Entenda seu próximo passo.
             </h2>
             <p className={s.intro}>
-              Explore um exemplo de como diagnóstico, lacunas e atividades se
-              conectam na sua jornada.
+              Explore como diagnóstico, trilha e evolução se conectam.
             </p>
             <PlatformShowcase />
             <div className={s.actions}>
@@ -126,7 +116,7 @@ export default function HomePage() {
                 className={s.button}
                 data-lp-event="platform_cta_click"
               >
-                Quero conhecer minha preparação{' '}
+                Descobrir meu ponto de partida{' '}
                 <span aria-hidden="true">↗</span>
               </Link>
             </div>
