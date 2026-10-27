@@ -13,7 +13,7 @@ describe('landing Mentor First', () => {
       'Dr. Aristóteles',
       'Dr. Lucas',
       'Dr. Guilherme Peterson',
-      'Dra. Fernanda Grosbelli',
+      'Dr. João Garcia',
     ]) {
       expect(screen.getByText(mentor)).toBeVisible();
     }

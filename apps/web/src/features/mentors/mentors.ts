@@ -40,10 +40,10 @@ export const mentors: readonly Mentor[] = [
   },
   {
     id: 'gynecology_obstetrics',
-    name: 'Fernanda Grosbelli',
-    displayName: 'Dra. Fernanda Grosbelli',
-    specialty: 'Ginecologia e Obstetrícia',
-    initials: 'FG',
+    name: 'João Garcia',
+    displayName: 'Dr. João Garcia',
+    specialty: 'Ginecologista Obstetra',
+    initials: 'JG',
     description:
       'Referência da experiência de Ginecologia e Obstetrícia no Iatron.',
   },

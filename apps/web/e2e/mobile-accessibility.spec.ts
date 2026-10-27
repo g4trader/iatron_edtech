@@ -80,7 +80,7 @@ test.describe('hardening mobile', () => {
         'Dr. Aristóteles',
         'Dr. Lucas',
         'Dr. Guilherme Peterson',
-        'Dra. Fernanda Grosbelli',
+        'Dr. João Garcia',
       ]) {
         await expect(page.getByText(mentor).first(), route).toBeVisible();
       }
