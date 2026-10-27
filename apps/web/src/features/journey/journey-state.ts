@@ -116,7 +116,7 @@ export function resolveJourneyState({
     mission = {
       title: nextActivity.competencyName,
       reason: activityReason(nextActivity.reasons[0]?.code ?? ''),
-      href: '/app/plan/today',
+      href: `/app/plan/items/${nextActivity.id}` as Route,
       label:
         nextActivity.status === 'in_progress'
           ? 'Retomar atividade'

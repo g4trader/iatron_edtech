@@ -167,7 +167,9 @@ describe('resolveJourneyState', () => {
       currentPlan: plan(true),
     });
     expect(state.mission.title).toBe('Reconhecer choque séptico');
-    expect(state.mission.href).toBe('/app/plan/today');
+    expect(state.mission.href).toBe(
+      '/app/plan/items/10000000-0000-4000-8000-000000000003',
+    );
     expect(state.planState).toBe('available');
   });
 

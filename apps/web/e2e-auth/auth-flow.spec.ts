@@ -203,7 +203,7 @@ test('critical journey: onboarding, diagnóstico, plano, persistência e mobile'
   ).toBeVisible();
   await expect(
     page.getByRole('link', { name: /Começar atividade|Retomar atividade/ }),
-  ).toHaveAttribute('href', '/app/plan/today');
+  ).toHaveAttribute('href', /\/app\/plan\/items\//);
 
   // Cenário E — Tutor real responde dentro do limite operacional.
   await page.goto('/app/tutor');
@@ -239,6 +239,7 @@ test('critical journey: onboarding, diagnóstico, plano, persistência e mobile'
   await expect(page).toHaveURL(/\/login/);
   await login(page, email, password);
   await expect(page).toHaveURL(/\/app$/);
+  await page.getByRole('button', { name: 'Ver todas as etapas' }).click();
   await expect(journeyStep(page, 'Prova')).toContainText('Concluído');
   await expect(journeyStep(page, 'Diagnóstico')).toContainText('Concluído');
   await expect(journeyStep(page, 'Estudos')).toContainText('Agora');
