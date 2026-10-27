@@ -9,7 +9,7 @@ export type NavigationItem = {
 };
 
 export const navigationItems: readonly NavigationItem[] = [
-  { href: '/app', label: 'Jornada', icon: 'J' },
+  { href: '/app', label: 'Minha preparação', icon: 'J' },
   { href: '/app/tutor', label: 'Mentores', icon: 'M' },
   { href: '/app/profile', label: 'Perfil', icon: 'P' },
 ] as const;

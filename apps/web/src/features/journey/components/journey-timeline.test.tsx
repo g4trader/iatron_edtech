@@ -14,12 +14,10 @@ describe('JourneyTimeline', () => {
       />,
     );
 
-    expect(
-      screen.getByRole('region', { name: 'Progresso da sua jornada' }),
-    ).toBeVisible();
+    expect(screen.getByRole('region', { name: 'Seu progresso' })).toBeVisible();
     expect(screen.getByText('Você está em: Diagnóstico')).toBeVisible();
     expect(screen.getByText('Concluído')).toBeVisible();
     expect(screen.getByText('Agora')).toBeVisible();
-    expect(screen.getByText('Próxima etapa')).toBeVisible();
+    expect(screen.getByText('Pendente')).toBeVisible();
   });
 });

@@ -131,7 +131,7 @@ test.describe('hardening mobile', () => {
   }) => {
     for (const [route, label, role] of [
       ['/app/assessment/start', 'Começar meu diagnóstico', 'button'],
-      ['/app', /Escolher minha prova|Começar diagnóstico/, 'link'],
+      ['/app', /Escolher minha prova|Iniciar diagnóstico/, 'link'],
     ] as const) {
       await page.goto(route);
       const button = page.getByRole(role, { name: label });

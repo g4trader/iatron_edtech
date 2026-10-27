@@ -105,7 +105,7 @@ describe('AppShell', () => {
       </AppShell>,
     );
 
-    expect(screen.getByRole('link', { name: /Jornada/ })).toBeVisible();
+    expect(screen.getByRole('link', { name: /Minha preparação/ })).toBeVisible();
     expect(screen.queryByRole('link', { name: /Simulados/ })).toBeNull();
     expect(screen.getByRole('link', { name: /Mentores/ })).toBeVisible();
     expect(screen.getByRole('link', { name: /Perfil/ })).toBeVisible();

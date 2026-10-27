@@ -3,11 +3,11 @@ import { expect, test } from '@playwright/test';
 test('abre a jornada e apresenta o próximo passo real', async ({ page }) => {
   await page.goto('/app');
   await expect(
-    page.getByRole('heading', { name: /Olá, Estudante\./ }),
+    page.getByRole('heading', { name: 'Minha preparação' }),
   ).toBeVisible();
   await expect(
     page.getByRole('link', {
-      name: /Escolher minha prova|Começar diagnóstico|Continuar diagnóstico|Criar meu plano|Começar atividade|Retomar atividade/,
+      name: /Escolher minha prova|Iniciar diagnóstico|Retomar diagnóstico|Criar meu plano|Começar atividade|Retomar atividade/,
     }),
   ).toBeVisible();
 });

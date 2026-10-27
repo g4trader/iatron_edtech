@@ -100,11 +100,11 @@ test('critical journey: onboarding, diagnóstico, plano, persistência e mobile'
   await page.getByRole('button', { name: 'Começar minha preparação' }).click();
   await expect(page).toHaveURL(/\/app$/);
   await expect(journeyStep(page, 'Perfil')).toContainText('Concluído');
-  await expect(journeyStep(page, 'Banca')).toContainText('Concluído');
+  await expect(journeyStep(page, 'Prova')).toContainText('Concluído');
   await expect(journeyStep(page, 'Diagnóstico')).toContainText('Agora');
 
   // Cenário B — primeira resposta, segurança, retry e retomada.
-  await page.getByRole('link', { name: 'Começar diagnóstico' }).click();
+  await page.getByRole('link', { name: 'Iniciar diagnóstico' }).click();
   await expect(
     page.getByRole('radio', { name: /Triagem rápida/ }),
   ).toBeChecked();
@@ -178,26 +178,29 @@ test('critical journey: onboarding, diagnóstico, plano, persistência e mobile'
     }),
   ).toBeVisible();
   await page.goto('/app');
-  await expect(journeyStep(page, 'Banca')).toContainText('Concluído');
+  await expect(journeyStep(page, 'Prova')).toContainText('Concluído');
   await expect(journeyStep(page, 'Diagnóstico')).toContainText('Concluído');
   await expect(
     page.getByRole('heading', {
-      name: 'Transformar seu diagnóstico em um plano',
+      name: 'Confira seu resultado',
     }),
   ).toBeVisible();
   await expect(
-    page.getByRole('link', { name: 'Continuar diagnóstico' }),
+    page.getByRole('link', { name: 'Retomar diagnóstico' }),
   ).toHaveCount(0);
   await page.reload();
   await expect(journeyStep(page, 'Diagnóstico')).toContainText('Concluído');
 
   // Cenário D — plano e atividade reais.
-  await page.getByRole('link', { name: 'Criar meu plano' }).click();
+  await page.getByRole('link', { name: 'Ver meu diagnóstico' }).click();
+  await page.getByRole('link', { name: 'Ver minha trilha de estudos' }).click();
   await page.getByRole('button', { name: 'Criar meu plano' }).click();
   await expect(page).toHaveURL(/\/app\/plan\/week/);
   await page.goto('/app');
-  await expect(journeyStep(page, 'Fundamentos')).toContainText('Agora');
-  await expect(page.getByText('Mentor da área')).toBeVisible();
+  await expect(journeyStep(page, 'Estudos')).toContainText('Agora');
+  await expect(
+    page.getByRole('link', { name: 'Conhecer os mentores e suas áreas' }),
+  ).toBeVisible();
   await expect(
     page.getByRole('link', { name: /Começar atividade|Retomar atividade/ }),
   ).toHaveAttribute('href', '/app/plan/today');
@@ -236,9 +239,9 @@ test('critical journey: onboarding, diagnóstico, plano, persistência e mobile'
   await expect(page).toHaveURL(/\/login/);
   await login(page, email, password);
   await expect(page).toHaveURL(/\/app$/);
-  await expect(journeyStep(page, 'Banca')).toContainText('Concluído');
+  await expect(journeyStep(page, 'Prova')).toContainText('Concluído');
   await expect(journeyStep(page, 'Diagnóstico')).toContainText('Concluído');
-  await expect(journeyStep(page, 'Fundamentos')).toContainText('Agora');
+  await expect(journeyStep(page, 'Estudos')).toContainText('Agora');
   await expectNoHorizontalOverflow(page);
 });
 

@@ -1,94 +1,112 @@
 import Link from 'next/link';
 import { PageContainer } from '@/components/layout/page-container';
 import { getAuthState } from '@/lib/auth';
+import { isAuthBypassEnabled } from '@/lib/auth-bypass';
 import { studyPlans } from '@/features/study-plans/server/study-plans';
 import { assessmentHistory } from '@/features/assessments/server/adaptive-assessment';
-import { dominantMentor } from '@/features/mentors/mentors';
-import { MentorIdentity } from '@/features/mentors/components/mentor';
-import { examIntelligenceContext } from '@/features/exam-intelligence/server/context';
 import { JourneyTimeline } from '@/features/journey/components/journey-timeline';
 import { resolveJourneyState } from '@/features/journey/journey-state';
 import { createClient } from '@/lib/supabase/server';
+import { loadExamCatalog } from '@/features/exams/catalog';
 
 export default async function AppHomePage() {
   const { user, profile } = await getAuthState();
   const client = await createClient();
-  const [currentPlan, assessments, examContext, targetResult] =
-    await Promise.all([
-    studyPlans.current().catch(() => null),
-    assessmentHistory().catch(() => []),
-    examIntelligenceContext().catch(() => null),
-      user
-        ? client
-            .from('student_target_exams')
-            .select('exam_edition_id')
-            .eq('user_id', user.id)
-            .limit(1)
-            .maybeSingle()
-        : Promise.resolve({ data: null }),
-    ]);
-  const hasTargetExam = Boolean(targetResult.data?.exam_edition_id);
-  const journey = resolveJourneyState({
-    hasTargetExam,
-    assessments,
-    currentPlan,
+  const bypass = isAuthBypassEnabled(process.env);
+  const results = await Promise.allSettled([
+    bypass ? null : studyPlans.current(),
+    bypass ? [] : assessmentHistory(),
+    bypass ? [] : loadExamCatalog(),
+    bypass || !user
+      ? { data: [], error: null }
+      : client
+          .from('student_target_exams')
+          .select('exam_edition_id')
+          .eq('user_id', user.id),
+  ] as const);
+  const [planResult, historyResult, catalogResult, targetsResult] = results;
+  const failed =
+    results.some((result) => result.status === 'rejected') ||
+    (targetsResult.status === 'fulfilled' && targetsResult.value.error);
+  if (failed)
+    return (
+      <PageContainer>
+        <main className="journey-home">
+          <h1>Minha preparação</h1>
+          <section role="alert">
+            <h2>Não conseguimos atualizar sua preparação</h2>
+            <p>
+              Seus estudos continuam salvos. Tente novamente para ver seu
+              progresso e o próximo passo.
+            </p>
+            <Link className="primary-button" href="/app">
+              Tentar novamente
+            </Link>
+          </section>
+        </main>
+      </PageContainer>
+    );
+  const targets =
+    targetsResult.status === 'fulfilled'
+      ? (targetsResult.value.data ?? [])
+      : [];
+  const catalog =
+    catalogResult.status === 'fulfilled' ? catalogResult.value : [];
+  const names = targets.map((target) => {
+    const edition = catalog.find(
+      (edition) => edition.id === target.exam_edition_id,
+    );
+    return edition
+      ? `${edition.programName} · ${edition.edition ?? edition.year}`
+      : 'Prova selecionada fora do catálogo atual';
   });
-  const nextActivity = journey.mission.activity;
-  const mentor = dominantMentor(nextActivity ? [nextActivity] : []);
-  const targetExam = examContext?.availability === 'available'
-    ? examContext.profile.displayName
-    : hasTargetExam
-      ? 'Sua prova escolhida'
-      : 'Sua prova de residência';
+  const journey = resolveJourneyState({
+    profileComplete: profile?.onboarding_status === 'completed',
+    hasTargetExam: targets.length > 0,
+    assessments:
+      historyResult.status === 'fulfilled' ? historyResult.value : [],
+    currentPlan: planResult.status === 'fulfilled' ? planResult.value : null,
+  });
+  const rawName = profile?.display_name?.trim().split(/\s+/)[0];
   const firstName =
-    profile?.display_name?.trim().split(/\s+/)[0] ?? 'estudante';
-  const remainingStages = journey.steps.filter(
-    (step) => step.status !== 'complete',
-  ).length;
-
+    rawName && !/^(student|estudante|teste|test)$/i.test(rawName)
+      ? rawName
+      : null;
   return (
     <PageContainer>
       <main className="journey-home">
         <header className="journey-hero">
           <div>
-            <p className="eyebrow">Sua jornada</p>
-            <h1>Olá, {firstName}. Este é o seu próximo passo.</h1>
+            <h1>Minha preparação</h1>
+            <p>Continue de onde parou.</p>
           </div>
-          <div className="journey-goal" aria-label="Objetivo da preparação">
-            <span>Seu objetivo</span>
-            <strong>{targetExam}</strong>
-            <small>
-              {remainingStages} etapas visíveis até a revisão final da jornada
-            </small>
+          <div className="journey-goal">
+            <span>
+              {firstName ? `Olá, ${firstName}` : 'Olá, bom ter você por aqui'}
+            </span>
+            <p>
+              <strong>Objetivo:</strong>{' '}
+              {names.length
+                ? names.join('; ')
+                : 'Escolher sua prova de residência'}
+            </p>
+            {names.length > 0 && <Link href="/app/exams">Alterar provas</Link>}
           </div>
         </header>
-
         <JourneyTimeline steps={journey.steps} />
-
         <section
           aria-labelledby="journey-next-title"
           className="journey-next-step"
         >
           <div className="journey-next-copy">
-            <p className="eyebrow">Agora</p>
+            <p className="eyebrow">Próxima ação</p>
             <h2 id="journey-next-title">{journey.mission.title}</h2>
-            {nextActivity && (
+            <p className="journey-reason">{journey.mission.reason}</p>
+            {journey.mission.activity && (
               <p className="journey-time">
-                Cerca de {nextActivity.estimatedMinutes} minutos
+                Cerca de {journey.mission.activity.estimatedMinutes} minutos
               </p>
             )}
-            <div className="journey-why">
-              <strong>Por que este passo?</strong>
-              <p>{journey.mission.reason}</p>
-            </div>
-          </div>
-          <div className="journey-mentor">
-            <span>Mentor da área</span>
-            <MentorIdentity mentor={mentor} />
-            <p>
-              Referência de {mentor.specialty} ao longo desta etapa. As
-              recomendações vêm dos critérios pedagógicos do seu plano.
-            </p>
           </div>
           <Link
             className="primary-button journey-primary-action"
@@ -97,11 +115,15 @@ export default async function AppHomePage() {
             {journey.mission.label}
           </Link>
         </section>
-
-        <p className="journey-after">
-          Depois desta atividade, sua jornada será atualizada com o próximo
-          passo mais útil para sua preparação.
-        </p>
+        <aside className="journey-context">
+          <h2>O que acontece depois?</h2>
+          <p>
+            {!targets.length
+              ? 'Após confirmar sua prova, você poderá iniciar ou retomar o diagnóstico. Suas escolhas ficam salvas para o próximo acesso.'
+              : 'As respostas e atividades confirmadas atualizam sua preparação. O diagnóstico mostra seu ponto de partida e orienta a trilha de estudos.'}
+          </p>
+          <Link href="/app/tutor">Conhecer os mentores e suas áreas</Link>
+        </aside>
       </main>
     </PageContainer>
   );

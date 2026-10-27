@@ -57,17 +57,46 @@ const plan = (withActivity: boolean): StudyPlan => ({
 });
 
 describe('resolveJourneyState', () => {
+  it('não marca perfil incompleto como concluído', () => {
+    const state = resolveJourneyState({
+      profileComplete: false,
+      hasTargetExam: false,
+      assessments: [],
+      currentPlan: null,
+    });
+    expect(state.currentStep).toBe('Perfil');
+    expect(state.mission.href).toBe('/app/onboarding');
+    expect(state.steps.filter((s) => s.status === 'current')).toHaveLength(1);
+  });
+  it('leva a escolha posterior de provas à rota independente do onboarding', () => {
+    const state = resolveJourneyState({
+      hasTargetExam: false,
+      assessments: [],
+      currentPlan: null,
+    });
+    expect(state.mission.href).toBe('/app/exams');
+  });
+  it('não confunde plano vazio com estudos concluídos', () => {
+    expect(
+      resolveJourneyState({
+        hasTargetExam: true,
+        assessments: [],
+        currentPlan: plan(false),
+      }).planState,
+    ).toBe('empty');
+  });
+
   it('marca Banca concluída pela prova persistida, mesmo sem perfil estatístico', () => {
     const state = resolveJourneyState({
       hasTargetExam: true,
       assessments: [],
       currentPlan: null,
     });
-    expect(state.steps.find(({ label }) => label === 'Banca')?.status).toBe(
+    expect(state.steps.find(({ label }) => label === 'Prova')?.status).toBe(
       'complete',
     );
     expect(state.targetExamState).toBe('selected');
-    expect(state.completedSteps).toContain('Banca');
+    expect(state.completedSteps).toContain('Prova');
   });
 
   it('mantém Banca atual enquanto não há prova-alvo', () => {
@@ -76,7 +105,7 @@ describe('resolveJourneyState', () => {
       assessments: [],
       currentPlan: null,
     });
-    expect(state.steps.find(({ label }) => label === 'Banca')?.status).toBe(
+    expect(state.steps.find(({ label }) => label === 'Prova')?.status).toBe(
       'current',
     );
   });
@@ -93,14 +122,14 @@ describe('resolveJourneyState', () => {
       ],
       currentPlan: null,
     });
-    expect(state.mission.title).toBe('Continuar seu diagnóstico');
+    expect(state.mission.title).toBe('Continue seu diagnóstico');
     expect(state.assessmentState).toBe('in_progress');
     expect(
       state.steps.find(({ label }) => label === 'Diagnóstico')?.status,
     ).toBe('current');
   });
 
-  it('não deixa sessão antiga aberta prevalecer sobre conclusão mais recente', () => {
+  it('preserva sessão ainda aberta conforme a entrada V3, mesmo com resultado posterior', () => {
     const state = resolveJourneyState({
       hasTargetExam: true,
       assessments: [
@@ -117,12 +146,12 @@ describe('resolveJourneyState', () => {
       ],
       currentPlan: null,
     });
-    expect(state.mission.title).toBe('Transformar seu diagnóstico em um plano');
-    expect(state.activeAssessment).toBeNull();
+    expect(state.mission.title).toBe('Continue seu diagnóstico');
+    expect(state.activeAssessment).not.toBeNull();
     expect(
       state.steps.find(({ label }) => label === 'Diagnóstico')?.status,
-    ).toBe('complete');
-    expect(state.assessmentState).toBe('completed');
+    ).toBe('current');
+    expect(state.assessmentState).toBe('in_progress');
   });
 
   it('mostra atividade real quando o diagnóstico tem plano disponível', () => {

@@ -5,7 +5,8 @@ import type { Route } from 'next';
 import type { NavigationItem } from './navigation';
 
 const titleByPath: Record<string, string> = {
-  '/app': 'Jornada',
+  '/app': 'Preparação',
+  '/app/exams': 'Escolha da prova',
   '/app/profile': 'Perfil',
   '/app/plan': 'Meu plano',
   '/app/simulations': 'Simulados',

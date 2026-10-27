@@ -5,10 +5,12 @@ import type {
 } from '@iatron/contracts';
 import type { Route } from 'next';
 import type { JourneyStep } from './components/journey-timeline';
+import { selectAssessmentEntry } from '@/features/assessments/entry-state';
 import { activityReason } from '@/lib/learning-language';
 
 interface JourneyStateInput {
   hasTargetExam: boolean;
+  profileComplete?: boolean;
   assessments: AssessmentSummary[];
   currentPlan: StudyPlan | null;
 }
@@ -32,117 +34,85 @@ export interface JourneyState {
   nextActionReason: string;
   targetExamState: 'missing' | 'selected';
   assessmentState: 'not_started' | 'in_progress' | 'completed';
-  planState: 'missing' | 'available' | 'completed';
+  planState: 'missing' | 'available' | 'completed' | 'empty';
   dataFreshness: 'fresh';
 }
-
-const byNewest = (left: AssessmentSummary, right: AssessmentSummary) =>
-  Date.parse(right.startedAt) - Date.parse(left.startedAt);
 
 export function resolveJourneyState({
   hasTargetExam,
   assessments,
   currentPlan,
+  profileComplete = true,
 }: JourneyStateInput): JourneyState {
-  const completedAssessment =
-    assessments
-      .filter(
-        (assessment) =>
-          assessment.status === 'completed' ||
-          assessment.completedAt !== null,
-      )
-      .sort(byNewest)[0] ?? null;
-  const newestOpenAssessment =
-    assessments
-      .filter(
-        (assessment) =>
-          assessment.status !== 'completed' &&
-          assessment.completedAt === null,
-      )
-      .sort(byNewest)[0] ?? null;
-  const activeAssessment =
-    newestOpenAssessment &&
-    (!completedAssessment ||
-      Date.parse(newestOpenAssessment.startedAt) >
-        Date.parse(completedAssessment.completedAt ?? completedAssessment.startedAt))
-      ? newestOpenAssessment
-      : null;
+  const { current: activeAssessment, completed: completedAssessment } =
+    selectAssessmentEntry(assessments);
   const hasCompletedDiagnostic = completedAssessment !== null;
   const nextActivity =
     currentPlan?.items.find((item) =>
       ['planned', 'in_progress'].includes(item.status),
     ) ?? null;
-  const completedActivities =
-    currentPlan?.items.filter((item) => item.status === 'completed').length ??
-    0;
-
-  const currentStage = !hasTargetExam
-    ? 'Banca'
-    : activeAssessment
-      ? 'Diagnóstico'
-      : !hasCompletedDiagnostic
+  // Navigation milestones only. Clinical mastery/readiness remain backend decisions.
+  const currentStage = !profileComplete
+    ? 'Perfil'
+    : !hasTargetExam
+      ? 'Prova'
+      : activeAssessment || !hasCompletedDiagnostic
         ? 'Diagnóstico'
-        : nextActivity || completedActivities === 0
-          ? 'Fundamentos'
-          : 'Consolidação';
+        : 'Estudos';
   const steps: JourneyStep[] = [
-    { label: 'Perfil', status: 'complete' },
+    { label: 'Perfil', status: profileComplete ? 'complete' : 'current' },
     {
-      label: 'Banca',
+      label: 'Prova',
       status: hasTargetExam
         ? 'complete'
-        : currentStage === 'Banca'
+        : currentStage === 'Prova'
           ? 'current'
           : 'upcoming',
     },
     {
       label: 'Diagnóstico',
-      status: activeAssessment
-        ? 'current'
-        : hasCompletedDiagnostic
-          ? 'complete'
-          : currentStage === 'Diagnóstico'
-          ? 'current'
-          : 'upcoming',
-    },
-    {
-      label: 'Fundamentos',
       status:
-        currentStage === 'Fundamentos'
+        currentStage === 'Diagnóstico'
           ? 'current'
-          : completedActivities > 0
+          : hasCompletedDiagnostic
             ? 'complete'
             : 'upcoming',
     },
     {
-      label: 'Consolidação',
-      status: currentStage === 'Consolidação' ? 'current' : 'upcoming',
+      label: 'Estudos',
+      status: currentStage === 'Estudos' ? 'current' : 'upcoming',
     },
-    { label: 'Simulados', status: 'upcoming' },
-    { label: 'Revisão final', status: 'upcoming' },
-    { label: 'Pronto para a prova', status: 'upcoming' },
   ];
 
   let mission: JourneyMission;
-  if (!hasTargetExam) {
+  if (!profileComplete) {
     mission = {
-      title: 'Escolher sua prova-alvo',
+      title: 'Complete seu perfil',
+      reason:
+        'Conte sua rotina para organizar uma preparação que caiba no seu dia.',
+      href: '/app/onboarding',
+      label: 'Continuar meu cadastro',
+      activity: null,
+    };
+  } else if (!hasTargetExam) {
+    mission = {
+      title: 'Escolha sua prova de residência',
       reason:
         'Sua prova orienta os próximos passos e ajuda a concentrar seu tempo no que mais importa.',
-      href: '/app/onboarding',
+      href: '/app/exams',
       label: 'Escolher minha prova',
       activity: null,
     };
   } else if (activeAssessment) {
     mission = {
-      title: 'Continuar seu diagnóstico',
+      title: 'Continue seu diagnóstico',
       reason:
         'Suas respostas anteriores estão salvas. Continue de onde parou para concluirmos seu retrato inicial.',
-      href: `/app/assessment/session?id=${activeAssessment.id}` as Route,
-      label: 'Continuar diagnóstico',
+      href: '/app/assessment/entry',
+      label: 'Retomar diagnóstico',
       activity: null,
     };
-  } else if (nextActivity) {
+  } else if (hasCompletedDiagnostic && nextActivity) {
     mission = {
       title: nextActivity.competencyName,
       reason: activityReason(nextActivity.reasons[0]?.code ?? ''),
@@ -155,29 +125,31 @@ export function resolveJourneyState({
     };
   } else if (hasCompletedDiagnostic && !currentPlan) {
     mission = {
-      title: 'Transformar seu diagnóstico em um plano',
+      title: 'Confira seu resultado',
       reason:
         'Seu diagnóstico já mostrou as primeiras prioridades. Agora vamos distribuí-las de acordo com sua rotina.',
-      href: '/app/plan',
-      label: 'Criar meu plano',
+      href: `/app/assessment/result?id=${completedAssessment!.id}` as Route,
+      label: 'Ver meu diagnóstico',
       activity: null,
     };
   } else if (hasCompletedDiagnostic) {
     mission = {
-      title: 'Revisar seu progresso',
+      title: currentPlan?.items.length
+        ? 'Continue sua preparação'
+        : 'Confira sua trilha',
       reason:
-        'As atividades previstas foram concluídas. Veja sua evolução e prepare o próximo passo.',
+        'Veja as atividades e os próximos passos disponíveis no seu plano. A conclusão dos estudos não representa, por si só, prontidão para a prova.',
       href: '/app/plan/week',
       label: 'Ver meu plano',
       activity: null,
     };
   } else {
     mission = {
-      title: 'Conhecer seu ponto de partida',
+      title: 'Descubra seu ponto de partida',
       reason:
         'Um diagnóstico curto mostra o que já está consistente e onde seu tempo de estudo pode fazer mais diferença.',
-      href: '/app/assessment/start',
-      label: 'Começar diagnóstico',
+      href: '/app/assessment/entry',
+      label: 'Iniciar diagnóstico',
       activity: null,
     };
   }
@@ -202,9 +174,11 @@ export function resolveJourneyState({
         : 'not_started',
     planState: !currentPlan
       ? 'missing'
-      : nextActivity
-        ? 'available'
-        : 'completed',
+      : currentPlan.items.length === 0
+        ? 'empty'
+        : nextActivity
+          ? 'available'
+          : 'completed',
     dataFreshness: 'fresh',
   };
 }
