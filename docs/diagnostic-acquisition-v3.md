@@ -103,6 +103,10 @@ preservada. Não foi feita medição de Core Web Vitals em usuários reais.
 A execução inicial de CI identificou uma asserção com texto antigo de recuperação,
 corrigida, e bloqueio externo de download de imagens (HTTP rate limit) antes dos
 E2E reais. A inicialização efêmera admite uma segunda tentativa, sem ignorar falhas.
+O CI usa o espelho GHCR e autenticação pelo token efêmero do job, somente com
+permissão de leitura de pacotes, para evitar downloads anônimos limitados. Não
+há novo segredo permanente. Referências: [Supabase setup-cli](https://github.com/supabase/setup-cli/blob/main/src/main.ts)
+e [autenticação GHCR](https://docs.github.com/en/packages/working-with-a-github-packages-registry/working-with-the-container-registry).
 A primeira execução real também revelou perda de sessão no callback ao usar
 um host interno do Next e divergência entre `/next` e `/finish` quando as questões
 se esgotavam. Ambos foram corrigidos com regressões automatizadas; a rodada final
