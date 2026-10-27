@@ -108,13 +108,21 @@ async function enterFromLanding(page: Page) {
 }
 
 async function expectNoHorizontalOverflow(page: Page) {
-  const dimensions = await page.evaluate(() => ({
-    width: document.documentElement.clientWidth,
-    scroll: document.documentElement.scrollWidth,
-  }));
-  expect(dimensions.scroll, JSON.stringify(dimensions)).toBeLessThanOrEqual(
-    dimensions.width,
-  );
+  const original = page.viewportSize();
+  try {
+    for (const width of [320, 375, 390, 768, 1366]) {
+      await page.setViewportSize({ width, height: 844 });
+      const dimensions = await page.evaluate(() => ({
+        width: document.documentElement.clientWidth,
+        scroll: document.documentElement.scrollWidth,
+      }));
+      expect(dimensions.scroll, JSON.stringify(dimensions)).toBeLessThanOrEqual(
+        dimensions.width,
+      );
+    }
+  } finally {
+    if (original) await page.setViewportSize(original);
+  }
 }
 
 async function answerFirstOption(page: Page) {
@@ -360,12 +368,10 @@ test('aquisição real preserva intenção, progresso e resultado sem criar aval
         },
       }),
     );
-    await page
-      .locator('main')
-      .screenshot({
-        caret: 'initial',
-        path: testInfo.outputPath('acquisition-after-finish.png'),
-      });
+    await page.locator('main').screenshot({
+      caret: 'initial',
+      path: testInfo.outputPath('acquisition-after-finish.png'),
+    });
   }
   await expect(page).toHaveURL(
     new RegExp(`/app/assessment/result\\?id=${id}$`),

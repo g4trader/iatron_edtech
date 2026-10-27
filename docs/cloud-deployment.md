@@ -1,3 +1,7 @@
+> Política vigente: [deploy automático e validação online](deployment-policy.md).
+> Somente `main` publica automaticamente na Vercel. Branches de trabalho não
+> criam previews; a entrega é validada em `https://go.iatron.com.br`.
+
 # Deploy cloud
 
 Fluxo de staging:
@@ -8,7 +12,7 @@ CI → migrations → seed protegido → pgTAP → tipos/drift → Cloud Run
 ```
 
 Os workflows são `ci.yml`, `deploy-supabase-staging.yml`,
-`deploy-api-staging.yml` e `e2e-staging.yml`. A Vercel gera previews pela
+`deploy-api-staging.yml` e `e2e-staging.yml`. A Vercel publica `main` no ambiente atual pela
 integração Git; não há Action redundante. Nenhum workflow funciona antes de os
 GitHub Environments e secrets serem configurados.
 
@@ -23,7 +27,7 @@ O frontend Vercel usa root `apps/web`, instalação a partir do workspace pnpm e
 build `pnpm build`. A opção para incluir fontes fora do root deve permanecer
 ativa para pacotes compartilhados.
 
-Como o preview Vercel nasce da integração Git, migrations seguem expansão e
+Como a publicação Vercel nasce da integração Git, migrations seguem expansão e
 contração e precisam ser retrocompatíveis com a revisão anterior e a nova. O
 deploy da API é serializado depois do pipeline Supabase; mudanças destrutivas de
 schema exigem uma fase posterior, nunca o mesmo push.
