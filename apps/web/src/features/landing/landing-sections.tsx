@@ -1,6 +1,8 @@
 import Link from 'next/link';
 import { mentors } from '../mentors/mentors';
-import { journey, faqs } from './content';
+import { faqs } from './content';
+import { LearningProgression } from './learning-journey';
+import { MentorPortrait } from './mentor-portrait';
 import s from './landing.module.css';
 
 export function LearningJourney() {
@@ -15,21 +17,17 @@ export function LearningJourney() {
           </h2>
           <div className={s.problemGrid}>
             <p>
-              Entre tantos conteúdos, o desafio é reconhecer suas lacunas,
-              definir prioridades e construir uma rotina que faça sentido para
-              você.
+              Mais conteúdo não resolve a falta de direção. Reconheça suas
+              lacunas, escolha prioridades e encontre uma rotina possível.
             </p>
             <ul>
-              <li>Estudar sem saber onde estão suas lacunas.</li>
-              <li>
-                Seguir a mesma sequência, mesmo com necessidades diferentes.
-              </li>
-              <li>Tomar decisões de formação e carreira sem orientação.</li>
+              <li>O que preciso aprender?</li>
+              <li>Por onde começo?</li>
+              <li>Como sei que estou evoluindo?</li>
             </ul>
           </div>
           <p className={s.bridge}>
-            Uma preparação com direção começa ao conectar evidências de
-            aprendizagem e experiência médica.
+            Transforme essas perguntas em próximos passos.
           </p>
         </div>
       </section>
@@ -43,19 +41,10 @@ export function LearningJourney() {
             DA PRIMEIRA RESPOSTA AO PRÓXIMO PASSO
           </span>
           <h2 id="journey-title">
-            Uma jornada de estudos construída <br />a partir do seu
-            conhecimento.
+            Do seu ponto de partida <br />
+            ao próximo passo.
           </h2>
-          <ol className={s.journey}>
-            {journey.map(([label, title, description], index) => (
-              <li key={label}>
-                <span className={s.step}>0{index + 1}</span>
-                <span className={s.eyebrow}>{label}</span>
-                <h3>{title}</h3>
-                <p>{description}</p>
-              </li>
-            ))}
-          </ol>
+          <LearningProgression />
         </div>
       </section>
     </>
@@ -68,42 +57,57 @@ export function AIAndMedicalCuration() {
       <div className={s.container}>
         <span className={s.eyebrow}>DUAS FORÇAS. UMA PREPARAÇÃO.</span>
         <h2 id="curation-title">
-          Tecnologia para orientar o estudo. <br />
-          <em>Experiência médica para dar contexto.</em>
+          A tecnologia orienta o estudo. <br />
+          <em>A experiência médica dá contexto.</em>
         </h2>
-        <div className={s.twoColumns}>
-          <article>
-            <span className={s.smallNumber}>01 / INTELIGÊNCIA APLICADA</span>
-            <h3>Mais sentido para cada próximo passo.</h3>
+        <div className={s.curationPair}>
+          <article className={s.technologyPanel}>
+            <span className={s.smallNumber}>01 / TECNOLOGIA</span>
+            <h3>Dados orientam. A IA explica.</h3>
             <p>
-              O sistema identifica lacunas e organiza prioridades a partir das
-              suas respostas. A IA ajuda a compreender os resultados e
-              aprofundar os temas do seu plano.
+              O sistema organiza suas prioridades. A IA ajuda a compreender os
+              resultados e aprofundar o estudo.
             </p>
-            <ul>
-              <li>Explicações conectadas à sua preparação</li>
-              <li>Apoio para explorar dúvidas e revisar conceitos</li>
-              <li>Contexto para compreender suas recomendações</li>
-            </ul>
+            <div
+              className={s.decisionFlow}
+              aria-label="Como a tecnologia apoia o estudo"
+            >
+              <span>Suas respostas</span>
+              <span aria-hidden="true">↓</span>
+              <strong>Prioridades de aprendizagem</strong>
+              <span aria-hidden="true">↓</span>
+              <span>Explicações com IA</span>
+            </div>
           </article>
-          <article>
+          <span className={s.connection} aria-hidden="true">
+            +
+          </span>
+          <article className={s.medicalPanel}>
             <span className={s.smallNumber}>02 / EXPERIÊNCIA MÉDICA</span>
-            <h3>Conhecimento conectado à formação.</h3>
+            <h3>Conhecimento encontra contexto.</h3>
             <p>
-              A curadoria médica integra a proposta educacional: aproximar o
-              estudo da experiência de quem conhece os desafios da medicina.
+              A curadoria integra a proposta educacional, conectando fontes,
+              formação e perspectivas da prática médica.
             </p>
-            <ul>
-              <li>Referências em quatro áreas médicas</li>
-              <li>Perspectivas sobre formação e carreira</li>
-              <li>Fontes e status de revisão por conteúdo</li>
-            </ul>
+            <div
+              className={s.curationPillars}
+              aria-label="Pilares da proposta de curadoria"
+            >
+              <span>Fontes e referências</span>
+              <span>Status de revisão</span>
+              <span>Contexto clínico</span>
+              <span>Formação profissional</span>
+            </div>
           </article>
         </div>
-        <p className={s.bridge}>
-          A tecnologia amplia a orientação. O olhar humano dá contexto à
-          jornada.
-        </p>
+        <div className={s.curationResult}>
+          <span aria-hidden="true">↳</span>
+          <strong>Seu próximo estudo, com direção e contexto.</strong>
+          <p>
+            Consulte fontes e revisão em cada conteúdo. Explicações de IA não
+            equivalem a revisão médica individual.
+          </p>
+        </div>
       </div>
     </section>
   );
@@ -123,25 +127,19 @@ export function MentorsSection() {
           que vai além dos livros.
         </h2>
         <p className={s.intro}>
-          Aprender com quem conhece a prática médica amplia sua visão sobre a
-          formação, as especialidades e as decisões da carreira.
+          Quatro referências médicas para ampliar sua visão da formação e das
+          especialidades.
         </p>
         <div className={s.mentors}>
-          {mentors.map((mentor, i) => (
+          {mentors.map((mentor) => (
             <article className={s.mentor} key={mentor.id}>
-              <div className={s.mentorMark} aria-hidden="true">
-                <span>{mentor.initials}</span>
-                <small>0{i + 1}</small>
-              </div>
+              <MentorPortrait
+                name={mentor.displayName}
+                initials={mentor.initials}
+              />
               <p className={s.eyebrow}>{mentor.specialty}</p>
               <h3>{mentor.displayName}</h3>
-              <p>
-                Mentor de referência em{' '}
-                {mentor.id === 'gynecology_obstetrics'
-                  ? 'Ginecologia e Obstetrícia'
-                  : mentor.specialty}{' '}
-                na experiência educacional da Iatron.
-              </p>
+              <p className={s.mentorRole}>Referência educacional da Iatron.</p>
             </article>
           ))}
         </div>
@@ -163,50 +161,56 @@ export function CommunitySection() {
       aria-labelledby="community-title"
     >
       <div className={`${s.container} ${s.twoColumns}`}>
-        <div>
+        <div className={s.communityCopy}>
           <span className={s.eyebrow}>COMUNIDADE IATRON · EM PREPARAÇÃO</span>
           <h2 id="community-title">
             Você não precisa construir sua carreira médica sozinho.
           </h2>
           <p>
-            A proposta da comunidade é aproximar alunos e médicos em um ambiente
-            de troca de experiências e conhecimento.
+            Estratégias de estudo, dúvidas e experiências. Um espaço proposto
+            para aprender também com outras perspectivas.
           </p>
-          <a
-            className={s.textLink}
-            href="#comunidade-detalhes"
-            data-lp-event="community_cta_click"
-          >
-            Conhecer a comunidade Iatron <span aria-hidden="true">↗</span>
-          </a>
+          <details id="comunidade-detalhes" className={s.offerDetails}>
+            <summary className={s.textLink} data-lp-event="community_cta_click">
+              Conhecer a comunidade Iatron <span aria-hidden="true">+</span>
+            </summary>
+            <p>
+              A comunidade será organizada no WhatsApp. Acesso, regras e
+              condições serão divulgados quando disponíveis. A participação dos
+              médicos dependerá da disponibilidade do programa.
+            </p>
+          </details>
         </div>
-        <div id="comunidade-detalhes" className={s.communityDetails}>
-          <span className={s.eyebrow}>CONEXÕES QUE AMPLIAM A FORMAÇÃO</span>
-          <h3>Um espaço para aprender com outras perspectivas.</h3>
-          <ul>
-            <li>
-              <strong>Experiência médica</strong>
-              <span>
-                Interação conforme as regras e a disponibilidade do programa.
-              </span>
-            </li>
-            <li>
-              <strong>Troca entre alunos</strong>
-              <span>
-                Desafios, estratégias de preparação e experiências
-                compartilhadas.
-              </span>
-            </li>
-            <li>
-              <strong>Discussões educacionais</strong>
-              <span>Conhecimento e relacionamentos ao longo da formação.</span>
-            </li>
-          </ul>
-          <p className={s.note}>
-            A comunidade será organizada no WhatsApp. Acesso e condições de
-            participação serão divulgados quando disponíveis.
+        <figure
+          className={s.conversation}
+          aria-label="Exemplo ilustrativo de conversa na comunidade"
+        >
+          <figcaption>
+            <strong>Comunidade Iatron</strong>
+            <span>Exemplo ilustrativo · mensagens fictícias</span>
+          </figcaption>
+          <div className={s.conversationTopic}>
+            TROCA DE ESTRATÉGIAS DE ESTUDO
+          </div>
+          <div className={s.message}>
+            <span>Participante A</span>
+            <p>Como vocês encaixam a revisão na semana?</p>
+          </div>
+          <div className={`${s.message} ${s.reply}`}>
+            <span>Participante B</span>
+            <p>
+              Separo um momento para retomar os temas em que tive mais dúvidas.
+            </p>
+          </div>
+          <div className={s.message}>
+            <span>Participante A</span>
+            <p>Vou experimentar e compartilhar como foi.</p>
+          </div>
+          <p className={s.conversationNote}>
+            Uma representação de troca educacional. Não são mensagens reais nem
+            falas dos mentores.
           </p>
-        </div>
+        </figure>
       </div>
     </section>
   );
@@ -223,31 +227,45 @@ export function CareerMentoringSection() {
             <em>Sua carreira médica é uma jornada.</em>
           </h2>
           <p>
-            A Iatron propõe um espaço de orientação para tomar decisões
-            profissionais com mais clareza e aprender com a experiência de quem
-            já percorreu esse caminho.
+            Uma proposta de orientação para suas escolhas profissionais, com a
+            perspectiva de quem conhece a medicina na prática.
           </p>
-          <a
-            href="#mentoria-detalhes"
-            className={s.lightLink}
-            data-lp-event="career_mentoring_cta_click"
-          >
-            Conhecer a mentoria de carreira <span aria-hidden="true">↗</span>
-          </a>
+          <details id="mentoria-detalhes" className={s.offerDetails}>
+            <summary
+              className={s.lightButton}
+              data-lp-event="career_mentoring_cta_click"
+            >
+              Conhecer a mentoria de carreira <span aria-hidden="true">+</span>
+            </summary>
+            <p>
+              Oferta complementar em preparação. Formato, agenda e condições
+              ainda serão divulgados. Não há contratação disponível nesta
+              página.
+            </p>
+          </details>
         </div>
-        <div id="mentoria-detalhes" className={s.careerTopics}>
-          <span className={s.eyebrow}>PERSPECTIVAS PARA SUA TRAJETÓRIA</span>
+        <div className={s.careerMap}>
+          <span className={s.eyebrow}>UM OLHAR PARA AS PRÓXIMAS ESCOLHAS</span>
           <ol>
-            <li>Escolha de especialidade</li>
-            <li>Planejamento profissional</li>
-            <li>Desafios do início da carreira</li>
-            <li>Desenvolvimento e prática médica</li>
+            <li>
+              <span>01 / FORMAÇÃO</span>
+              <h3>Onde quero chegar?</h3>
+              <p>Residência e escolha de especialidade.</p>
+            </li>
+            <li>
+              <span>02 / PRÁTICA</span>
+              <h3>Que caminho faz sentido?</h3>
+              <p>Desafios do início da carreira.</p>
+            </li>
+            <li>
+              <span>03 / DESENVOLVIMENTO</span>
+              <h3>Como seguir evoluindo?</h3>
+              <p>Planejamento da trajetória profissional.</p>
+            </li>
           </ol>
-          <p>
-            Oferta complementar em preparação. Agenda, formato e condições ainda
-            não estão disponíveis. Conheça reflexões sobre esses temas no
-            podcast abaixo.
-          </p>
+          <a className={s.lightLink} href="#podcast-title">
+            Explore essas conversas no podcast <span aria-hidden="true">↓</span>
+          </a>
         </div>
       </div>
     </section>
@@ -335,16 +353,13 @@ export function FinalCTA() {
           Seu próximo passo na medicina <br />
           merece uma preparação com direção.
         </h2>
-        <p>
-          Organize seus estudos, compreenda suas necessidades de aprendizagem e
-          evolua com tecnologia e experiência médica.
-        </p>
+        <p>Conheça seu ponto de partida e organize o próximo estudo.</p>
         <Link
           className={s.lightButton}
           href="/cadastro"
           data-lp-event="final_cta_click"
         >
-          Começar minha jornada na Iatron <span aria-hidden="true">↗</span>
+          Descobrir meu ponto de partida <span aria-hidden="true">↗</span>
         </Link>
         <a className={s.lightLink} href="#mentoria">
           Conhecer a mentoria

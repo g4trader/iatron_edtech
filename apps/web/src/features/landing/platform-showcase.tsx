@@ -3,7 +3,7 @@
 import { useId, useRef, useState, type KeyboardEvent } from 'react';
 import styles from './showcase.module.css';
 
-const tabs = ['Diagnóstico', 'Lacunas', 'Trilha'] as const;
+const tabs = ['Meu diagnóstico', 'Minha trilha', 'Minha evolução'] as const;
 const areas = [
   { name: 'Pediatria', value: 72 },
   { name: 'Clínica Médica', value: 64 },
@@ -29,33 +29,52 @@ function AreaBars() {
   );
 }
 
+function TrailProgress() {
+  return (
+    <div className={styles.progress}>
+      <div>
+        <span>Progresso da trilha</span>
+        <strong>2 de 5 etapas</strong>
+      </div>
+      <div className={styles.segments} aria-hidden="true">
+        {[0, 1, 2, 3, 4].map((step) => (
+          <span key={step} data-complete={step < 2} />
+        ))}
+      </div>
+    </div>
+  );
+}
+
 export function DiagnosisPreview() {
   return (
     <div className={styles.preview}>
       <div className={styles.topline}>
-        <span>IATRON / SUA PREPARAÇÃO</span>
-        <span className={styles.dot} aria-hidden="true" />
+        <span className={styles.brand}>Iatron</span>
+        <span className={styles.caption}>Exemplo ilustrativo</span>
       </div>
-      <p className={styles.caption}>Exemplo ilustrativo</p>
-      <h2 className={styles.previewTitle}>
-        Um ponto de partida.
-        <br />
-        Um caminho que faz sentido.
-      </h2>
-      <p className={styles.muted}>Retrato por área · percentuais fictícios</p>
+      <h2 className={styles.previewTitle}>Seu mapa de aprendizagem</h2>
+      <p className={styles.subtitle}>
+        Uma visão organizada das suas prioridades de estudo.
+      </p>
+      <div className={styles.chartTitle}>
+        <span>Domínio por área</span>
+        <span>4 áreas</span>
+      </div>
       <AreaBars />
       <div className={styles.nextStep}>
-        <span className={styles.stepNumber} aria-hidden="true">
-          01
-        </span>
         <div>
-          <strong>Próximo passo no exemplo</strong>
-          <p>Fortalecer Ginecologia e Obstetrícia com uma sessão de revisão.</p>
+          <span className={styles.eyebrow}>PRIORIDADE · PRÉ-NATAL</span>
+          <strong>Revisar os fundamentos</strong>
+          <span className={styles.muted}>Próxima atividade · 20 min</span>
         </div>
+        <span className={styles.priorityValue}>
+          46<span>%</span>
+        </span>
       </div>
+      <TrailProgress />
       <p className={styles.disclaimer}>
-        Demonstração visual. Não representa resultados de estudantes ou chance
-        de aprovação.
+        Dados, tempos e progresso fictícios. Não são resultados de estudantes
+        nem chance de aprovação.
       </p>
     </div>
   );
@@ -131,141 +150,210 @@ export function PlatformShowcase() {
           </button>
         ))}
       </div>
-      <div
-        role="tabpanel"
-        id={`${id}-panel-0`}
-        aria-labelledby={`${id}-tab-0`}
-        tabIndex={0}
-        hidden={active !== 0}
-        className={styles.panel}
-      >
-        <div className={styles.panelIntro}>
-          <p className={styles.eyebrow}>CONHEÇA SEU PONTO DE PARTIDA</p>
-          <h3>O que fortalecer primeiro?</h3>
-          <p>
-            O diagnóstico reúne evidências das suas respostas para orientar os
-            próximos estudos.
-          </p>
-          <span className={styles.note}>
-            Percentuais fictícios, apenas para demonstrar a interface.
-          </span>
-        </div>
-        <AreaBars />
-      </div>
-      <div
-        role="tabpanel"
-        id={`${id}-panel-1`}
-        aria-labelledby={`${id}-tab-1`}
-        tabIndex={0}
-        hidden={active !== 1}
-        className={styles.panel}
-      >
-        <div className={styles.panelIntro}>
-          <p className={styles.eyebrow}>ENTENDA SUAS PRIORIDADES</p>
-          <h3>Uma lacuna é um próximo passo.</h3>
-          <p>
-            As prioridades consideram suas respostas, a confiança nas evidências
-            e os critérios pedagógicos da plataforma.
-          </p>
-          <span className={styles.note}>
-            Temas e domínio ilustrativos. Não são dados reais de estudantes.
-          </span>
-        </div>
-        <ol className={styles.priorities}>
-          <li>
-            <span className={styles.priority}>Fortalecer primeiro</span>
-            <h4>Pré-natal</h4>
-            <p>Ginecologia e Obstetrícia · Domínio ilustrativo: 46%</p>
+      <div className={styles.workspace}>
+        <aside className={styles.sidebar} aria-label="Resumo do exemplo">
+          <span className={styles.eyebrow}>SUA JORNADA</span>
+          <strong>Um próximo passo claro.</strong>
+          <div className={styles.sidebarMetric}>
+            <span>Áreas no mapa</span>
+            <b>04</b>
+          </div>
+          <div className={styles.sidebarMetric}>
+            <span>Foco atual</span>
+            <b>Pré-natal</b>
+          </div>
+          <TrailProgress />
+        </aside>
+        <div
+          className={styles.panel}
+          role="tabpanel"
+          id={`${id}-panel-0`}
+          aria-labelledby={`${id}-tab-0`}
+          tabIndex={0}
+          hidden={active !== 0}
+        >
+          <div className={styles.panelHeading}>
+            <div>
+              <p className={styles.eyebrow}>SEU PONTO DE PARTIDA</p>
+              <h3>Clareza antes de acelerar.</h3>
+            </div>
+            <span className={styles.caption}>Diagnóstico ilustrativo</span>
+          </div>
+          <div className={styles.diagnosticGrid}>
+            <div>
+              <div className={styles.chartTitle}>
+                <span>Domínio por área</span>
+                <span>%</span>
+              </div>
+              <AreaBars />
+            </div>
+            <div className={styles.gaps}>
+              <span className={styles.eyebrow}>PRIORIDADES DE ESTUDO</span>
+              <div>
+                <span className={styles.priority}>Fortalecer primeiro</span>
+                <h4>Pré-natal</h4>
+                <p>Ginecologia e Obstetrícia</p>
+                <strong>46% de domínio</strong>
+              </div>
+              <div>
+                <span className={styles.priority}>Na sequência</span>
+                <h4>Cuidados perioperatórios</h4>
+                <p>Cirurgia Geral</p>
+                <strong>58% de domínio</strong>
+              </div>
+            </div>
+          </div>
+          <div className={styles.insight}>
+            <span aria-hidden="true">↗</span>
             <p>
-              No exemplo, esta área precisa de mais estudo e prática para
-              consolidar os fundamentos.
+              <strong>Do resultado à ação.</strong> Neste exemplo, revisar
+              Pré-natal é o próximo passo antes de praticar com novas questões.
             </p>
-          </li>
-          <li>
-            <span className={styles.priority}>Aprofundar na sequência</span>
-            <h4>Cuidados perioperatórios</h4>
-            <p>Cirurgia Geral · Domínio ilustrativo: 58%</p>
-            <p>
-              Revisar os pontos de dúvida e buscar novas evidências com
-              questões.
-            </p>
-          </li>
-        </ol>
-      </div>
-      <div
-        role="tabpanel"
-        id={`${id}-panel-2`}
-        aria-labelledby={`${id}-tab-2`}
-        tabIndex={0}
-        hidden={active !== 2}
-        className={styles.panel}
-      >
-        <div className={styles.panelIntro}>
-          <p className={styles.eyebrow}>TRANSFORME CLAREZA EM AÇÃO</p>
-          <h3>Um estudo de cada vez.</h3>
-          <p>
-            Uma trilha organiza atividades e tempo disponível. Novas respostas
-            ajudam a atualizar o próximo passo.
-          </p>
-          <span className={styles.note}>
-            Tema do exemplo: Pré-natal. Tempos ilustrativos, sem atividades
-            reais nesta demonstração.
-          </span>
+          </div>
         </div>
-        <ol className={styles.journey}>
-          <li>
-            <span className={styles.stepNumber} aria-hidden="true">
-              01
-            </span>
+        <div
+          className={styles.panel}
+          role="tabpanel"
+          id={`${id}-panel-1`}
+          aria-labelledby={`${id}-tab-1`}
+          tabIndex={0}
+          hidden={active !== 1}
+        >
+          <div className={styles.panelHeading}>
             <div>
-              <span className={styles.priority}>
-                Conteúdo recomendado · 10 min ilustrativos
-              </span>
-              <h4>Estudar Pré-natal</h4>
-              <p>Ginecologia e Obstetrícia</p>
+              <p className={styles.eyebrow}>FOCO · PRÉ-NATAL</p>
+              <h3>Seu estudo, em sequência.</h3>
             </div>
-          </li>
-          <li>
-            <span className={styles.stepNumber} aria-hidden="true">
-              02
-            </span>
+            <span className={styles.caption}>Tempos ilustrativos</span>
+          </div>
+          <ol className={styles.journey}>
+            {[
+              {
+                label: 'Diagnóstico',
+                title: 'Reconhecer as prioridades',
+                time: '30 min',
+                state: 'Concluída',
+              },
+              {
+                label: 'Conteúdo recomendado',
+                title: 'Estudar Pré-natal',
+                time: '10 min',
+                state: 'Concluída',
+              },
+              {
+                label: 'Revisão',
+                title: 'Retomar os fundamentos',
+                time: '20 min',
+                state: 'Próxima atividade',
+              },
+              {
+                label: 'Prática',
+                title: 'Responder questões',
+                time: '15 min',
+                state: 'Na sequência',
+              },
+              {
+                label: 'Reavaliação',
+                title: 'Reconhecer o que mudou',
+                time: '10 min',
+                state: 'Depois da prática',
+              },
+            ].map((item, index) => (
+              <li
+                key={item.label}
+                data-current={item.state === 'Próxima atividade'}
+              >
+                <span className={styles.stepNumber} aria-hidden="true">
+                  {item.state === 'Concluída' ? '✓' : `0${index + 1}`}
+                </span>
+                <div>
+                  <span className={styles.priority}>{item.label}</span>
+                  <h4>{item.title}</h4>
+                  <span className={styles.activityState}>{item.state}</span>
+                </div>
+                <span className={styles.duration}>{item.time}</span>
+              </li>
+            ))}
+          </ol>
+        </div>
+        <div
+          className={styles.panel}
+          role="tabpanel"
+          id={`${id}-panel-2`}
+          aria-labelledby={`${id}-tab-2`}
+          tabIndex={0}
+          hidden={active !== 2}
+        >
+          <div className={styles.panelHeading}>
             <div>
-              <span className={styles.priority}>
-                Revisar · 20 min ilustrativos
-              </span>
-              <h4>Retomar os fundamentos de Pré-natal</h4>
-              <p>Revisar os pontos que precisam de reforço.</p>
+              <p className={styles.eyebrow}>CADA ETAPA CONTA</p>
+              <h3>Perceba o que mudou.</h3>
             </div>
-          </li>
-          <li>
-            <span className={styles.stepNumber} aria-hidden="true">
-              03
-            </span>
+            <span className={styles.caption}>Evolução fictícia</span>
+          </div>
+          <div className={styles.evolutionGrid}>
             <div>
-              <span className={styles.priority}>
-                Praticar · 15 min ilustrativos
-              </span>
-              <h4>Responder questões</h4>
-              <p>Aplicar o que acabou de estudar.</p>
+              <div className={styles.legend}>
+                <span>
+                  <i aria-hidden="true" />
+                  Antes
+                </span>
+                <span>
+                  <i aria-hidden="true" />
+                  Agora
+                </span>
+              </div>
+              <ul
+                className={styles.comparisons}
+                aria-label="Comparação fictícia de domínio por área"
+              >
+                {areas.map((area, index) => (
+                  <li key={area.name}>
+                    <strong>{area.name}</strong>
+                    <div className={styles.comparisonRow}>
+                      <span>Antes</span>
+                      <div className={styles.track} aria-hidden="true">
+                        <span
+                          className={styles.before}
+                          style={{ width: `${[60, 52, 42, 32][index]}%` }}
+                        />
+                      </div>
+                      <b>{[60, 52, 42, 32][index]}%</b>
+                    </div>
+                    <div className={styles.comparisonRow}>
+                      <span>Agora</span>
+                      <div className={styles.track} aria-hidden="true">
+                        <span style={{ width: `${area.value}%` }} />
+                      </div>
+                      <b>{area.value}%</b>
+                    </div>
+                  </li>
+                ))}
+              </ul>
             </div>
-          </li>
-          <li>
-            <span className={styles.stepNumber} aria-hidden="true">
-              04
-            </span>
-            <div>
-              <span className={styles.priority}>
-                Reavaliar · 10 min ilustrativos
-              </span>
-              <h4>Reconhecer o que mudou</h4>
-              <p>Usar novas evidências para orientar a continuidade.</p>
+            <div className={styles.evolutionSummary}>
+              <div>
+                <span className={styles.eyebrow}>ATIVIDADES CONCLUÍDAS</span>
+                <strong className={styles.largeMetric}>08</strong>
+                <span className={styles.muted}>em 2 semanas ilustrativas</span>
+              </div>
+              <div>
+                <span className={styles.eyebrow}>HISTÓRICO DO EXEMPLO</span>
+                <p>Semana 1 · diagnóstico e estudo</p>
+                <p>Semana 2 · prática e reavaliação</p>
+              </div>
+              <div>
+                <span className={styles.eyebrow}>PRÓXIMO OBJETIVO</span>
+                <h4>Consolidar Pré-natal</h4>
+                <p>Revisar dúvidas e reunir novas evidências.</p>
+              </div>
             </div>
-          </li>
-        </ol>
+          </div>
+        </div>
       </div>
       <p className={styles.footer}>
-        Dados e atividades fictícios para demonstração. Seu plano depende do
-        diagnóstico e da sua disponibilidade.
+        Exemplo ilustrativo: dados, atividades, tempos e evolução são fictícios.
+        Não representam estudantes reais nem chance de aprovação.
       </p>
     </div>
   );
