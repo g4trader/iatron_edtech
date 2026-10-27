@@ -108,15 +108,9 @@ export async function finishAcquisitionDiagnostic(
           'Este diagnóstico ainda não pode ser concluído. Volte à entrada para retomar sua avaliação.',
       };
     await finishAssessment(id);
-    for (const path of [
-      '/app',
-      '/app/assessment/entry',
-      '/app/assessment/history',
-      '/app/assessment/coverage',
-      '/app/assessment/result',
-      '/app/plan',
-    ])
-      revalidatePath(path);
+    // These reads use no-store. Revalidating here would rerender /session after completion,
+    // remove this action's form, and prevent its confirmed result from reaching the client.
+    // The finish form performs a full navigation, discarding its previous Router Cache.
     return {
       status: 'success',
       destination: `/app/assessment/result?id=${id}`,

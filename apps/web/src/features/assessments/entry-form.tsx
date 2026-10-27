@@ -36,8 +36,9 @@ export function DiagnosticEntryForm({
     if (handled.current.has(signature)) return;
     handled.current.add(signature);
     if (state.event) emitAcquisitionEvent({ name: state.event });
-    router.push(state.destination as Route);
-  }, [state, router]);
+    if (kind === 'finish') globalThis.location.assign(state.destination);
+    else router.push(state.destination as Route);
+  }, [state, router, kind]);
   return (
     <form action={formAction} className={className}>
       {assessmentId && (

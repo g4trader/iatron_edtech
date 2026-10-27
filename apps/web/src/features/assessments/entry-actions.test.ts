@@ -1,3 +1,4 @@
+import { revalidatePath } from 'next/cache';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { assessmentSummarySchema } from '@iatron/contracts';
 import {
@@ -142,6 +143,8 @@ describe('entrada e confirmação do diagnóstico', () => {
       destination: `/app/assessment/result?id=${id}`,
       event: 'diagnostic_completed',
     });
+    // A rerender here can remove the submitting form before its success effect runs.
+    expect(revalidatePath).not.toHaveBeenCalled();
   });
   it('redireciona conclusão já salva sem repetir finish ou evento', async () => {
     api.assessmentHistory.mockResolvedValue([

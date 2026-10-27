@@ -55,7 +55,12 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - run: pnpm exec turbo build --filter=@iatron/api...
       - name: Start isolated Supabase (retry transient registry limits once)
-        run: pnpm db:start || { sleep 10; pnpm db:start; }
+        # This job tests Auth/PostgREST/Postgres/Mailpit, not Studio, image transforms or telemetry.
+        run: |
+          pnpm exec supabase start --exclude studio,imgproxy,vector,analytics,edge-runtime,realtime,meta || {
+            sleep 10
+            pnpm exec supabase start --exclude studio,imgproxy,vector,analytics,edge-runtime,realtime,meta
+          }
       - run: pnpm --filter @iatron/web exec playwright install --with-deps chromium
       - name: Acquisition funnel with isolated local Supabase
         run: pnpm test:e2e:auth acquisition-flow.spec.ts

@@ -1,12 +1,13 @@
 import { StrictMode } from 'react';
 import type * as ReactModule from 'react';
 import { render } from '@testing-library/react';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { DiagnosticActionState } from './entry-state';
 
 const fixture = vi.hoisted(() => ({
   state: { status: 'idle' } as DiagnosticActionState,
   push: vi.fn(),
+  navigate: vi.fn(),
   event: vi.fn(),
   submit: vi.fn(),
 }));
@@ -30,6 +31,10 @@ import { DiagnosticEntryForm } from './entry-form';
 beforeEach(() => {
   vi.clearAllMocks();
   fixture.state = { status: 'idle' };
+  vi.stubGlobal('location', { assign: fixture.navigate });
+});
+afterEach(() => {
+  vi.unstubAllGlobals();
 });
 
 describe('diagnostic confirmed action navigation', () => {
@@ -49,8 +54,8 @@ describe('diagnostic confirmed action navigation', () => {
       event: 'diagnostic_completed',
     };
     rerender(<DiagnosticEntryForm kind="finish" assessmentId="fixture" />);
-    expect(fixture.push).toHaveBeenCalledTimes(2);
-    expect(fixture.push).toHaveBeenLastCalledWith(
+    expect(fixture.push).toHaveBeenCalledTimes(1);
+    expect(fixture.navigate).toHaveBeenCalledExactlyOnceWith(
       '/app/assessment/result?id=fixture',
     );
     expect(fixture.event).toHaveBeenNthCalledWith(2, {
@@ -71,7 +76,10 @@ describe('diagnostic confirmed action navigation', () => {
       event: 'diagnostic_completed',
     };
     rerender(<DiagnosticEntryForm kind="finish" assessmentId="fixture" />);
-    expect(fixture.push).toHaveBeenCalledTimes(2);
+    expect(fixture.push).toHaveBeenCalledTimes(1);
+    expect(fixture.navigate).toHaveBeenCalledExactlyOnceWith(
+      '/app/assessment/result?id=fixture',
+    );
     expect(fixture.event).toHaveBeenCalledExactlyOnceWith({
       name: 'diagnostic_completed',
     });
@@ -93,13 +101,18 @@ describe('diagnostic confirmed action navigation', () => {
         <DiagnosticEntryForm kind="finish" assessmentId="fixture" />
       </StrictMode>,
     );
-    expect(fixture.push).toHaveBeenCalledTimes(1);
+    expect(fixture.push).not.toHaveBeenCalled();
+    expect(fixture.navigate).toHaveBeenCalledTimes(1);
     expect(fixture.event).toHaveBeenCalledTimes(1);
+    expect(fixture.event.mock.invocationCallOrder[0]).toBeLessThan(
+      fixture.navigate.mock.invocationCallOrder[0]!,
+    );
   });
   it('does not navigate or emit when the action fails', () => {
     fixture.state = { status: 'error', message: 'Não foi possível confirmar.' };
     render(<DiagnosticEntryForm />);
     expect(fixture.push).not.toHaveBeenCalled();
+    expect(fixture.navigate).not.toHaveBeenCalled();
     expect(fixture.event).not.toHaveBeenCalled();
   });
 });

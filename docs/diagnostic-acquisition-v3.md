@@ -94,7 +94,7 @@ consentimento, deduplicação e vínculo permitido. Nenhuma taxa foi inventada.
 ## F. Cenários e G. validação técnica
 
 Validação local em 27/10/2026: lint, typecheck, build de produção e testes
-aprovados (175 web, 161 API, 25 contratos, 6 IA, 9 guards). Playwright:
+aprovados (179 web, 161 API, 25 contratos, 6 IA, 9 guards). Playwright:
 139 aprovados e 26 exclusões condicionais por dispositivo. A matriz inclui
 320×812, 375×812, 390×844, 768×1024, 1024×768, 1366×768, 1440×900 e 1920×1080.
 A inspeção visual do hero desktop/mobile confirma CTA legível e composição
@@ -106,7 +106,17 @@ E2E reais. A inicialização efêmera admite uma segunda tentativa, sem ignorar 
 A primeira execução real também revelou perda de sessão no callback ao usar
 um host interno do Next e divergência entre `/next` e `/finish` quando as questões
 se esgotavam. Ambos foram corrigidos com regressões automatizadas; a rodada final
-reexecuta o percurso inteiro. Capturas usam `caret: initial` para evitar que a
+reexecuta o percurso inteiro.
+A coleta seguinte confirmou avaliação persistida como concluída (8 respostas),
+mas a revalidação da sessão desmontava o formulário antes de seu efeito de
+navegação. A conclusão agora retorna o sucesso sem revalidar a tela de origem;
+o cliente emite o evento confirmado e faz navegação completa para o resultado,
+limpando o Router Cache. As consultas permanecem `no-store`. Início e retomada
+continuam usando navegação interna. A deduplicação considera evento e destino.
+
+O job de aquisição mantém Postgres, Auth, PostgREST, gateway e caixa de e-mail,
+mas dispensa Studio, processamento de imagens e telemetria que não participam
+desse teste. A validação geral continua executando a pilha e os testes existentes. Capturas usam `caret: initial` para evitar que a
 manipulação de caret pelo Playwright interfira na hidratação durante a evidência.
 
 Smoke adicional do build de produção local, sem bypass: CTA anônimo → login →
@@ -186,6 +196,7 @@ Nenhuma configuração de produção ou credencial foi alterada.
 - `apps/web/e2e/app.spec.ts`
 - `apps/web/e2e/landing.spec.ts`
 - `apps/web/e2e/mobile-accessibility.spec.ts`
+- `apps/web/playwright.auth.config.ts`
 - `apps/web/src/app/(authenticated)/app/assessment/entry/error.tsx`
 - `apps/web/src/app/(authenticated)/app/assessment/entry/page.tsx`
 - `apps/web/src/app/(authenticated)/app/assessment/result/page.tsx`
@@ -215,6 +226,7 @@ Nenhuma configuração de produção ou credencial foi alterada.
 - `apps/web/src/features/acquisition/signup-observer.tsx`
 - `apps/web/src/features/assessments/entry-actions.test.ts`
 - `apps/web/src/features/assessments/entry-actions.ts`
+- `apps/web/src/features/assessments/entry-form.test.tsx`
 - `apps/web/src/features/assessments/entry-form.tsx`
 - `apps/web/src/features/assessments/entry-session.test.tsx`
 - `apps/web/src/features/assessments/entry-state.ts`
