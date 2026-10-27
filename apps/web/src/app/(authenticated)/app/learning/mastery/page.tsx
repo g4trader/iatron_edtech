@@ -1,3 +1,4 @@
+import { ProficiencyBar } from '@/components/learning/proficiency-bar';
 import {
   EmptyLearningState,
   LearningCard,
@@ -20,6 +21,13 @@ export default async function MasteryPage() {
           title={item.competencyName}
           eyebrow={learningTrendLabel(item.trend)}
         >
+          {item.evidenceCount > 0 && (
+            <ProficiencyBar
+              label="Domínio estimado"
+              percent={item.mastery * 100}
+              description={`${item.evidenceCount} evidências registradas; não é chance de aprovação.`}
+            />
+          )}
           <p>{learningStage(item.mastery)}</p>
           <p>{measurementClarity(item.confidence)}</p>
           <p>

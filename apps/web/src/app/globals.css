@@ -2827,3 +2827,51 @@ textarea.form-control {
 }
 
 /* Preparation V4: compact task-oriented workspace. */
+
+.learning-environments {
+  margin-top: 1.25rem;
+}
+.learning-environments h2 {
+  font-size: 1rem;
+  margin-bottom: 0.65rem;
+}
+.learning-spaces {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+.learning-spaces a {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  min-height: 44px;
+  padding: 0.6rem 1rem;
+  border: 1px solid var(--border);
+  background: white;
+  border-radius: 0.75rem;
+  color: var(--primary);
+}
+.learning-spaces a[aria-current='page'] {
+  background: #e7eee9;
+  border-color: var(--primary);
+}
+.learning-spaces a strong {
+  font-size: 0.875rem;
+}
+.learning-spaces-overview {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+.learning-spaces-overview a {
+  gap: 0.4rem;
+  padding: 1rem;
+}
+.learning-spaces-overview span {
+  font-size: 0.85rem;
+  color: var(--foreground-muted);
+}
+@media (max-width: 760px) {
+  .learning-spaces-overview {
+    grid-template-columns: 1fr;
+  }
+}

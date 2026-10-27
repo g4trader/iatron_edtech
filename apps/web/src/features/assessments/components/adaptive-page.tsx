@@ -1,3 +1,4 @@
+import { LearningSpaces } from '@/components/learning/learning-spaces';
 import Link from 'next/link';
 import type { ReactNode } from 'react';
 
@@ -19,7 +20,7 @@ export function AssessmentPage({
     >
       <header>
         <p className="text-sm font-semibold text-[var(--foreground-muted)]">
-          Seu diagnóstico
+          Meu diagnóstico
         </p>
         <h1 className="text-2xl font-semibold">{title}</h1>
         <p>{description}</p>
@@ -34,6 +35,7 @@ export function AssessmentPage({
           <Link href="/app/assessment/coverage">O que já foi avaliado</Link>
         </nav>
       )}
+      {!focused && <LearningSpaces />}
       {children}
     </main>
   );

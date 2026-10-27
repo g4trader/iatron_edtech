@@ -86,3 +86,30 @@ entrega de confirmação de e-mail é independente e não é considerado resolvi
 por testes com contas pré-confirmadas.
 
 Rollback: promover frontend/revisão anteriores; não há schema a desfazer.
+
+## Complemento: continuidade da LP à experiência real
+
+Os ambientes “Meu diagnóstico”, “Minha trilha” e “Minha evolução” compartilham
+nomenclatura e navegação, separados dos marcos de organização da preparação.
+São links para os serviços existentes, não novas regras pedagógicas ou tabs
+com dados copiados da demonstração. A área de diagnóstico preserva o modo
+focado durante as questões; a trilha sem diagnóstico orienta o estudante à
+avaliação, em vez de oferecer geração sem evidência.
+
+A barra de proficiência é um componente de apresentação compartilhado entre LP
+e resultados/domínio reais. LP continua marcada como ilustrativa. Na plataforma,
+percentuais apenas formatam mastery do backend por competência, com contagem de
+evidências; não são agregados em áreas fictícias nem representam aprovação.
+Histórico, prioridades e tendência continuam nos serviços existentes de evolução.
+Não foi inventado um comparativo antes/depois quando o serviço não o fornece.
+
+## Resiliência do CI
+
+Duas execuções da versão inicial falharam antes dos testes de banco por limites
+ECR/GHCR. O fallback tentou `supabase/kong` e `supabase/vector` no Docker Hub,
+perdendo os namespaces oficiais. O gate agora tenta antecipadamente os mesmos
+upstreams e tags `library/kong:2.8.1` e `timberio/vector:0.53.0-alpine` declarados
+no [Dockerfile da CLI 2.109.1](https://github.com/supabase/cli/blob/v2.109.1/apps/cli-go/pkg/config/templates/Dockerfile)
+e os disponibiliza no cache local do runner sob o nome esperado. Fallback e
+retries permanecem; nenhum serviço, teste ou verificação de segurança foi removido.
+Não há novo registry, projeto, segredo ou custo de infraestrutura contratado.

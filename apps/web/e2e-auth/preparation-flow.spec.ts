@@ -46,6 +46,19 @@ test('V4: escolhe prova após cadastro completo, persiste e retoma preparação 
       page.getByRole('heading', { name: 'Minha preparação', exact: true }),
     ).toBeVisible();
     await expect(page.getByText('Olá, Camila', { exact: true })).toBeVisible();
+    const spaces = page.getByRole('navigation', {
+      name: 'Ambientes de aprendizagem',
+    });
+    await expect(
+      spaces.getByRole('link', { name: /Meu diagnóstico/ }),
+    ).toHaveAttribute('href', '/app/assessment/entry');
+    await expect(
+      spaces.getByRole('link', { name: /Minha trilha/ }),
+    ).toHaveAttribute('href', '/app/plan');
+    await expect(
+      spaces.getByRole('link', { name: /Minha evolução/ }),
+    ).toHaveAttribute('href', '/app/learning/mastery');
+
     await expect(
       page.getByRole('listitem').filter({ hasText: 'Prova' }),
     ).toContainText('Agora');
@@ -145,6 +158,26 @@ test('V4: escolhe prova após cadastro completo, persiste e retoma preparação 
     await expect(
       page.getByRole('button', { name: 'Começar meu diagnóstico' }),
     ).toBeVisible();
+    await page.getByRole('link', { name: 'Minha trilha', exact: true }).click();
+    await expect(
+      page.getByRole('heading', {
+        name: 'Sua trilha começa com o diagnóstico',
+      }),
+    ).toBeVisible();
+    await expect(
+      page.getByRole('button', { name: 'Criar meu plano' }),
+    ).toHaveCount(0);
+    await page
+      .getByRole('link', { name: 'Minha evolução', exact: true })
+      .click();
+    await expect(
+      page.getByRole('heading', { name: 'Seu progresso aparecerá aqui' }),
+    ).toBeVisible();
+    await expect(page.getByRole('meter')).toHaveCount(0);
+    await page
+      .getByRole('link', { name: 'Histórico de atividades', exact: true })
+      .click();
+    await expect(page).toHaveURL(/\/app\/learning\/timeline$/);
   } finally {
     await service(`/auth/v1/admin/users/${user.id}`, 'DELETE');
   }

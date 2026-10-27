@@ -1,3 +1,4 @@
+import { ProficiencyBar } from '@/components/learning/proficiency-bar';
 import { AcquisitionView } from '@/features/acquisition/acquisition-view';
 import Link from 'next/link';
 import { EmptyState } from '@/components/feedback/states';
@@ -151,6 +152,13 @@ export default async function ResultPage({
             />
             <strong>{item.competencyName}</strong>
             <p>{classificationLabel[item.classification]}.</p>
+            {item.evidenceCount > 0 && (
+              <ProficiencyBar
+                label="Domínio estimado"
+                percent={item.mastery * 100}
+                description={`${item.evidenceCount} evidências registradas; não é chance de aprovação.`}
+              />
+            )}
             <p>{learningStage(item.mastery)}</p>
             <p>{measurementClarity(item.confidence)}</p>
           </article>

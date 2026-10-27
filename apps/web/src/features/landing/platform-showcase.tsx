@@ -2,8 +2,10 @@
 
 import { useId, useRef, useState, type KeyboardEvent } from 'react';
 import styles from './showcase.module.css';
+import { ProficiencyBar } from '@/components/learning/proficiency-bar';
+import { learningSpaces } from '@/components/learning/learning-spaces';
 
-const tabs = ['Meu diagnóstico', 'Minha trilha', 'Minha evolução'] as const;
+const tabs = learningSpaces.map((space) => space.label);
 const areas = [
   { name: 'Pediatria', value: 72 },
   { name: 'Clínica Médica', value: 64 },
@@ -16,13 +18,7 @@ function AreaBars() {
     <ul className={styles.bars} aria-label="Percentuais fictícios por área">
       {areas.map((area) => (
         <li key={area.name}>
-          <div className={styles.barLabel}>
-            <span>{area.name}</span>
-            <strong>{area.value}%</strong>
-          </div>
-          <div className={styles.track} aria-hidden="true">
-            <span style={{ width: `${area.value}%` }} />
-          </div>
+          <ProficiencyBar label={area.name} percent={area.value} />
         </li>
       ))}
     </ul>

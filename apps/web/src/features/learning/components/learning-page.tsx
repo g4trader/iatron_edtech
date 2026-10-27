@@ -1,3 +1,4 @@
+import { LearningSpaces } from '@/components/learning/learning-spaces';
 import Link from 'next/link';
 import type { ReactNode } from 'react';
 import { PageContainer } from '@/components/layout/page-container';
@@ -6,7 +7,7 @@ const items = [
   ['Meu domínio', '/app/learning/mastery'],
   ['Como aprendemos', '/app/learning/evidence'],
   ['Prioridades', '/app/learning/gaps'],
-  ['Minha evolução', '/app/learning/timeline'],
+  ['Histórico de atividades', '/app/learning/timeline'],
   ['Próximos estudos', '/app/learning/schedule'],
 ] as const;
 
@@ -22,10 +23,11 @@ export function LearningPage({
   return (
     <PageContainer>
       <section className="page-intro">
-        <p className="eyebrow">Seu progresso</p>
+        <p className="eyebrow">Minha evolução</p>
         <h2>{title}</h2>
         <p>{description}</p>
       </section>
+      <LearningSpaces />
       <nav aria-label="Acompanhar aprendizado" className="flex flex-wrap gap-2">
         {items.map(([label, href]) => (
           <Link
@@ -75,7 +77,7 @@ export function EmptyLearningState({
     <section className="state-card empty-state">
       <h2>{title}</h2>
       <p>{description}</p>
-      <Link className="primary-button inline-flex" href="/app/assessment/start">
+      <Link className="primary-button inline-flex" href="/app/assessment/entry">
         Fazer meu diagnóstico
       </Link>
     </section>

@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import { LearningSpaces } from '@/components/learning/learning-spaces';
 import { PageContainer } from '@/components/layout/page-container';
 import { getAuthState } from '@/lib/auth';
 import { isAuthBypassEnabled } from '@/lib/auth-bypass';
@@ -114,6 +115,13 @@ export default async function AppHomePage() {
           >
             {journey.mission.label}
           </Link>
+        </section>
+        <section
+          className="learning-environments"
+          aria-label="Sua experiência de aprendizagem"
+        >
+          <h2>Seus ambientes de aprendizagem</h2>
+          <LearningSpaces overview />
         </section>
         <aside className="journey-context">
           <h2>O que acontece depois?</h2>

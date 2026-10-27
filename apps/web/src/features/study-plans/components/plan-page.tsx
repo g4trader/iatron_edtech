@@ -1,3 +1,4 @@
+import { LearningSpaces } from '@/components/learning/learning-spaces';
 import Link from 'next/link';
 import type { Route } from 'next';
 import type { ReactNode } from 'react';
@@ -20,12 +21,11 @@ export function PlanPage({
   return (
     <main className="experience-page mx-auto w-full max-w-5xl min-w-0 space-y-6 px-4 py-6 sm:p-6">
       <header>
-        <p className="text-sm text-[var(--foreground-muted)]">
-          Seu plano de estudos
-        </p>
+        <p className="text-sm text-[var(--foreground-muted)]">Minha trilha</p>
         <h1 className="text-2xl font-semibold">{title}</h1>
         <p>{description}</p>
       </header>
+      <LearningSpaces />
       <nav aria-label="Navegação do plano" className="section-tabs">
         <Link href="/app/plan">Visão geral</Link>
         <Link href="/app/plan/today">Hoje</Link>

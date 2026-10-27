@@ -1,3 +1,7 @@
+import Link from 'next/link';
+import { assessmentHistory } from '@/features/assessments/server/adaptive-assessment';
+import { selectAssessmentEntry } from '@/features/assessments/entry-state';
+import { isAuthBypassEnabled } from '@/lib/auth-bypass';
 import { AcquisitionView } from '@/features/acquisition/acquisition-view';
 import { generatePlan } from '@/features/study-plans/actions';
 import { EmptyState } from '@/components/feedback/states';
@@ -10,7 +14,27 @@ import { studyPlans } from '@/features/study-plans/server/study-plans';
 
 export default async function CurrentPlanPage() {
   const plan = await studyPlans.current();
-  if (!plan)
+  if (!plan) {
+    const { completed } = selectAssessmentEntry(
+      isAuthBypassEnabled(process.env) ? [] : await assessmentHistory(),
+    );
+    if (!completed)
+      return (
+        <PlanPage
+          title="Minha trilha"
+          description="O diagnóstico é o ponto de partida para organizar seus estudos."
+        >
+          <EmptyState
+            title="Sua trilha começa com o diagnóstico"
+            description="Registre suas respostas para que possamos identificar prioridades reais e recomendar atividades."
+            action={
+              <Link className="primary-button" href="/app/assessment/entry">
+                Ir para meu diagnóstico
+              </Link>
+            }
+          />
+        </PlanPage>
+      );
     return (
       <PlanPage
         title="Seu plano de estudos"
@@ -29,9 +53,10 @@ export default async function CurrentPlanPage() {
         />
       </PlanPage>
     );
+  }
   return (
     <PlanPage
-      title="Plano atual"
+      title="Minha trilha"
       description={`${plan.totalPlannedMinutes} de ${plan.totalAvailableMinutes} minutos disponíveis foram organizados para os próximos dias.`}
     >
       <AcquisitionView name="study_path_opened" />

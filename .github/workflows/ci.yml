@@ -42,6 +42,23 @@ jobs:
       - run: pnpm lint
       - run: pnpm typecheck
       - run: pnpm test
+      - name: Warm official upstream gateway and log images
+        # Same sources/tags declared by supabase/cli v2.109.1's Dockerfile.
+        # Avoid the CLI fallback losing library/ and timberio/ namespaces.
+        shell: bash
+        run: |
+          for pair in 'library/kong:2.8.1 kong:2.8.1' 'timberio/vector:0.53.0-alpine vector:0.53.0-alpine'; do
+            read -r upstream mirror <<< "$pair"
+            for attempt in 1 2 3; do
+              if docker pull "$upstream" >"$RUNNER_TEMP/upstream-pull.log" 2>&1; then
+                docker tag "$upstream" "public.ecr.aws/supabase/$mirror"
+                echo "Official upstream cached: $upstream"
+                break
+              fi
+              echo "Upstream pull unavailable: $upstream (attempt $attempt/3); CLI fallback remains enabled."
+              sleep 10
+            done
+          done
       - name: Start Supabase with bounded registry retries
         shell: bash
         run: |
@@ -57,6 +74,7 @@ jobs:
               exit 1
             fi
             echo "Image registry unavailable (attempt $attempt/3); retaining downloaded layers."
+            grep -Ei 'failed to pull docker image from all registries|toomanyrequests: Data limit exceeded' "$startup_log" | tail -4 || true
             if [ "$attempt" -eq 3 ]; then
               grep -Ei 'toomanyrequests|failed to pull docker image' "$startup_log" | tail -15 || true
               exit 1
