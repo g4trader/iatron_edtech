@@ -18,6 +18,8 @@ export default defineConfig({
     : [
         {
           command: 'pnpm --filter @iatron/api dev',
+          // Existing API logs are structured and redact credentials; keep server failures visible in real E2E.
+          stdout: 'pipe',
           url: 'http://127.0.0.1:8080/health',
           reuseExistingServer: false,
           timeout: 120_000,

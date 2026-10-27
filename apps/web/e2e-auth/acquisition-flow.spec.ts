@@ -253,12 +253,10 @@ test('aquisição real preserva intenção, progresso e resultado sem criar aval
   await expect(
     page.getByRole('button', { name: 'Começar meu diagnóstico', exact: true }),
   ).toBeVisible();
-  await page
-    .locator('main')
-    .screenshot({
-      caret: 'initial',
-      path: testInfo.outputPath('acquisition-intro.png'),
-    });
+  await page.locator('main').screenshot({
+    caret: 'initial',
+    path: testInfo.outputPath('acquisition-intro.png'),
+  });
   await page.setViewportSize({ width: 390, height: 844 });
   await page
     .getByRole('button', { name: 'Começar meu diagnóstico', exact: true })
@@ -272,12 +270,10 @@ test('aquisição real preserva intenção, progresso e resultado sem criar aval
     page.locator('input[name="selectedOptionId"]').first(),
   ).toBeVisible();
   await expectNoHorizontalOverflow(page);
-  await page
-    .locator('main')
-    .screenshot({
-      caret: 'initial',
-      path: testInfo.outputPath('acquisition-question-mobile.png'),
-    });
+  await page.locator('main').screenshot({
+    caret: 'initial',
+    path: testInfo.outputPath('acquisition-question-mobile.png'),
+  });
   const id = new URL(page.url()).searchParams.get('id');
   expect(id).toBeTruthy();
   const token = await accessToken(request, email, password);
@@ -323,6 +319,54 @@ test('aquisição real preserva intenção, progresso e resultado sem criar aval
     }
     await answerFirstOption(page);
   }
+  const reachedResult = await page
+    .waitForURL(new RegExp(`/app/assessment/result\\?id=${id}$`), {
+      timeout: 5_000,
+    })
+    .then(
+      () => true,
+      () => false,
+    );
+  if (!reachedResult) {
+    const savedResponse = await request.get(
+      `${apiBaseUrl.replace(/\/$/, '')}/v1/assessments`,
+      { headers: { authorization: `Bearer ${token}` } },
+    );
+    const saved = savedResponse.ok()
+      ? ((await savedResponse.json()) as Array<{
+          status: string;
+          answeredCount: number;
+        }>)
+      : [];
+    const cleanText = (text: string) =>
+      text
+        .replace(/[0-9a-f]{8}-[0-9a-f-]{27,}/gi, '[identifier]')
+        .replace(/https?:\/\/\S+/g, '[url]')
+        .replace(/\S+@\S+/g, '[email]');
+    console.log(
+      JSON.stringify({
+        diagnosticAfterFinish: {
+          historyResponseStatus: savedResponse.status(),
+          history: saved.map((item) => ({
+            status: item.status,
+            answeredCount: item.answeredCount,
+          })),
+          heading: cleanText(await page.locator('main h1').first().innerText()),
+          alerts: (await page.getByRole('alert').allTextContents()).map(
+            cleanText,
+          ),
+          startedEvents: count('diagnostic_started'),
+          completedEvents: count('diagnostic_completed'),
+        },
+      }),
+    );
+    await page
+      .locator('main')
+      .screenshot({
+        caret: 'initial',
+        path: testInfo.outputPath('acquisition-after-finish.png'),
+      });
+  }
   await expect(page).toHaveURL(
     new RegExp(`/app/assessment/result\\?id=${id}$`),
   );
@@ -356,12 +400,10 @@ test('aquisição real preserva intenção, progresso e resultado sem criar aval
     }),
   ).toBeVisible();
   await expectNoHorizontalOverflow(page);
-  await page
-    .locator('main')
-    .screenshot({
-      caret: 'initial',
-      path: testInfo.outputPath('acquisition-result-mobile.png'),
-    });
+  await page.locator('main').screenshot({
+    caret: 'initial',
+    path: testInfo.outputPath('acquisition-result-mobile.png'),
+  });
   await enterFromLanding(page);
   await expect(
     page.getByRole('heading', {
@@ -399,12 +441,10 @@ test('aquisição real preserva intenção, progresso e resultado sem criar aval
   ).toBeVisible();
   await expect.poll(() => count('study_path_opened')).toBe(1);
   await expectNoHorizontalOverflow(page);
-  await page
-    .locator('main')
-    .screenshot({
-      caret: 'initial',
-      path: testInfo.outputPath('acquisition-plan-mobile.png'),
-    });
+  await page.locator('main').screenshot({
+    caret: 'initial',
+    path: testInfo.outputPath('acquisition-plan-mobile.png'),
+  });
   await testInfo.attach('acquisition-events', {
     body: JSON.stringify(
       {

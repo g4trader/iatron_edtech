@@ -28,11 +28,13 @@ export function DiagnosticEntryForm({
         ? resumeAcquisitionDiagnostic
         : finishAcquisitionDiagnostic;
   const [state, formAction] = useActionState(action, { status: 'idle' });
-  const handled = useRef(false);
+  const handled = useRef(new Set<string>());
   const router = useRouter();
   useEffect(() => {
-    if (state.status !== 'success' || handled.current) return;
-    handled.current = true;
+    if (state.status !== 'success') return;
+    const signature = JSON.stringify([state.event ?? null, state.destination]);
+    if (handled.current.has(signature)) return;
+    handled.current.add(signature);
     if (state.event) emitAcquisitionEvent({ name: state.event });
     router.push(state.destination as Route);
   }, [state, router]);
