@@ -18,5 +18,19 @@ describe('landing Mentor First', () => {
       expect(screen.getByText(mentor)).toBeVisible();
     }
     expect(document.body.textContent).not.toMatch(/tutor ia|chatbot/i);
+    expect(
+      screen.getByRole('region', { name: 'Próxima Conduta' }),
+    ).toBeVisible();
+    expect(
+      screen.getByRole('link', { name: /Assistir no YouTube/ }),
+    ).toHaveAttribute('href', 'https://www.youtube.com/watch?v=PEKL4AgCtMQ');
+    expect(
+      screen.getByTitle(
+        'Próxima Conduta — Episódio #0: Carreira médica: como escolhemos nossos caminhos',
+      ),
+    ).toHaveAttribute(
+      'src',
+      'https://www.youtube-nocookie.com/embed/PEKL4AgCtMQ',
+    );
   });
 });

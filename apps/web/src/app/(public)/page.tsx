@@ -11,9 +11,9 @@ export default function HomePage() {
           <p className="eyebrow">Preparação para residência médica</p>
           <h1>Os melhores próximos passos começam com boa orientação.</h1>
           <p>
-            Mentores médicos acompanham sua preparação com um plano que
-            respeita sua rotina, suas respostas e a prova que você escolheu.
-            A tecnologia trabalha nos bastidores para ampliar esse cuidado.
+            Mentores médicos acompanham sua preparação com um plano que respeita
+            sua rotina, suas respostas e a prova que você escolheu. A tecnologia
+            trabalha nos bastidores para ampliar esse cuidado.
           </p>
           <Link href="/login">
             <Button className="mt-8">Conhecer minha preparação</Button>
@@ -56,6 +56,42 @@ export default function HomePage() {
           {mentors.map((mentor) => (
             <MentorCard key={mentor.id} mentor={mentor} />
           ))}
+        </div>
+      </section>
+      <section aria-labelledby="podcast-title" className="landing-podcast">
+        <div className="landing-podcast-copy">
+          <p className="eyebrow">Podcast oficial do Iatron</p>
+          <h2 id="podcast-title">Próxima Conduta</h2>
+          <p>
+            Conheça o episódio de estreia e acompanhe o Próxima Conduta no
+            YouTube.
+          </p>
+          <div className="landing-podcast-episode">
+            <p className="landing-podcast-number">Episódio #0</p>
+            <h3>Carreira médica: como escolhemos nossos caminhos</h3>
+          </div>
+          <a
+            className="landing-podcast-link"
+            href="https://www.youtube.com/watch?v=PEKL4AgCtMQ"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            Assistir no YouTube
+            <span aria-hidden="true">↗</span>
+            <span className="sr-only"> (abre em uma nova aba)</span>
+          </a>
+        </div>
+        <div className="landing-podcast-player">
+          <iframe
+            src="https://www.youtube-nocookie.com/embed/PEKL4AgCtMQ"
+            title="Próxima Conduta — Episódio #0: Carreira médica: como escolhemos nossos caminhos"
+            width="560"
+            height="315"
+            loading="lazy"
+            referrerPolicy="strict-origin-when-cross-origin"
+            allow="encrypted-media; picture-in-picture; web-share"
+            allowFullScreen
+          />
         </div>
       </section>
     </main>
