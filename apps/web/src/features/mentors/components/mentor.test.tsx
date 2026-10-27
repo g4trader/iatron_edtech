@@ -14,14 +14,12 @@ describe('mensagem do mentor', () => {
 
     expect(
       screen.getByRole('region', {
-        name: 'Contexto de Ginecologia e Obstetrícia',
+        name: 'Contexto de Ginecologista Obstetra',
       }),
     ).toBeVisible();
-    expect(
-      screen.getByText(/mentor da área: dra\. fernanda grosbelli/i),
-    ).toBeVisible();
+    expect(screen.getByText(/mentor da área: dr\. joão garcia/i)).toBeVisible();
     expect(document.body.textContent).not.toMatch(
-      /fernanda recomenda|orientação de dra\. fernanda|engine/i,
+      /joão recomenda|orientação de dr\. joão|engine/i,
     );
   });
 
