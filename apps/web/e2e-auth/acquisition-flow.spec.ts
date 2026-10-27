@@ -5,6 +5,9 @@ import {
   type Page,
 } from '@playwright/test';
 
+// Authenticated traces can contain session tokens; publish only explicit screenshots.
+test.use({ trace: 'off' });
+
 const supabaseUrl = process.env.E2E_SUPABASE_URL!;
 const publishableKey = process.env.E2E_SUPABASE_PUBLISHABLE_KEY!;
 const serviceRoleKey = process.env.E2E_SUPABASE_SERVICE_ROLE_KEY!;
@@ -241,11 +244,9 @@ test('aquisição real preserva intenção, progresso e resultado sem criar aval
     .click();
   await expect(page).toHaveURL(/\/app\/assessment\/session\?id=/);
   await expect.poll(() => count('diagnostic_started')).toBe(1);
-  await page
-    .locator('main')
-    .screenshot({
-      path: testInfo.outputPath('acquisition-question-mobile.png'),
-    });
+  await page.locator('main').screenshot({
+    path: testInfo.outputPath('acquisition-question-mobile.png'),
+  });
   const id = new URL(page.url()).searchParams.get('id');
   expect(id).toBeTruthy();
   const token = await accessToken(request, email, password);

@@ -63,5 +63,5 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: acquisition-evidence
-          path: apps/web/test-results/
+          path: apps/web/test-results/**/*.png
           retention-days: 7
