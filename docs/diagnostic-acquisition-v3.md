@@ -124,6 +124,13 @@ mas dispensa Studio, processamento de imagens e telemetria que não participam
 desse teste. A validação geral continua executando a pilha e os testes existentes. Capturas usam `caret: initial` para evitar que a
 manipulação de caret pelo Playwright interfira na hidratação durante a evidência.
 
+No CI, `E2E_BROWSER_CHANNEL=chrome` seleciona o Chrome já instalado no runner
+Ubuntu 24.04; o workflow registra sua versão. A instalação adicional do Chromium
+ficou presa por mais de dez minutos antes dos testes. Esta configuração usa o
+[canal oficial do Playwright](https://playwright.dev/docs/browsers#google-chrome--microsoft-edge),
+preserva todos os testes/viewports e mantém o Chromium padrão nas execuções locais.
+O navegador vem da [imagem oficial do runner](https://github.com/actions/runner-images/blob/main/images/ubuntu/Ubuntu2404-Readme.md).
+
 Smoke adicional do build de produção local, sem bypass: CTA anônimo → login →
 cadastro preservou `returnTo`; rota inexistente retornou 404. Nenhuma conta foi
 criada nesse smoke. O comando `next start` emitiu o aviso preexistente do projeto
@@ -214,6 +221,7 @@ Nenhuma configuração de produção ou credencial foi alterada.
 - `apps/web/e2e/landing.spec.ts`
 - `apps/web/e2e/mobile-accessibility.spec.ts`
 - `apps/web/playwright.auth.config.ts`
+- `apps/web/playwright.config.ts`
 - `apps/web/src/app/(authenticated)/app/assessment/entry/error.tsx`
 - `apps/web/src/app/(authenticated)/app/assessment/entry/page.tsx`
 - `apps/web/src/app/(authenticated)/app/assessment/result/page.tsx`

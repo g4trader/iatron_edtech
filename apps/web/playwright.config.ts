@@ -5,7 +5,12 @@ export default defineConfig({
   fullyParallel: false,
   workers: 1,
   reporter: 'list',
-  use: { baseURL: 'http://localhost:3000', trace: 'retain-on-failure' },
+  use: {
+    baseURL: 'http://localhost:3000',
+    trace: 'retain-on-failure',
+    channel:
+      process.env.E2E_BROWSER_CHANNEL === 'chrome' ? 'chrome' : undefined,
+  },
   webServer: {
     command: 'E2E_AUTH_BYPASS=1 pnpm dev',
     url: 'http://localhost:3000',
