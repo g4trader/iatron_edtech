@@ -13,8 +13,8 @@ describe('PublicHeader', () => {
   it('oferece as seções da landing e os destinos reais de acesso', () => {
     render(<PublicHeader />);
     expect(
-      screen.getByRole('link', { name: 'Conhecer a Iatron' }),
-    ).toHaveAttribute('href', '/cadastro');
+      screen.getByRole('link', { name: 'Iniciar meu diagnóstico' }),
+    ).toHaveAttribute('href', '/app/assessment/entry');
     expect(screen.getByRole('link', { name: 'Entrar' })).toHaveAttribute(
       'href',
       '/login',

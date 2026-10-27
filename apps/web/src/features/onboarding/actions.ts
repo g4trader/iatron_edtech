@@ -12,6 +12,7 @@ export async function saveOnboarding(input: OnboardingInput) {
     return {
       ok: false as const,
       message: 'Sua sessão expirou. Entre novamente.',
+      requiresLogin: true,
     };
   const { error } = await client.rpc('save_onboarding', {
     p_step: parsed.step,

@@ -111,9 +111,7 @@ test('critical journey: onboarding, diagnóstico, plano, persistência e mobile'
   await expect(
     page.getByRole('radio', { name: /Diagnóstico completo/ }),
   ).toBeVisible();
-  await page
-    .getByRole('button', { name: 'Descobrir meu ponto de partida' })
-    .click();
+  await page.getByRole('button', { name: 'Começar meu diagnóstico' }).click();
   await expect(page).toHaveURL(/\/app\/assessment\/session/);
   const assessmentId = new URL(page.url()).searchParams.get('id');
   expect(assessmentId).toBeTruthy();

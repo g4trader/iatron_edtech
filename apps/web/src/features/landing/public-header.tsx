@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import { DiagnosticCTA } from '@/features/acquisition/diagnostic-cta';
 import { usePathname } from 'next/navigation';
 import { useRef, useState } from 'react';
 import styles from './header.module.css';
@@ -70,13 +71,12 @@ function LandingHeader() {
             >
               Entrar
             </Link>
-            <Link
+            <DiagnosticCTA
+              location="header"
               className={styles.cta}
-              href="/cadastro"
-              onClick={() => setOpen(false)}
-            >
-              Conhecer a Iatron
-            </Link>
+              arrow={false}
+              onNavigate={() => setOpen(false)}
+            />
           </div>
         </nav>
       </div>

@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import { DiagnosticCTA } from '@/features/acquisition/diagnostic-cta';
 import { mentors } from '../mentors/mentors';
 import { faqs } from './content';
 import { LearningProgression } from './learning-journey';
@@ -172,7 +173,7 @@ export function CommunitySection() {
           </p>
           <details id="comunidade-detalhes" className={s.offerDetails}>
             <summary className={s.textLink} data-lp-event="community_cta_click">
-              Conhecer a comunidade Iatron <span aria-hidden="true">+</span>
+              Conhecer a comunidade <span aria-hidden="true">+</span>
             </summary>
             <p>
               A comunidade será organizada no WhatsApp. Acesso, regras e
@@ -235,7 +236,7 @@ export function CareerMentoringSection() {
               className={s.lightButton}
               data-lp-event="career_mentoring_cta_click"
             >
-              Conhecer a mentoria de carreira <span aria-hidden="true">+</span>
+              Conhecer a mentoria <span aria-hidden="true">+</span>
             </summary>
             <p>
               Oferta complementar em preparação. Formato, agenda e condições
@@ -295,7 +296,7 @@ export function PodcastSection() {
             rel="noopener noreferrer"
             data-lp-event="podcast_play_click"
           >
-            Assistir ao Próxima Conduta <span aria-hidden="true">↗</span>
+            Assistir ao episódio <span aria-hidden="true">↗</span>
             <span className="sr-only"> no YouTube (abre em nova aba)</span>
           </a>
         </div>
@@ -354,13 +355,7 @@ export function FinalCTA() {
           merece uma preparação com direção.
         </h2>
         <p>Conheça seu ponto de partida e organize o próximo estudo.</p>
-        <Link
-          className={s.lightButton}
-          href="/cadastro"
-          data-lp-event="final_cta_click"
-        >
-          Descobrir meu ponto de partida <span aria-hidden="true">↗</span>
-        </Link>
+        <DiagnosticCTA location="final" className={s.lightButton} />
         <a className={s.lightLink} href="#mentoria">
           Conhecer a mentoria
         </a>

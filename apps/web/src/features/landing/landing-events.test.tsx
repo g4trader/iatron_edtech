@@ -4,33 +4,40 @@ import { describe, expect, it, vi } from 'vitest';
 import { LandingEvents } from './landing-events';
 
 describe('eventos locais da landing', () => {
-  it('evita duplicação no StrictMode e limita eventos a metadados permitidos', () => {
-    const listener = vi.fn();
-    window.addEventListener('iatron:landing-event', listener);
+  it('emite view somente na aquisição e preserva eventos editoriais permitidos', () => {
+    const landing = vi.fn();
+    const acquisition = vi.fn();
+    window.addEventListener('iatron:landing-event', landing);
+    window.addEventListener('iatron:acquisition-event', acquisition);
     const { unmount } = render(
       <StrictMode>
         <LandingEvents />
         <a
-          href="/cadastro"
+          href="#como-funciona"
           onClick={(event) => event.preventDefault()}
-          data-lp-event="hero_primary_cta_click"
+          data-lp-event="hero_secondary_cta_click"
         >
-          Cadastro
+          Como funciona
         </a>
+        <button data-lp-event="hero_primary_cta_click">Evento antigo</button>
         <button data-lp-event="email@example.com">Não permitido</button>
       </StrictMode>,
     );
-    expect(listener).toHaveBeenCalledTimes(1);
-    expect((listener.mock.calls[0]?.[0] as CustomEvent).detail).toEqual({
-      name: 'lp_view',
+    expect(landing).not.toHaveBeenCalled();
+    expect(acquisition).toHaveBeenCalledTimes(1);
+    expect((acquisition.mock.calls[0]![0] as CustomEvent).detail).toEqual({
+      name: 'landing_page_view',
     });
-    fireEvent.click(screen.getByText('Cadastro'));
-    expect((listener.mock.calls[1]?.[0] as CustomEvent).detail).toEqual({
-      name: 'hero_primary_cta_click',
+    fireEvent.click(screen.getByText('Como funciona'));
+    expect((landing.mock.calls[0]![0] as CustomEvent).detail).toEqual({
+      name: 'hero_secondary_cta_click',
     });
+    fireEvent.click(screen.getByText('Evento antigo'));
     fireEvent.click(screen.getByText('Não permitido'));
-    expect(listener).toHaveBeenCalledTimes(2);
+    expect(landing).toHaveBeenCalledTimes(1);
+    expect(acquisition).toHaveBeenCalledTimes(1);
     unmount();
-    window.removeEventListener('iatron:landing-event', listener);
+    window.removeEventListener('iatron:landing-event', landing);
+    window.removeEventListener('iatron:acquisition-event', acquisition);
   });
 });

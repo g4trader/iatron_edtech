@@ -46,7 +46,7 @@ test.describe('landing premium', () => {
       await page.waitForLoadState('networkidle');
       await expectNoOverflow(page);
       if (width < 600) {
-        const cta = page.locator('[data-lp-event="hero_primary_cta_click"]');
+        const cta = page.locator('[data-diagnostic-cta="hero"]');
         await expect(cta).toBeVisible();
         const bounds = await cta.boundingBox();
         expect(bounds, `CTA ausente em ${width}px`).not.toBeNull();
@@ -68,14 +68,14 @@ test.describe('landing premium', () => {
         await page.getByRole('button', { name: 'Fechar menu' }).click();
       }
       await page.screenshot({
-        path: `/tmp/iatron-lp-${width}.png`,
+        path: `/tmp/iatron-lp-v3-${width}.png`,
         fullPage: true,
         animations: 'disabled',
       });
       if (width === 390 || width === 1440) {
         const device = width === 390 ? 'mobile' : 'desktop';
         await page.screenshot({
-          path: `/tmp/iatron-lp-hero-${device}.png`,
+          path: `/tmp/iatron-lp-v3-hero-${device}.png`,
           animations: 'disabled',
         });
         for (const section of [
@@ -86,14 +86,14 @@ test.describe('landing premium', () => {
           'mentoria',
         ]) {
           await page.locator(`#${section}`).screenshot({
-            path: `/tmp/iatron-lp-${section}-${device}.png`,
+            path: `/tmp/iatron-lp-v3-${section}-${device}.png`,
             animations: 'disabled',
           });
         }
         await page
           .locator('section[aria-labelledby="curation-title"]')
           .screenshot({
-            path: `/tmp/iatron-lp-curation-${device}.png`,
+            path: `/tmp/iatron-lp-v3-curation-${device}.png`,
             animations: 'disabled',
           });
         for (const [tab, slug] of [
@@ -102,24 +102,20 @@ test.describe('landing premium', () => {
           ['Minha evolução', 'evolucao'],
         ] as const) {
           await page.getByRole('tab', { name: tab, exact: true }).click();
-          await page
-            .locator('#plataforma')
-            .screenshot({
-              path: `/tmp/iatron-lp-demo-${slug}-${device}.png`,
-              animations: 'disabled',
-            });
+          await page.locator('#plataforma').screenshot({
+            path: `/tmp/iatron-lp-v3-demo-${slug}-${device}.png`,
+            animations: 'disabled',
+          });
         }
         for (const [section, event] of [
           ['comunidade', 'community_cta_click'],
           ['mentoria', 'career_mentoring_cta_click'],
         ] as const) {
           await page.locator(`[data-lp-event="${event}"]`).click();
-          await page
-            .locator(`#${section}`)
-            .screenshot({
-              path: `/tmp/iatron-lp-${section}-open-${device}.png`,
-              animations: 'disabled',
-            });
+          await page.locator(`#${section}`).screenshot({
+            path: `/tmp/iatron-lp-v3-${section}-open-${device}.png`,
+            animations: 'disabled',
+          });
         }
       }
     }
@@ -268,28 +264,93 @@ test.describe('landing premium', () => {
     ).toBeVisible();
   });
 
-  test('conversão e acesso chegam aos formulários existentes', async ({
+  test('CTAs apontam à entrada real e clique não anuncia diagnóstico iniciado ou concluído', async ({
     page,
   }) => {
+    const received: unknown[] = [];
+    await page.exposeFunction('captureAcquisitionEvent', (event: unknown) => {
+      received.push(event);
+    });
+    await page.addInitScript(() => {
+      window.addEventListener('iatron:acquisition-event', (event) => {
+        const capture = (
+          window as unknown as {
+            captureAcquisitionEvent: (detail: unknown) => Promise<void>;
+          }
+        ).captureAcquisitionEvent;
+        void capture((event as CustomEvent).detail);
+      });
+    });
     await page.goto('/');
-    await page.locator('[data-lp-event="hero_primary_cta_click"]').click();
-    await expect(page).toHaveURL(/\/cadastro$/);
+    for (const location of ['header', 'hero', 'platform', 'final']) {
+      await expect(
+        page.locator(`[data-diagnostic-cta="${location}"]`),
+      ).toHaveAttribute('href', '/app/assessment/entry');
+    }
+    await expect(
+      page.locator('[data-diagnostic-cta="hero"]'),
+    ).toHaveAccessibleName('Iniciar meu diagnóstico');
+    // Keep the document open to inspect a real click without invoking an authenticated flow in bypass tests.
+    await page.evaluate(() => {
+      document.addEventListener(
+        'click',
+        (event) => {
+          if (
+            event.target instanceof Element &&
+            event.target.closest('[data-diagnostic-cta]')
+          )
+            event.preventDefault();
+        },
+        true,
+      );
+    });
+    await page.locator('[data-diagnostic-cta="hero"]').click();
+    await expect
+      .poll(() =>
+        received.filter(
+          (event) =>
+            (event as { name: string }).name === 'diagnostic_cta_click',
+        ),
+      )
+      .toEqual([
+        {
+          name: 'diagnostic_cta_click',
+          cta_location: 'hero',
+          user_auth_state: 'unknown',
+        },
+      ]);
+    expect(
+      received.some((event) =>
+        [
+          'diagnostic_started',
+          'diagnostic_completed',
+          'signup_completed',
+        ].includes((event as { name: string }).name),
+      ),
+    ).toBe(false);
+    expect(
+      received.filter(
+        (event) => (event as { name: string }).name === 'landing_page_view',
+      ),
+    ).toHaveLength(1);
+  });
+
+  test('login e cadastro permanecem disponíveis sem simular uma sessão', async ({
+    page,
+  }) => {
+    await page.goto('/login');
+    await expect(page.getByLabel('E-mail')).toBeVisible();
+    await expect(page.getByLabel('Senha', { exact: true })).toBeVisible();
+    await expect(
+      page.getByRole('button', { name: 'Entrar', exact: true }),
+    ).toBeVisible();
+    await page.goto('/cadastro');
     await expect(
       page.getByRole('heading', { name: 'Criar conta' }),
     ).toBeVisible();
     await expect(page.getByLabel('E-mail')).toBeVisible();
     await expect(
       page.getByLabel('Senha (mínimo de 8 caracteres)'),
-    ).toBeVisible();
-    await page
-      .getByRole('banner')
-      .getByRole('link', { name: 'Entrar', exact: true })
-      .click();
-    await expect(page).toHaveURL(/\/login$/);
-    await expect(page.getByLabel('E-mail')).toBeVisible();
-    await expect(page.getByLabel('Senha', { exact: true })).toBeVisible();
-    await expect(
-      page.getByRole('button', { name: 'Entrar', exact: true }),
     ).toBeVisible();
   });
 

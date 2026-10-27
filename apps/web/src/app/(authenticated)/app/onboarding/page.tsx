@@ -1,9 +1,16 @@
+import type { Route } from 'next';
+import { safeReturnTo, withReturnTo } from '@/lib/safe-return-to';
 import { redirect } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
 import { OnboardingWizard } from '@/features/onboarding/components/onboarding-wizard';
 import { isAuthBypassEnabled } from '@/lib/auth-bypass';
 
-export default async function OnboardingPage() {
+export default async function OnboardingPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ returnTo?: string }>;
+}) {
+  const returnTo = safeReturnTo((await searchParams).returnTo);
   const client = await createClient();
   const {
     data: { user },
@@ -11,6 +18,7 @@ export default async function OnboardingPage() {
   if (!user && isAuthBypassEnabled(process.env)) {
     return (
       <OnboardingWizard
+        returnTo={returnTo}
         e2eBypass
         initialStep={1}
         initialName=""
@@ -35,7 +43,7 @@ export default async function OnboardingPage() {
       />
     );
   }
-  if (!user) redirect('/login?returnTo=/app/onboarding');
+  if (!user) redirect(withReturnTo('/login', returnTo) as Route);
   const [
     profileResult,
     studentResult,
@@ -118,6 +126,7 @@ export default async function OnboardingPage() {
     );
   return (
     <OnboardingWizard
+      returnTo={returnTo}
       initialStep={profileResult.data?.onboarding_step ?? 1}
       initialName={profileResult.data?.display_name ?? ''}
       initialResidencyYear={studentResult.data?.residency_year ?? null}

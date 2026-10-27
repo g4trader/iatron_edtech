@@ -1,3 +1,6 @@
+import { DIAGNOSTIC_ENTRY_PATH } from '@/features/acquisition/routes';
+import type { Route } from 'next';
+import { safeReturnTo, withReturnTo } from '@/lib/safe-return-to';
 import Link from 'next/link';
 import { AuthForm, Field, Submit } from '@/components/auth/auth-form';
 import { login } from '../auth/actions';
@@ -11,15 +14,20 @@ export default async function LoginPage({
   }>;
 }) {
   const query = await searchParams;
+  const returnTo = safeReturnTo(query.returnTo);
   return (
     <AuthForm
       title="Entrar"
-      description="Retome seu plano e continue de onde parou."
+      description={
+        returnTo === DIAGNOSTIC_ENTRY_PATH
+          ? 'Entre para iniciar ou retomar seu diagnóstico. Seu próximo passo está preservado.'
+          : 'Retome seu plano e continue de onde parou.'
+      }
       action={login}
       error={query.erro}
       message={query.mensagem}
     >
-      <input type="hidden" name="returnTo" value={query.returnTo ?? '/app'} />
+      <input type="hidden" name="returnTo" value={returnTo} />
       <Field label="E-mail" name="email" type="email" autoComplete="email" />
       <Field
         label="Senha"
@@ -29,8 +37,12 @@ export default async function LoginPage({
       />
       <Submit>Entrar</Submit>
       <div className="flex justify-between text-sm">
-        <Link href="/cadastro">Começar agora</Link>
-        <Link href="/esqueci-minha-senha">Recuperar senha</Link>
+        <Link href={withReturnTo('/cadastro', returnTo) as Route}>
+          Começar agora
+        </Link>
+        <Link href={withReturnTo('/esqueci-minha-senha', returnTo) as Route}>
+          Recuperar senha
+        </Link>
       </div>
     </AuthForm>
   );

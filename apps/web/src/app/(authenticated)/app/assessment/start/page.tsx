@@ -1,6 +1,6 @@
-import { startDiagnostic } from '@/features/assessments/actions';
+import { DiagnosticEntryForm } from '@/features/assessments/entry-form';
+import { AcquisitionView } from '@/features/acquisition/acquisition-view';
 import { AssessmentPage } from '@/features/assessments/components/adaptive-page';
-import { ActionSubmitButton } from '@/components/feedback/action-submit-button';
 import { studyPlans } from '@/features/study-plans/server/study-plans';
 import { dominantMentor, mentors } from '@/features/mentors/mentors';
 import {
@@ -45,7 +45,8 @@ export default async function StartPage() {
           consistente.
         </p>
       </MentorMessage>
-      <form action={startDiagnostic} className="experience-callout">
+      <AcquisitionView name="diagnostic_entry_view" />
+      <DiagnosticEntryForm className="experience-callout">
         <div>
           <p className="eyebrow">Como funciona</p>
           <h2>Escolha quanto deseja aprofundar agora</h2>
@@ -87,13 +88,7 @@ export default async function StartPage() {
             incerta.
           </p>
         </div>
-        <ActionSubmitButton
-          className="mt-4"
-          pendingLabel="Preparando seu diagnóstico…"
-        >
-          Descobrir meu ponto de partida
-        </ActionSubmitButton>
-      </form>
+      </DiagnosticEntryForm>
       <section aria-labelledby="diagnostic-mentors-title">
         <p className="eyebrow">Mentores por grande área</p>
         <h2 id="diagnostic-mentors-title">Quem acompanha esta experiência</h2>

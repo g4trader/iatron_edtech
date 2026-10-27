@@ -1,12 +1,15 @@
+import { DiagnosticEntryForm } from '@/features/assessments/entry-form';
 import {
-  completeDiagnostic,
   pauseDiagnostic,
   submitDiagnosticAnswer,
 } from '@/features/assessments/actions';
 import Link from 'next/link';
 import { ActionSubmitButton } from '@/components/feedback/action-submit-button';
 import { AssessmentPage } from '@/features/assessments/components/adaptive-page';
-import { nextQuestion } from '@/features/assessments/server/adaptive-assessment';
+import {
+  nextQuestion,
+  assessmentHistory,
+} from '@/features/assessments/server/adaptive-assessment';
 import { questionSelectionReason } from '@/lib/learning-language';
 
 export default async function SessionPage({
@@ -46,34 +49,71 @@ export default async function SessionPage({
             perder o diagnóstico iniciado.
           </p>
           <div className="state-action flex flex-wrap gap-2">
-            <Link
+            <a
               className="primary-button inline-flex"
-              href={`/app/assessment/session?id=${id}`}
+              href={`/app/assessment/session?id=${encodeURIComponent(id)}`}
             >
               Tentar novamente
-            </Link>
-            <Link className="secondary-button inline-flex" href="/app">
-              Voltar para minha Jornada
+            </a>
+            <Link
+              className="secondary-button inline-flex"
+              href="/app/assessment/entry"
+            >
+              Conferir meu diagnóstico salvo
             </Link>
           </div>
         </section>
       </AssessmentPage>
     );
   }
-  if (!question)
+  if (!question) {
+    let saved:
+      | Awaited<ReturnType<typeof assessmentHistory>>[number]
+      | undefined;
+    try {
+      saved = (await assessmentHistory()).find((item) => item.id === id);
+    } catch {
+      // Failure to verify progress must not be presented as a completed session.
+    }
+    if (!saved || saved.answeredCount === 0) {
+      return (
+        <AssessmentPage
+          title="As questões não estão disponíveis agora"
+          description="Ainda não temos respostas confirmadas suficientes para mostrar um resultado."
+        >
+          <p role="alert">
+            Não foi possível confirmar a próxima questão. Tente novamente ou
+            volte à entrada do diagnóstico para verificar seu progresso.
+          </p>
+          <div className="flex flex-wrap gap-3">
+            <a
+              className="primary-button"
+              href={`/app/assessment/session?id=${encodeURIComponent(id)}`}
+            >
+              Tentar novamente
+            </a>
+            <Link className="secondary-button" href="/app/assessment/entry">
+              Voltar ao diagnóstico
+            </Link>
+          </div>
+        </AssessmentPage>
+      );
+    }
     return (
       <AssessmentPage
-        title="Questões concluídas"
-        description="Suas respostas foram salvas. Conclua para ver seus pontos fortes, prioridades e próximos passos."
+        title="Confira seu próximo passo"
+        description={`${saved.answeredCount} respostas estão registradas. Podemos verificar se há evidências suficientes para concluir seu diagnóstico.`}
       >
-        <form action={completeDiagnostic}>
-          <input type="hidden" name="assessmentId" value={id} />
-          <ActionSubmitButton pendingLabel="Analisando suas competências…">
-            Ver meu resultado
-          </ActionSubmitButton>
-        </form>
+        <DiagnosticEntryForm kind="finish" assessmentId={id} />
+        <Link
+          className="secondary-button inline-flex mt-3"
+          href="/app/assessment/entry"
+        >
+          Voltar ao diagnóstico
+        </Link>
       </AssessmentPage>
     );
+  }
 
   return (
     <AssessmentPage

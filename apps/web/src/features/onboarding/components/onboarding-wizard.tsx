@@ -1,5 +1,6 @@
 'use client';
 import { useRef, useState, useTransition } from 'react';
+import { safeReturnTo, withReturnTo } from '@/lib/safe-return-to';
 import { saveOnboarding } from '../actions';
 
 interface Edition {
@@ -13,6 +14,7 @@ interface Edition {
   institutionName?: string;
 }
 interface WizardProps {
+  returnTo?: string;
   e2eBypass?: boolean;
   initialStep: number;
   initialName: string;
@@ -265,7 +267,7 @@ export function OnboardingWizard(props: WizardProps) {
     if (!validateStep()) return;
     if (props.e2eBypass) {
       setError('');
-      if (complete) window.location.assign('/app');
+      if (complete) window.location.assign(safeReturnTo(props.returnTo));
       else setStep((current) => Math.min(4, current + 1));
       return;
     }
@@ -288,9 +290,15 @@ export function OnboardingWizard(props: WizardProps) {
         examEditionIds: targets,
         complete,
       });
-      if (!result.ok) return setError(result.message);
+      if (!result.ok) {
+        if ('requiresLogin' in result && result.requiresLogin) {
+          window.location.assign(withReturnTo('/login', props.returnTo));
+          return;
+        }
+        return setError(result.message);
+      }
       if (complete) {
-        window.location.assign('/app');
+        window.location.assign(safeReturnTo(props.returnTo));
       } else {
         setStep((current) => Math.min(4, current + 1));
         document.querySelector<HTMLElement>('.onboarding-title')?.focus();

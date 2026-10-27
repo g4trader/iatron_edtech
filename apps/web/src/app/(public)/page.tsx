@@ -1,5 +1,5 @@
 import type { Metadata } from 'next';
-import Link from 'next/link';
+import { DiagnosticCTA } from '@/features/acquisition/diagnostic-cta';
 import {
   DiagnosisPreview,
   PlatformShowcase,
@@ -51,18 +51,12 @@ export default function HomePage() {
                 Sua preparação começa pelo que você precisa <em>aprender.</em>
               </h1>
               <p>
-                Entenda suas lacunas. Organize seus estudos. Evolua com
-                explicações apoiadas por IA e uma proposta de curadoria médica.
+                Descubra seus pontos fortes e o que precisa de atenção. Organize
+                sua preparação para residência médica com explicações apoiadas
+                por IA e uma proposta de curadoria médica.
               </p>
               <div className={s.actions}>
-                <Link
-                  href="/cadastro"
-                  className={s.button}
-                  data-lp-event="hero_primary_cta_click"
-                >
-                  Descobrir meu ponto de partida{' '}
-                  <span aria-hidden="true">↗</span>
-                </Link>
+                <DiagnosticCTA location="hero" className={s.button} />
                 <a
                   href="#como-funciona"
                   className={s.textLink}
@@ -72,7 +66,8 @@ export default function HomePage() {
                 </a>
               </div>
               <p className={s.note}>
-                Crie sua conta. Depois, comece pelo diagnóstico.
+                Entre ou crie sua conta para começar. Se já iniciou, continue de
+                onde parou.
               </p>
               <ul className={s.benefits}>
                 <li>Diagnóstico individual</li>
@@ -111,14 +106,7 @@ export default function HomePage() {
             </p>
             <PlatformShowcase />
             <div className={s.actions}>
-              <Link
-                href="/cadastro"
-                className={s.button}
-                data-lp-event="platform_cta_click"
-              >
-                Descobrir meu ponto de partida{' '}
-                <span aria-hidden="true">↗</span>
-              </Link>
+              <DiagnosticCTA location="platform" className={s.button} />
             </div>
           </div>
         </section>

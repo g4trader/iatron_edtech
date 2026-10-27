@@ -1,27 +1,16 @@
 'use client';
-import { useEffect, useRef } from 'react';
+import { useEffect } from 'react';
+import { AcquisitionView } from '@/features/acquisition/acquisition-view';
 
 const events = new Set([
-  'hero_primary_cta_click',
   'hero_secondary_cta_click',
   'community_cta_click',
   'career_mentoring_cta_click',
   'podcast_play_click',
-  'final_cta_click',
-  'platform_cta_click',
 ]);
 /** Local, nonpersistent integration point. No provider, cookies or network requests. */
 export function LandingEvents() {
-  const viewed = useRef(false);
   useEffect(() => {
-    if (!viewed.current) {
-      viewed.current = true;
-      window.dispatchEvent(
-        new CustomEvent('iatron:landing-event', {
-          detail: { name: 'lp_view' },
-        }),
-      );
-    }
     const click = (event: MouseEvent) => {
       if (!(event.target instanceof Element)) return;
       const name = event.target
@@ -55,5 +44,5 @@ export function LandingEvents() {
       document.removeEventListener('toggle', toggle, true);
     };
   }, []);
-  return null;
+  return <AcquisitionView name="landing_page_view" />;
 }

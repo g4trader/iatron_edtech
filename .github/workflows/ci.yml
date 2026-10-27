@@ -39,3 +39,29 @@ jobs:
       - run: pnpm build
       - run: pnpm --filter @iatron/web exec playwright install --with-deps chromium
       - run: pnpm test:e2e:mock
+
+  acquisition:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10.13.1
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm exec turbo build --filter=@iatron/api...
+      - run: pnpm db:start
+      - run: pnpm --filter @iatron/web exec playwright install --with-deps chromium
+      - name: Acquisition funnel with isolated local Supabase
+        run: pnpm test:e2e:auth acquisition-flow.spec.ts
+      - name: Acquisition evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: acquisition-evidence
+          path: apps/web/test-results/
+          retention-days: 7

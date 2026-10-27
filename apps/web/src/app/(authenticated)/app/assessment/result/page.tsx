@@ -1,3 +1,4 @@
+import { AcquisitionView } from '@/features/acquisition/acquisition-view';
 import Link from 'next/link';
 import { EmptyState } from '@/components/feedback/states';
 import {
@@ -63,6 +64,7 @@ export default async function ResultPage({
       title="Agora já conhecemos seu ponto de partida"
       description="Seu resultado mostra o que já está consistente e onde seu tempo de estudo pode gerar mais avanço."
     >
+      <AcquisitionView name="diagnostic_result_viewed" />
       {examContext?.availability === 'available' && (
         <TargetExamBadge
           isSynthetic={examContext.profile.isSynthetic}
@@ -87,7 +89,7 @@ export default async function ResultPage({
           </p>
         </div>
         <Link className="primary-button inline-flex" href="/app/plan">
-          Ver meu plano
+          Ver minha trilha de estudos
         </Link>
       </section>
       <div className="grid gap-3 sm:grid-cols-3">

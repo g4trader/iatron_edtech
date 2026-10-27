@@ -16,7 +16,12 @@ if (remoteWebUrl) {
   requiredEnvironment('E2E_SUPABASE_SERVICE_ROLE_KEY');
   const result = spawnSync(
     'pnpm',
-    ['--filter', '@iatron/web', 'test:e2e:auth:direct'],
+    [
+      '--filter',
+      '@iatron/web',
+      'test:e2e:auth:direct',
+      ...process.argv.slice(2),
+    ],
     { stdio: 'inherit', env: process.env },
   );
   process.exit(result.status ?? 1);
@@ -53,7 +58,7 @@ if (
 
 const result = spawnSync(
   'pnpm',
-  ['--filter', '@iatron/web', 'test:e2e:auth:direct'],
+  ['--filter', '@iatron/web', 'test:e2e:auth:direct', ...process.argv.slice(2)],
   {
     stdio: 'inherit',
     env: {
@@ -65,6 +70,9 @@ const result = spawnSync(
       SUPABASE_PUBLISHABLE_KEY: publishableKey,
       SUPABASE_SERVICE_ROLE_KEY: serviceRoleKey,
       E2E_SUPABASE_SERVICE_ROLE_KEY: serviceRoleKey,
+      E2E_SUPABASE_URL: supabaseUrl,
+      E2E_SUPABASE_PUBLISHABLE_KEY: publishableKey,
+      E2E_API_BASE_URL: 'http://127.0.0.1:8080',
       SUPABASE_JWT_ISSUER: `${supabaseUrl}/auth/v1`,
       SUPABASE_JWT_AUDIENCE: 'authenticated',
       SUPABASE_JWT_ALGORITHMS: 'ES256,RS256',

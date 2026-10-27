@@ -130,7 +130,7 @@ test.describe('hardening mobile', () => {
     page,
   }) => {
     for (const [route, label, role] of [
-      ['/app/assessment/start', 'Descobrir meu ponto de partida', 'button'],
+      ['/app/assessment/start', 'Começar meu diagnóstico', 'button'],
       ['/app', /Escolher minha prova|Começar diagnóstico/, 'link'],
     ] as const) {
       await page.goto(route);

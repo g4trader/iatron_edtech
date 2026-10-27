@@ -32,10 +32,11 @@ describe('landing premium', () => {
     expect(screen.getByRole('tab', { name: 'Minha trilha' })).toBeVisible();
     expect(screen.getByRole('tab', { name: 'Minha evolução' })).toBeVisible();
     const ctas = screen.getAllByRole('link', {
-      name: /Descobrir meu ponto de partida/,
+      name: /Iniciar meu diagnóstico/,
     });
     expect(ctas).toHaveLength(3);
-    for (const cta of ctas) expect(cta).toHaveAttribute('href', '/cadastro');
+    for (const cta of ctas)
+      expect(cta).toHaveAttribute('href', '/app/assessment/entry');
 
     expect(
       screen.getByRole('region', {
@@ -43,7 +44,7 @@ describe('landing premium', () => {
       }),
     ).toBeVisible();
     expect(
-      screen.getByRole('link', { name: /Assistir ao Próxima Conduta/ }),
+      screen.getByRole('link', { name: /Assistir ao episódio/ }),
     ).toHaveAttribute('href', 'https://www.youtube.com/watch?v=PEKL4AgCtMQ');
     expect(
       screen.getByTitle(

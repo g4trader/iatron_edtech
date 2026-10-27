@@ -1,3 +1,4 @@
+import { AcquisitionView } from '@/features/acquisition/acquisition-view';
 import { generatePlan } from '@/features/study-plans/actions';
 import { EmptyState } from '@/components/feedback/states';
 import { ActionSubmitButton } from '@/components/feedback/action-submit-button';
@@ -33,13 +34,17 @@ export default async function CurrentPlanPage() {
       title="Plano atual"
       description={`${plan.totalPlannedMinutes} de ${plan.totalAvailableMinutes} minutos disponíveis foram organizados para os próximos dias.`}
     >
-      <section className="experience-callout" aria-label="Como seu plano foi criado">
+      <AcquisitionView name="study_path_opened" />
+      <section
+        className="experience-callout"
+        aria-label="Como seu plano foi criado"
+      >
         <div>
           <p className="eyebrow">Feito para a sua rotina</p>
           <h2>Seu plano transforma prioridades em próximos passos</h2>
           <p>
-            Consideramos suas respostas e o tempo disponível. Em cada
-            atividade, você pode conferir o motivo da recomendação.
+            Consideramos suas respostas e o tempo disponível. Em cada atividade,
+            você pode conferir o motivo da recomendação.
           </p>
         </div>
       </section>

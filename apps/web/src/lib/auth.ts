@@ -9,12 +9,7 @@ export function workspaceForRoles(roles: string[]) {
   return '/app';
 }
 
-export function safeReturnTo(
-  value: string | null | undefined,
-  fallback = '/app',
-) {
-  return value?.startsWith('/') && !value.startsWith('//') ? value : fallback;
-}
+export { safeReturnTo } from './safe-return-to';
 
 export async function getAuthState() {
   if (isAuthBypassEnabled(process.env)) {

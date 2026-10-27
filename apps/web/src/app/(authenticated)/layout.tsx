@@ -1,3 +1,6 @@
+import { headers } from 'next/headers';
+import type { Route } from 'next';
+import { withReturnTo } from '@/lib/safe-return-to';
 import type { ReactNode } from 'react';
 import { AppShell } from '@/components/layout/app-shell';
 import { redirect } from 'next/navigation';
@@ -9,7 +12,13 @@ export default async function AuthenticatedLayout({
   children: ReactNode;
 }) {
   const { user, profile } = await getAuthState();
-  if (!user) redirect('/login');
+  if (!user)
+    redirect(
+      withReturnTo(
+        '/login',
+        (await headers()).get('x-iatron-return-to'),
+      ) as Route,
+    );
   return (
     <AppShell
       identity={{

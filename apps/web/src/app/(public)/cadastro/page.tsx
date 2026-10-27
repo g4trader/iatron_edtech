@@ -1,31 +1,30 @@
-import { headers } from 'next/headers';
+import { DIAGNOSTIC_ENTRY_PATH } from '@/features/acquisition/routes';
+import { SignupObserver } from '@/features/acquisition/signup-observer';
+import type { Route } from 'next';
+import { safeReturnTo, withReturnTo } from '@/lib/safe-return-to';
 import Link from 'next/link';
 import { AuthForm, Field, Submit } from '@/components/auth/auth-form';
 import { signup } from '../auth/actions';
 export default async function SignupPage({
   searchParams,
 }: {
-  searchParams: Promise<{ erro?: string }>;
+  searchParams: Promise<{ erro?: string; returnTo?: string }>;
 }) {
   const query = await searchParams;
-  const headerStore = await headers();
-  const protocol =
-    headerStore.get('x-forwarded-proto') ??
-    (process.env.NODE_ENV === 'production' ? 'https' : 'http');
-  const host =
-    headerStore.get('x-forwarded-host') ??
-    headerStore.get('host') ??
-    'localhost:3000';
-  const origin =
-    headerStore.get('origin') ?? `${protocol.split(',')[0]}://${host.split(',')[0]}`;
+  const returnTo = safeReturnTo(query.returnTo);
   return (
     <AuthForm
       title="Criar conta"
-      description="Leva poucos minutos. Depois, vamos conhecer sua rotina e organizar seus primeiros passos."
+      description={
+        returnTo === DIAGNOSTIC_ENTRY_PATH
+          ? 'Crie sua conta. Após confirmar seu e-mail e informar sua rotina, você seguirá para o diagnóstico.'
+          : 'Leva poucos minutos. Depois, vamos conhecer sua rotina e organizar seus primeiros passos.'
+      }
       action={signup}
       error={query.erro}
     >
-      <input type="hidden" name="origin" value={origin} />
+      <SignupObserver />
+      <input type="hidden" name="returnTo" value={returnTo} />
       <Field
         label="Como devemos chamar você?"
         name="displayName"
@@ -39,7 +38,10 @@ export default async function SignupPage({
         autoComplete="new-password"
       />
       <Submit>Começar minha preparação</Submit>
-      <Link className="text-sm" href="/login">
+      <Link
+        className="text-sm"
+        href={withReturnTo('/login', returnTo) as Route}
+      >
         Já tenho uma conta
       </Link>
     </AuthForm>

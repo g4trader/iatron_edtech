@@ -66,7 +66,7 @@ test('direciona a antiga demonstração para o diagnóstico real', async ({
     page.getByRole('heading', { name: 'Diagnóstico inicial' }),
   ).toBeVisible();
   await expect(
-    page.getByRole('button', { name: 'Descobrir meu ponto de partida' }),
+    page.getByRole('button', { name: 'Começar meu diagnóstico' }),
   ).toBeVisible();
   await expect(
     page.getByRole('radio', { name: /Triagem rápida/ }),

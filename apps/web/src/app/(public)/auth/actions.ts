@@ -3,13 +3,22 @@
 import { redirect } from 'next/navigation';
 import type { Route } from 'next';
 import { createClient } from '@/lib/supabase/server';
-import { safeReturnTo, workspaceForRoles } from '@/lib/auth';
+import { workspaceForRoles } from '@/lib/auth';
+import { safeReturnTo, withReturnTo } from '@/lib/safe-return-to';
+import { authOrigin } from '@/lib/auth-origin';
 
 function value(formData: FormData, name: string) {
   return String(formData.get(name) ?? '').trim();
 }
-function errorRedirect(path: string, message: string): never {
-  redirect(`${path}?erro=${encodeURIComponent(message)}` as Route);
+function feedbackRedirect(
+  path: string,
+  returnTo: string,
+  key: 'erro' | 'mensagem',
+  message: string,
+): never {
+  redirect(
+    `${withReturnTo(path, returnTo)}&${key}=${encodeURIComponent(message)}` as Route,
+  );
 }
 
 export async function login(formData: FormData) {
@@ -19,7 +28,8 @@ export async function login(formData: FormData) {
     email: value(formData, 'email'),
     password: value(formData, 'password'),
   });
-  if (error) errorRedirect('/login', 'E-mail ou senha inválidos.');
+  if (error || !data.user)
+    feedbackRedirect('/login', returnTo, 'erro', 'E-mail ou senha inválidos.');
   const [{ data: profile }, { data: roleRows }] = await Promise.all([
     client
       .from('profiles')
@@ -28,53 +38,72 @@ export async function login(formData: FormData) {
       .single(),
     client.from('user_roles').select('role').eq('user_id', data.user.id),
   ]);
-  const workspace = workspaceForRoles(
-    roleRows?.map(({ role }) => role) ?? [],
-  );
-  if (workspace === '/app' && profile?.onboarding_status !== 'completed') {
-    redirect('/app/onboarding');
-  }
+  const workspace = workspaceForRoles(roleRows?.map(({ role }) => role) ?? []);
+  if (workspace === '/app' && profile?.onboarding_status !== 'completed')
+    redirect(withReturnTo('/app/onboarding', returnTo) as Route);
   redirect((returnTo === '/app' ? workspace : returnTo) as Route);
 }
 
 export async function signup(formData: FormData) {
   const client = await createClient();
-  const origin = value(formData, 'origin');
-  const { error } = await client.auth.signUp({
+  const returnTo = safeReturnTo(value(formData, 'returnTo'));
+  const callback = new URL('/auth/callback', await authOrigin());
+  callback.searchParams.set('next', returnTo);
+  const { data, error } = await client.auth.signUp({
     email: value(formData, 'email'),
     password: value(formData, 'password'),
     options: {
       data: { display_name: value(formData, 'displayName') },
-      emailRedirectTo: `${origin}/auth/callback?next=/app/onboarding`,
+      emailRedirectTo: callback.toString(),
     },
   });
   if (error)
-    errorRedirect(
+    feedbackRedirect(
       '/cadastro',
+      returnTo,
+      'erro',
       'Não foi possível criar a conta. Revise os dados.',
     );
-  redirect('/login?mensagem=Confira seu e-mail para confirmar o cadastro.');
+  // The protected destination applies onboarding consistently, including installations without email confirmation.
+  if (data.session) redirect(returnTo as Route);
+  feedbackRedirect(
+    '/login',
+    returnTo,
+    'mensagem',
+    'Confira seu e-mail para confirmar o cadastro.',
+  );
 }
 
 export async function recoverPassword(formData: FormData) {
   const client = await createClient();
-  const origin = value(formData, 'origin');
+  const returnTo = safeReturnTo(value(formData, 'returnTo'));
+  const callback = new URL('/auth/callback', await authOrigin());
+  callback.searchParams.set('next', withReturnTo('/redefinir-senha', returnTo));
   await client.auth.resetPasswordForEmail(value(formData, 'email'), {
-    redirectTo: `${origin}/auth/callback?next=/redefinir-senha`,
+    redirectTo: callback.toString(),
   });
-  redirect(
-    '/login?mensagem=Se o e-mail estiver cadastrado, enviaremos as instruções.',
+  feedbackRedirect(
+    '/login',
+    returnTo,
+    'mensagem',
+    'Se o e-mail estiver cadastrado, enviaremos as instruções.',
   );
 }
 
 export async function updatePassword(formData: FormData) {
   const client = await createClient();
+  const returnTo = safeReturnTo(value(formData, 'returnTo'));
   const { error } = await client.auth.updateUser({
     password: value(formData, 'password'),
   });
   if (error)
-    errorRedirect('/redefinir-senha', 'O link expirou ou a senha é inválida.');
-  redirect('/app');
+    feedbackRedirect(
+      '/redefinir-senha',
+      returnTo,
+      'erro',
+      'O link expirou ou a senha é inválida.',
+    );
+  redirect(returnTo as Route);
 }
 
 export async function logout() {
