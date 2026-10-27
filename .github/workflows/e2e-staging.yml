@@ -20,6 +20,7 @@ jobs:
     runs-on: ubuntu-24.04
     timeout-minutes: 25
     env:
+      E2E_BROWSER_CHANNEL: chrome
       E2E_ALLOW_DESTRUCTIVE_TESTS: '1'
       E2E_WEB_BASE_URL: ${{ vars.E2E_WEB_BASE_URL }}
       E2E_API_BASE_URL: ${{ vars.E2E_API_BASE_URL }}
@@ -45,6 +46,6 @@ jobs:
           node-version: 22
           cache: pnpm
       - run: pnpm install --frozen-lockfile
-      - run: pnpm --filter @iatron/web exec playwright install --with-deps chromium
+      - run: google-chrome --version
       - run: node scripts/assert-staging-alignment.mjs
       - run: pnpm test:e2e:auth

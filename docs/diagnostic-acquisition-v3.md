@@ -1,7 +1,7 @@
 # Aquisição V3 — diagnóstico como porta de entrada
 
 Data: 27/10/2026. Base: `049678f52b4609b2c82a115145a5e4019c312e04`.
-Branch: `feat/diagnostic-acquisition-v3`. Publicação não autorizada nesta rodada.
+Branch: `feat/diagnostic-acquisition-v3`. Publicação autorizada pela política permanente de 27/10/2026; validação online obrigatória.
 
 ## A. Fluxo encontrado
 
@@ -203,7 +203,7 @@ Os resultados finais por commit estão na PR #7.
 6. **Produção:** não está declarada pronta. Faltam aprovação integrada da última
    correção e validação no ambiente publicado; downloads HTTP 429 interromperam
    as rodadas finais antes dos testes reais. Consultar a PR para a última rodada.
-A publicação depende de autorização explícita, merge e smoke no ambiente aprovado.
+A publicação é automática no ambiente atual após os gates; smoke online é obrigatório.
 Rollback futuro: reverter o commit da V3; não há mudança de schema para desfazer.
 `apps/web/vercel.json` impede somente o deploy automático desta branch, conforme
 [a configuração oficial da Vercel](https://vercel.com/docs/project-configuration/git-configuration).

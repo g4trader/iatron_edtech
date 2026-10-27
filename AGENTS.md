@@ -1,5 +1,18 @@
 # CONTEXTO DO PROJETO
 
+# POLÍTICA PERMANENTE DE PUBLICAÇÃO
+
+Por instrução do proprietário em 27/10/2026, toda implementação inclui:
+IMPLEMENTAÇÃO → TESTES → BUILD → DEPLOY → VALIDAÇÃO ONLINE → RELATÓRIO.
+Publicar automaticamente no ambiente atual de desenvolvimento/homologação
+`https://go.iatron.com.br`, sem preview e sem pedir autorização adicional.
+Usar os projetos já configurados e preservar os gates de segurança e testes.
+A autorização não abrange ambiente comercial futuro, migrações destrutivas,
+exclusão de dados reais, credenciais ou infraestrutura com custo relevante.
+Não declarar conclusão com deploy ou validação online pendente. Documentar
+bloqueios externos e a ação necessária. Esta regra substitui restrições anteriores
+de autorização para deploy neste ambiente. Ver `docs/deployment-policy.md`.
+
 # GOVERNANÇA OBRIGATÓRIA
 
 Antes de qualquer implementação, leia integralmente:

@@ -19,7 +19,7 @@ env:
 jobs:
   validate:
     runs-on: ubuntu-24.04
-    timeout-minutes: 25
+    timeout-minutes: 40
     steps:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4
@@ -42,7 +42,27 @@ jobs:
       - run: pnpm lint
       - run: pnpm typecheck
       - run: pnpm test
-      - run: pnpm db:start
+      - name: Start Supabase with bounded registry retries
+        shell: bash
+        run: |
+          startup_log="$RUNNER_TEMP/supabase-start.log"
+          for attempt in 1 2 3; do
+            if pnpm db:start >"$startup_log" 2>&1; then
+              echo "Supabase ready; database and E2E checks remain required."
+              exit 0
+            fi
+            if ! grep -Eqi 'toomanyrequests|rate limit|Data limit exceeded|failed to pull docker image' "$startup_log"; then
+              echo "Supabase initialization failed outside registry downloads."
+              grep -Ei 'error|failed|unhealthy' "$startup_log" | tail -15 || true
+              exit 1
+            fi
+            echo "Image registry unavailable (attempt $attempt/3); retaining downloaded layers."
+            if [ "$attempt" -eq 3 ]; then
+              grep -Ei 'toomanyrequests|failed to pull docker image' "$startup_log" | tail -15 || true
+              exit 1
+            fi
+            sleep 20
+          done
       - run: pnpm db:test
       - run: pnpm build
       - name: Verify preinstalled Chrome
