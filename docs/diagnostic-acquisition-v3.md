@@ -103,8 +103,9 @@ preservada. Não foi feita medição de Core Web Vitals em usuários reais.
 A execução inicial de CI identificou uma asserção com texto antigo de recuperação,
 corrigida, e bloqueio externo de download de imagens (HTTP rate limit) antes dos
 E2E reais. A inicialização efêmera admite uma segunda tentativa, sem ignorar falhas.
-O CI usa o espelho GHCR e autenticação pelo token efêmero do job, somente com
-permissão de leitura de pacotes, para evitar downloads anônimos limitados. Não
+O CI preserva a alternância de registros do Supabase e autentica a leitura no
+GHCR pelo token efêmero do job, somente com permissão de leitura de pacotes.
+O limite externo também ocorreu com autenticação; não há garantia de eliminá-lo. Não
 há novo segredo permanente. Referências: [Supabase setup-cli](https://github.com/supabase/setup-cli/blob/main/src/main.ts)
 e [autenticação GHCR](https://docs.github.com/en/packages/working-with-a-github-packages-registry/working-with-the-container-registry).
 A primeira execução real também revelou perda de sessão no callback ao usar
@@ -179,9 +180,21 @@ versus trilha. Não foi criado sistema de A/B testing.
 
 ## J. Resumo executivo e operação
 
-Implementação conectada ao diagnóstico real; resultados integrados e status de
-aceite estão na PR #7 para evitar confundir validação local com publicação.
-Não declarar pronto para produção até verificar os critérios bloqueantes.
+Status: **implementado com pendências de validação integrada e publicação**.
+Os resultados finais por commit estão na PR #7.
+
+1. **Entrada pela LP:** os quatro CTAs conduzem à entrada real do diagnóstico.
+2. **Usuário autenticado:** o fluxo seleciona avaliação nova, pendente ou concluída;
+   início e retomada foram exercitados com serviços reais. A última correção da
+   transição conclusão → resultado aguarda aprovação integrada.
+3. **Visitante anônimo:** login/cadastro são obrigatórios; confirmação real via
+   caixa de e-mail efêmera e chegada ao diagnóstico passaram em CI anterior.
+4. **Intenção preservada:** retorno sanitizado acompanha autenticação e onboarding.
+5. **Mensuração:** início confirmado dispara evento local e já possui auditoria
+   persistida na API. Métricas de visitantes e taxas dependem de coletor/consentimento.
+6. **Produção:** não está declarada pronta. Faltam aprovação integrada da última
+   correção e validação no ambiente publicado; downloads HTTP 429 interromperam
+   as rodadas finais antes dos testes reais. Consultar a PR para a última rodada.
 A publicação depende de autorização explícita, merge e smoke no ambiente aprovado.
 Rollback futuro: reverter o commit da V3; não há mudança de schema para desfazer.
 `apps/web/vercel.json` impede somente o deploy automático desta branch, conforme

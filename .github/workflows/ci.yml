@@ -13,10 +13,6 @@ permissions:
   contents: read
   packages: read
 
-env:
-  # Same registry used by supabase/setup-cli on GitHub-hosted runners.
-  SUPABASE_INTERNAL_IMAGE_REGISTRY: ghcr.io
-
 jobs:
   validate:
     runs-on: ubuntu-24.04
