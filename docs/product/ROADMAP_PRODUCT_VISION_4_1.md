@@ -115,7 +115,7 @@ e distingue orientação médica revisada de explicação gerada como apoio.
 - Aristóteles em Pediatria;
 - Lucas em Clínica Médica;
 - Guilherme Peterson em Cirurgia Geral;
-- Fernanda Grosbelli em Ginecologia e Obstetrícia;
+- João Garcia em Ginecologia e Obstetrícia;
 - apresentação, atuação, metodologia, mensagem e materiais;
 - estados de atribuição: criado, revisado, homologado pela equipe, gerado por
   IA a partir de conteúdo homologado e provisório;

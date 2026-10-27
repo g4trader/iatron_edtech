@@ -11,9 +11,16 @@ declara que autorizações já foram concedidas; o
 | Pediatria                 | Aristóteles        |
 | Clínica Médica            | Lucas              |
 | Cirurgia Geral            | Guilherme Peterson |
-| Ginecologia e Obstetrícia | Fernanda Grosbelli |
+| Ginecologia e Obstetrícia | João Garcia        |
 
 O uso oficial de cada associação depende de autorização documental.
+
+Em 27/10/2026, o responsável pelo produto solicitou substituir a apresentação
+de Ginecologia e Obstetrícia por **Dr. João Garcia — Ginecologista Obstetra**
+na landing page. O cadastro compartilhado de apresentação foi atualizado para
+manter a identidade consistente na interface. Esta solicitação não atribui
+autoria ou revisão de conteúdos, não altera registros editoriais e não aprova
+os demais escopos pendentes da DEC-002.
 
 ## Autorizações independentes
 
