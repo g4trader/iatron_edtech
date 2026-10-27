@@ -31,13 +31,17 @@ quando exigida → onboarding existente → diagnóstico.
 - Conclusão valida identificador, ownership pelo histórico autenticado e resposta
   real da API. Repetir uma conclusão já salva não repete o evento.
 - Sem questões e sem respostas confirmadas, a interface oferece recuperação,
-  sem anunciar conclusão.
+  sem anunciar conclusão. Quando há respostas e o conteúdo se esgota, a API
+  consulta o seletor existente e informa disponibilidade ao motor, que já prevê
+  `content_exhausted` com `evidenceSufficient:false`. A tela identifica esse
+  retrato como parcial. Nenhuma política de pontuação ou parada foi alterada.
 
 `returnTo` acompanha os formulários, erros, confirmação, recuperação e onboarding.
 Destinos são restritos aos workspaces internos; normalizações perigosas são
 rejeitadas. O proxy sobrescreve o header interno de retorno e preserva cookies
 renovados nos redirects. A origem de e-mails ignora campos enviados pelo navegador
-em favor dos hosts aprovados. Autorização continua no servidor/API/RLS.
+em favor dos hosts aprovados. O callback também usa o host público aprovado,
+preservando o escopo dos cookies quando o servidor Next informa um host interno. Autorização continua no servidor/API/RLS.
 
 ## C. Arquivos alterados
 
@@ -90,7 +94,7 @@ consentimento, deduplicação e vínculo permitido. Nenhuma taxa foi inventada.
 ## F. Cenários e G. validação técnica
 
 Validação local em 27/10/2026: lint, typecheck, build de produção e testes
-aprovados (173 web, 157 API, 25 contratos, 6 IA, 9 guards). Playwright:
+aprovados (175 web, 161 API, 25 contratos, 6 IA, 9 guards). Playwright:
 139 aprovados e 26 exclusões condicionais por dispositivo. A matriz inclui
 320×812, 375×812, 390×844, 768×1024, 1024×768, 1366×768, 1440×900 e 1920×1080.
 A inspeção visual do hero desktop/mobile confirma CTA legível e composição
@@ -99,6 +103,18 @@ preservada. Não foi feita medição de Core Web Vitals em usuários reais.
 A execução inicial de CI identificou uma asserção com texto antigo de recuperação,
 corrigida, e bloqueio externo de download de imagens (HTTP rate limit) antes dos
 E2E reais. A inicialização efêmera admite uma segunda tentativa, sem ignorar falhas.
+A primeira execução real também revelou perda de sessão no callback ao usar
+um host interno do Next e divergência entre `/next` e `/finish` quando as questões
+se esgotavam. Ambos foram corrigidos com regressões automatizadas; a rodada final
+reexecuta o percurso inteiro. Capturas usam `caret: initial` para evitar que a
+manipulação de caret pelo Playwright interfira na hidratação durante a evidência.
+
+Smoke adicional do build de produção local, sem bypass: CTA anônimo → login →
+cadastro preservou `returnTo`; rota inexistente retornou 404. Nenhuma conta foi
+criada nesse smoke. O comando `next start` emitiu o aviso preexistente do projeto
+sobre `output: standalone`; esse smoke não substitui a validação do empacotamento
+na hospedagem.
+
 Os resultados finais de CI e o aceite integrado são registrados na
 [PR #7](https://github.com/g4trader/iatron_edtech/pull/7), associados ao commit testado.
 
@@ -163,6 +179,8 @@ Nenhuma configuração de produção ou credencial foi alterada.
 - `.github/workflows/ci.yml`
 - `apps/api/src/assessment-repository-history.test.ts`
 - `apps/api/src/assessment-repository.ts`
+- `apps/api/src/assessment-routes.test.ts`
+- `apps/api/src/assessment-routes.ts`
 - `apps/web/e2e-auth/acquisition-flow.spec.ts`
 - `apps/web/e2e-auth/auth-flow.spec.ts`
 - `apps/web/e2e/app.spec.ts`

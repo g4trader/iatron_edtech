@@ -17,6 +17,41 @@ beforeEach(() => {
   mocks.verify.mockResolvedValue({ error: null });
 });
 describe('auth callback', () => {
+  it('keeps the browser host when Next exposes an internal localhost origin', async () => {
+    const response = await GET(
+      new Request(
+        'http://localhost:3000/auth/callback?code=fixture&next=%2Fapp%2Fassessment%2Fentry',
+        { headers: { host: '127.0.0.1:3000' } },
+      ),
+    );
+    expect(response.headers.get('location')).toBe(
+      'http://127.0.0.1:3000/app/assessment/entry',
+    );
+  });
+  it('uses the approved forwarded host and refuses an arbitrary forwarded origin', async () => {
+    const response = await GET(
+      new Request(
+        'http://localhost:3000/auth/callback?code=fixture&next=%2Fapp',
+        {
+          headers: {
+            host: 'localhost:3000',
+            'x-forwarded-host': 'go.iatron.com.br',
+          },
+        },
+      ),
+    );
+    expect(response.headers.get('location')).toBe(
+      'https://go.iatron.com.br/app',
+    );
+    const unsafe = await GET(
+      new Request(
+        'http://localhost:3000/auth/callback?code=fixture&next=%2Fapp',
+        { headers: { 'x-forwarded-host': 'evil.invalid' } },
+      ),
+    );
+    expect(unsafe.headers.get('location')).toBe('https://go.iatron.com.br/app');
+  });
+
   it('exchanges the code before returning to a protected destination', async () => {
     const response = await GET(request('/app/assessment/entry'));
     expect(mocks.exchange).toHaveBeenCalledWith('fixture');

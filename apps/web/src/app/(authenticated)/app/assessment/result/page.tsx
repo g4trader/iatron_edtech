@@ -65,6 +65,18 @@ export default async function ResultPage({
       description="Seu resultado mostra o que já está consistente e onde seu tempo de estudo pode gerar mais avanço."
     >
       <AcquisitionView name="diagnostic_result_viewed" />
+      {!result.evidenceSufficient && (
+        <section className="state-card" aria-labelledby="partial-result-title">
+          <h2 id="partial-result-title">Este retrato ainda é parcial</h2>
+          <p>
+            {result.completionReason === 'content_exhausted'
+              ? 'As questões disponíveis para este diagnóstico se esgotaram. '
+              : ''}
+            O resultado considera suas respostas registradas. Ainda não há
+            evidências suficientes para um retrato completo da sua preparação.
+          </p>
+        </section>
+      )}
       {examContext?.availability === 'available' && (
         <TargetExamBadge
           isSynthetic={examContext.profile.isSynthetic}

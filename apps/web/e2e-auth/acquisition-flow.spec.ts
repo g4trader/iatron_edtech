@@ -234,6 +234,7 @@ test('aquisição real preserva intenção, progresso e resultado sem criar aval
   await expect(page).toHaveURL(/\/login\?/);
   expect(new URL(page.url()).searchParams.get('returnTo')).toBe(entry);
   await page.screenshot({
+    caret: 'initial',
     path: testInfo.outputPath('acquisition-login.png'),
     fullPage: true,
   });
@@ -254,7 +255,10 @@ test('aquisição real preserva intenção, progresso e resultado sem criar aval
   ).toBeVisible();
   await page
     .locator('main')
-    .screenshot({ path: testInfo.outputPath('acquisition-intro.png') });
+    .screenshot({
+      caret: 'initial',
+      path: testInfo.outputPath('acquisition-intro.png'),
+    });
   await page.setViewportSize({ width: 390, height: 844 });
   await page
     .getByRole('button', { name: 'Começar meu diagnóstico', exact: true })
@@ -268,9 +272,12 @@ test('aquisição real preserva intenção, progresso e resultado sem criar aval
     page.locator('input[name="selectedOptionId"]').first(),
   ).toBeVisible();
   await expectNoHorizontalOverflow(page);
-  await page.locator('main').screenshot({
-    path: testInfo.outputPath('acquisition-question-mobile.png'),
-  });
+  await page
+    .locator('main')
+    .screenshot({
+      caret: 'initial',
+      path: testInfo.outputPath('acquisition-question-mobile.png'),
+    });
   const id = new URL(page.url()).searchParams.get('id');
   expect(id).toBeTruthy();
   const token = await accessToken(request, email, password);
@@ -320,6 +327,22 @@ test('aquisição real preserva intenção, progresso e resultado sem criar aval
     new RegExp(`/app/assessment/result\\?id=${id}$`),
   );
   await expect.poll(() => count('diagnostic_completed')).toBe(1);
+  const resultResponse = await request.get(
+    `${apiBaseUrl.replace(/\/$/, '')}/v1/assessments/${id}/result`,
+    { headers: { authorization: `Bearer ${token}` } },
+  );
+  expect(resultResponse.ok()).toBeTruthy();
+  const evidence = (await resultResponse.json()) as {
+    completionReason: string;
+    evidenceSufficient: boolean;
+  };
+  if (evidence.completionReason === 'content_exhausted')
+    expect(evidence.evidenceSufficient).toBe(false);
+  if (!evidence.evidenceSufficient)
+    await expect(
+      page.getByRole('heading', { name: 'Este retrato ainda é parcial' }),
+    ).toBeVisible();
+
   await expect(
     page.getByRole('heading', {
       name: 'Agora já conhecemos seu ponto de partida',
@@ -335,7 +358,10 @@ test('aquisição real preserva intenção, progresso e resultado sem criar aval
   await expectNoHorizontalOverflow(page);
   await page
     .locator('main')
-    .screenshot({ path: testInfo.outputPath('acquisition-result-mobile.png') });
+    .screenshot({
+      caret: 'initial',
+      path: testInfo.outputPath('acquisition-result-mobile.png'),
+    });
   await enterFromLanding(page);
   await expect(
     page.getByRole('heading', {
@@ -375,7 +401,10 @@ test('aquisição real preserva intenção, progresso e resultado sem criar aval
   await expectNoHorizontalOverflow(page);
   await page
     .locator('main')
-    .screenshot({ path: testInfo.outputPath('acquisition-plan-mobile.png') });
+    .screenshot({
+      caret: 'initial',
+      path: testInfo.outputPath('acquisition-plan-mobile.png'),
+    });
   await testInfo.attach('acquisition-events', {
     body: JSON.stringify(
       {
@@ -431,10 +460,13 @@ test('cadastro confirma e-mail real local e mantém intenção até o diagnósti
     .toBe(true);
   const verification = new URL(confirmation!);
   const redirect = new URL(verification.searchParams.get('redirect_to')!);
+  const browserOrigin = new URL(page.url()).origin;
+  expect(redirect.origin).toBe(browserOrigin);
   expect(redirect.pathname).toBe('/auth/callback');
   expect(redirect.searchParams.get('next')).toBe(entry);
   await page.goto(confirmation!);
   await completeOnboarding(page);
+  expect(new URL(page.url()).origin).toBe(browserOrigin);
   expect((await findFixtureUser(email))?.email_confirmed_at).toBeTruthy();
   await expect(
     page.getByRole('button', { name: 'Começar meu diagnóstico', exact: true }),

@@ -1,4 +1,4 @@
-import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { FastifyInstance } from 'fastify';
 import { buildApp } from './app.js';
 import { readEnvironment } from './config/environment.js';
@@ -237,6 +237,7 @@ describe('assessment API', () => {
     });
   });
   it('refuses to finish an incomplete assessment', async () => {
+    answeredCount = 1;
     const repository = {
       ...assessment,
       getAssessment: async () => ({
@@ -258,6 +259,94 @@ describe('assessment API', () => {
     expect(response.json()).toMatchObject({
       error: { code: 'ASSESSMENT_INCOMPLETE' },
     });
+  });
+  it('finishes with insufficient evidence when the same selector used by next exhausts content', async () => {
+    answeredCount = 1;
+    const finish = vi.fn().mockResolvedValue(result.id);
+    app = await build({
+      ...assessment,
+      getAssessment: async () => ({ ...summary(), questionCount: 10 }),
+      attempted: async () => ({
+        questionIds: [questionId],
+        themeIds: ['theme'],
+      }),
+      finish,
+    });
+    const next = await app.inject({
+      method: 'GET',
+      url: `/v1/assessments/${id}/next`,
+      headers: { authorization: 'Bearer token' },
+    });
+    expect(next.statusCode).toBe(204);
+    const response = await app.inject({
+      method: 'POST',
+      url: `/v1/assessments/${id}/finish`,
+      headers: { authorization: 'Bearer token' },
+    });
+    expect(response.statusCode).toBe(200);
+    expect(finish).toHaveBeenCalledWith(id, {
+      reason: 'content_exhausted',
+      evidenceSufficient: false,
+    });
+  });
+  it('does not classify a pending unanswered selection as exhausted content', async () => {
+    answeredCount = 1;
+    const finish = vi.fn();
+    app = await build({
+      ...assessment,
+      getAssessment: async () => ({ ...summary(), questionCount: 10 }),
+      listCandidates: async () => [],
+      pendingSelection: async () => ({
+        questionVersionId: questionId,
+        selectionOrder: 2,
+        reason: 'pending',
+      }),
+      finish,
+    });
+    const response = await app.inject({
+      method: 'POST',
+      url: `/v1/assessments/${id}/finish`,
+      headers: { authorization: 'Bearer token' },
+    });
+    expect(response.statusCode).toBe(409);
+    expect(finish).not.toHaveBeenCalled();
+  });
+  it('propagates content lookup failure without finishing or inventing exhaustion', async () => {
+    answeredCount = 1;
+    const finish = vi.fn();
+    app = await build({
+      ...assessment,
+      getAssessment: async () => ({ ...summary(), questionCount: 10 }),
+      listCandidates: async () => {
+        throw new Error('catalog unavailable');
+      },
+      finish,
+    });
+    const response = await app.inject({
+      method: 'POST',
+      url: `/v1/assessments/${id}/finish`,
+      headers: { authorization: 'Bearer token' },
+    });
+    expect(response.statusCode).toBeGreaterThanOrEqual(500);
+    expect(finish).not.toHaveBeenCalled();
+  });
+  it('rejects zero answers even when no content is available', async () => {
+    const finish = vi.fn();
+    app = await build({
+      ...assessment,
+      listCandidates: async () => [],
+      finish,
+    });
+    const response = await app.inject({
+      method: 'POST',
+      url: `/v1/assessments/${id}/finish`,
+      headers: { authorization: 'Bearer token' },
+    });
+    expect(response.statusCode).toBe(409);
+    expect(response.json()).toMatchObject({
+      error: { code: 'ASSESSMENT_NO_EVIDENCE' },
+    });
+    expect(finish).not.toHaveBeenCalled();
   });
   it.each(['confidence', 'coverage', 'competencies'])(
     'serves %s inspection',

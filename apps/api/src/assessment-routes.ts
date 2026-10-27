@@ -224,7 +224,7 @@ export async function registerAssessmentRoutes(
           },
         });
       const observations = await repository.observations(params(request));
-      const stopping = evaluateDiagnosticStop({
+      let stopping = evaluateDiagnosticStop({
         observations,
         policy: {
           ...policyForMode(state.mode),
@@ -240,6 +240,38 @@ export async function registerAssessmentRoutes(
         contentAvailable:
           state.answeredCount >= state.questionCount ? false : undefined,
       });
+      if (state.answeredCount === 0 || observations.length === 0)
+        return reply.status(409).send({
+          error: {
+            code: 'ASSESSMENT_NO_EVIDENCE',
+            message:
+              'Ainda não há respostas registradas para concluir o diagnóstico.',
+            requestId: request.id,
+          },
+        });
+      if (!stopping.shouldStop) {
+        const [candidates, attempted, pending, mastery] = await Promise.all([
+          repository.listCandidates(),
+          repository.attempted(params(request)),
+          repository.pendingSelection(params(request)),
+          learningFactory(request.auth.accessToken).listCurrentMastery(),
+        ]);
+        // Reuse selection eligibility from /next. Exam weights change ranking,
+        // not whether any eligible, unanswered candidate exists.
+        const selection = selectNextQuestion({
+          candidates,
+          mastery,
+          attemptedQuestionIds: attempted.questionIds,
+          usedThemeIds: attempted.themeIds,
+          observations,
+          policy: policyForMode(state.mode),
+        });
+        stopping = evaluateDiagnosticStop({
+          observations,
+          policy: policyForMode(state.mode),
+          contentAvailable: pending !== null || selection !== null,
+        });
+      }
       if (!stopping.shouldStop)
         return reply.status(409).send({
           error: {
