@@ -8,14 +8,15 @@ const titleByPath: Record<string, string> = {
   '/app': 'Preparação',
   '/app/exams': 'Escolha da prova',
   '/app/profile': 'Perfil',
-  '/app/plan': 'Meu plano',
+  '/app/plan': 'Trilha de estudos',
   '/app/simulations': 'Simulados',
   '/app/performance': 'Meu progresso',
   '/app/assessment/demo': 'Diagnóstico',
 };
 const titleByPrefix = [
   ['/app/assessment', 'Diagnóstico'],
-  ['/app/learning', 'Jornada'],
+  ['/app/plan', 'Trilha de estudos'],
+  ['/app/learning', 'Evolução'],
   ['/app/academic', 'Jornada'],
   ['/app/tutor', 'Mentores'],
 ] as const;
