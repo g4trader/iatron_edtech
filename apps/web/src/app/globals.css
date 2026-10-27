@@ -2641,6 +2641,9 @@ textarea.form-control {
 .journey-timeline strong {
   font-size: 0.875rem;
 }
+.journey-timeline li[data-status='current'] small {
+  color: #48564c;
+}
 .journey-timeline small {
   color: var(--foreground-muted);
   font-size: 0.75rem;

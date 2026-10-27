@@ -54,7 +54,10 @@ test('navega pelo drawer mobile', async ({ page, isMobile }) => {
   test.skip(!isMobile, 'Cenário específico para viewport móvel');
   await page.goto('/app');
   await page.getByRole('button', { name: 'Abrir menu' }).click();
-  await page.getByRole('link', { name: 'Mentores' }).click();
+  await page
+    .getByTestId('mobile-drawer-layer')
+    .getByRole('link', { name: 'Mentores', exact: true })
+    .click();
   await expect(page).toHaveURL(/\/app\/tutor/);
 });
 
