@@ -8,6 +8,7 @@ import {
 
 export const reviewLabels = {
   legacy_unreviewed: 'Revisão curricular não registrada',
+  superseded: 'Substituída — histórico preservado',
   draft: 'Rascunho',
   pending_review: 'Aguardando revisão médica',
 };
@@ -60,7 +61,9 @@ export function CurriculumCatalog({
         <p className="text-sm text-[var(--foreground-muted)]">
           Conhecimento médico / Matriz curricular
         </p>
-        <h1>Competências médicas</h1>
+        <h1 className="text-2xl font-semibold sm:text-3xl">
+          Competências médicas
+        </h1>
         <p>
           Organize, acompanhe e amplie a matriz de conhecimentos utilizada na
           preparação dos estudantes.
@@ -70,7 +73,7 @@ export function CurriculumCatalog({
         <Link
           href={link({ specialtyId: undefined, areaId: undefined, page: 1 })}
           aria-current={!query.specialtyId ? 'page' : undefined}
-          className={`rounded-xl border px-3 py-3 text-sm ${!query.specialtyId ? 'bg-[var(--primary)] text-white' : ''}`}
+          className={!query.specialtyId ? 'primary-button' : 'secondary-button'}
         >
           Todas
         </Link>
@@ -79,7 +82,11 @@ export function CurriculumCatalog({
             key={sp.id}
             href={link({ specialtyId: sp.id, areaId: undefined, page: 1 })}
             aria-current={query.specialtyId === sp.id ? 'page' : undefined}
-            className={`rounded-xl border px-3 py-3 text-sm ${query.specialtyId === sp.id ? 'bg-[var(--primary)] text-white' : ''}`}
+            className={
+              query.specialtyId === sp.id
+                ? 'primary-button'
+                : 'secondary-button'
+            }
           >
             {sp.name} <span>({sp.count})</span>
           </Link>
@@ -240,7 +247,8 @@ export function CurriculumCatalog({
                     >
                       Ver detalhes
                     </Link>
-                    {!item.active && item.status !== 'legacy_unreviewed' ? (
+                    {!item.active &&
+                    ['draft', 'pending_review'].includes(item.status) ? (
                       <Link
                         className="rounded-lg border px-3 py-3 text-sm"
                         href={
@@ -260,9 +268,9 @@ export function CurriculumCatalog({
         <section className="state-card space-y-2">
           <h2>Nenhuma competência neste recorte</h2>
           <p>
-            Revise os filtros. As matrizes de Ginecologia e Obstetrícia e
-            Medicina Preventiva aguardam o complemento do briefing; não foram
-            preenchidas com conteúdo presumido.
+            Revise os filtros ou selecione outra especialidade. A ausência de
+            recursos indica uma lacuna editorial, não proficiência zero do
+            estudante.
           </p>
         </section>
       )}

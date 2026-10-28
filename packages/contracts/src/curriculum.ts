@@ -8,7 +8,7 @@ export const curriculumQuerySchema = z.object({
   coverage: z.enum(['', 'covered', 'partial', 'uncovered']).default(''),
   missing: z.enum(['', 'content', 'questions', 'references']).default(''),
   status: z
-    .enum(['', 'legacy_unreviewed', 'draft', 'pending_review'])
+    .enum(['', 'legacy_unreviewed', 'draft', 'pending_review', 'superseded'])
     .default(''),
   page: z.coerce.number().int().min(1).max(100000).default(1),
 });
@@ -18,11 +18,17 @@ export const curriculumItemSchema = z.object({
   name: z.string(),
   description: z.string(),
   active: z.boolean(),
-  status: z.enum(['legacy_unreviewed', 'draft', 'pending_review']),
+  status: z.enum([
+    'legacy_unreviewed',
+    'draft',
+    'pending_review',
+    'superseded',
+  ]),
   source: z.string().nullable(),
   revision: z.number().int().positive(),
   terms: z.array(z.string()),
   objectives: z.array(z.string()),
+  superseded_by: z.uuid().nullable(),
   subtheme_id: z.uuid(),
   area_id: z.uuid(),
   subarea: z.string(),

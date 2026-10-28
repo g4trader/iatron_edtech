@@ -4,10 +4,10 @@ set local search_path = public, extensions;
 select extensions.plan(20);
 
 select extensions.is((select count(*) from public.specialties), 5::bigint, 'seed contains the five blueprint specialties');
-select extensions.is((select count(*) from public.medical_areas), 3::bigint, 'seed contains reusable areas');
-select extensions.is((select count(*) from public.themes), 3::bigint, 'seed contains themes');
-select extensions.is((select count(*) from public.subthemes), 3::bigint, 'seed contains subthemes');
-select extensions.is((select count(*) from public.competencies), 5::bigint, 'seed contains measurable competencies');
+select extensions.is((select count(*) from public.medical_areas where is_active), 3::bigint, 'seed contains reusable areas');
+select extensions.is((select count(*) from public.themes where is_active), 3::bigint, 'seed contains themes');
+select extensions.is((select count(*) from public.subthemes where is_active), 3::bigint, 'seed contains subthemes');
+select extensions.is((select count(*) from public.competencies where is_active), 5::bigint, 'seed contains measurable competencies');
 select extensions.is((select count(distinct specialty_id) from public.specialty_areas where area_id = '51000000-0000-4000-8000-000000000003'), 3::bigint, 'an area belongs to many specialties');
 select extensions.is((select count(*) from public.program_specialties where exam_program_id = '30000000-0000-4000-8000-000000000001'), 2::bigint, 'a program includes many specialties');
 select extensions.is((select count(*) from public.exam_questions where question_id = '58000000-0000-4000-8000-000000000001'), 2::bigint, 'one question is reused in many exams');

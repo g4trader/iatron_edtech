@@ -80,8 +80,16 @@ test('V5: catálogo filtra, pagina, preserva navegação e salva proposta audita
       .getByRole('navigation', { name: 'Especialidades médicas' })
       .getByRole('link', { name: /Pediatria/ })
       .click();
+    await expect(
+      page
+        .getByRole('navigation', { name: 'Especialidades médicas' })
+        .getByRole('link', { name: /Pediatria/ }),
+    ).toHaveAttribute('aria-current', 'page');
     await page.getByLabel('Buscar competência').fill('bronquiolite');
     await page.getByRole('button', { name: 'Aplicar filtros' }).click();
+    await expect(page).toHaveURL(
+      /specialtyId=50000000-0000-4000-8000-000000000002/,
+    );
     await expect(
       page.getByRole('heading', {
         name: 'Diagnosticar e manejar bronquiolite viral aguda',
@@ -106,6 +114,18 @@ test('V5: catálogo filtra, pagina, preserva navegação e salva proposta audita
       contentType: 'image/png',
     });
     await page.setViewportSize({ width: 390, height: 844 });
+    const group = page
+      .locator('summary')
+      .filter({ hasText: 'Pneumologia Pediátrica' });
+    await group.focus();
+    await group.press('Enter');
+    await expect(
+      page.getByRole('link', { name: 'Ver detalhes', exact: true }),
+    ).toBeHidden();
+    await group.press('Enter');
+    await page
+      .getByRole('link', { name: 'Ver detalhes', exact: true })
+      .scrollIntoViewIfNeeded();
     expect(
       await page.evaluate(
         () => document.documentElement.scrollWidth <= window.innerWidth,

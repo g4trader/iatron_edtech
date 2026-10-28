@@ -51,7 +51,7 @@ jobs:
             LOG_LEVEL=info
             BUILD_SHA=${{ github.event.workflow_run.head_sha || github.sha }}
             BUILD_TIMESTAMP=${{ steps.build_metadata.outputs.timestamp }}
-            MIGRATION_BASELINE=202610280002
+            MIGRATION_BASELINE=202610280004
             SUPABASE_URL=${{ vars.SUPABASE_STAGING_URL }}
             SUPABASE_JWT_ISSUER=${{ vars.SUPABASE_STAGING_URL }}/auth/v1
             SUPABASE_JWT_AUDIENCE=authenticated

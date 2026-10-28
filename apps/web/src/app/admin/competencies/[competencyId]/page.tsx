@@ -37,6 +37,16 @@ export default async function AdminCompetencyPage({
             : 'Proposta inativa: não utilizada em diagnósticos ou trilhas.'}
         </p>
       </div>
+      {item.superseded_by ? (
+        <div className="mx-auto max-w-6xl px-4 sm:px-8">
+          <Link
+            className="action-link"
+            href={`/admin/competencies/${item.superseded_by}` as Route}
+          >
+            Consultar a competência que substitui esta proposta
+          </Link>
+        </div>
+      ) : null}
       <CompetencyDetail
         competency={{
           ...competency,
@@ -51,13 +61,13 @@ export default async function AdminCompetencyPage({
         }}
       />
       <div className="mx-auto max-w-6xl px-4 pb-12 sm:px-8">
-        {!item.active && item.status !== 'legacy_unreviewed' ? (
+        {!item.active && ['draft', 'pending_review'].includes(item.status) ? (
           <CurriculumEditor item={item} />
         ) : (
           <p className="state-card">
-            A edição direta de competências ativas está protegida para preservar
-            avaliações e planos existentes. Mudanças clínicas exigem revisão
-            versionada.
+            A edição direta de competências ativas ou substituídas está
+            protegida para preservar avaliações e planos existentes. Mudanças
+            clínicas exigem revisão versionada.
           </p>
         )}
       </div>

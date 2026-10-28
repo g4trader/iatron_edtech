@@ -8,6 +8,20 @@ alter table public.competencies
 create unique index competencies_subtheme_normalized_name_idx on public.competencies(subtheme_id,lower(btrim(name)));
 create index competencies_curriculum_status_idx on public.competencies(curriculum_status);
 
+-- Restrict only newly-governed drafts; preserve visibility of every legacy row.
+create policy curriculum_drafts_staff on public.competencies as restrictive
+for select to authenticated using (
+ curriculum_status='legacy_unreviewed' or public.can_manage_editorial()
+ or (public.has_app_role('mentor') and exists(
+  select 1 from public.competency_specialties cs where cs.competency_id=id
+  and public.owns_medical_specialty(cs.specialty_id)
+ ))
+);
+create policy curriculum_objectives_visible on public.competency_objectives as restrictive
+for select to authenticated using (exists(
+ select 1 from public.competencies c where c.id=competency_id
+));
+
 -- Internal projection: exposed only through the role-checked RPC below.
 create view public.curriculum_catalog_rows as
 select c.id,c.code,c.name,c.description,c.is_active as active,

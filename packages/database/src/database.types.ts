@@ -78,6 +78,13 @@ export type Database = {
             referencedRelation: "competencies"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "assessment_competencies_competency_id_fkey"
+            columns: ["competency_id"]
+            isOneToOne: false
+            referencedRelation: "curriculum_catalog_rows"
+            referencedColumns: ["id"]
+          },
         ]
       }
       assessment_question_selections: {
@@ -222,6 +229,13 @@ export type Database = {
             referencedRelation: "competencies"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "assessment_result_competencies_competency_id_fkey"
+            columns: ["competency_id"]
+            isOneToOne: false
+            referencedRelation: "curriculum_catalog_rows"
+            referencedColumns: ["id"]
+          },
         ]
       }
       assessment_results: {
@@ -300,31 +314,46 @@ export type Database = {
         Row: {
           code: string
           created_at: string
+          curriculum_revision: number
+          curriculum_source: string | null
+          curriculum_status: string
           description: string
           id: string
           is_active: boolean
           name: string
+          search_terms: string[]
           subtheme_id: string
+          superseded_by: string | null
           updated_at: string
         }
         Insert: {
           code: string
           created_at?: string
+          curriculum_revision?: number
+          curriculum_source?: string | null
+          curriculum_status?: string
           description: string
           id?: string
           is_active?: boolean
           name: string
+          search_terms?: string[]
           subtheme_id: string
+          superseded_by?: string | null
           updated_at?: string
         }
         Update: {
           code?: string
           created_at?: string
+          curriculum_revision?: number
+          curriculum_source?: string | null
+          curriculum_status?: string
           description?: string
           id?: string
           is_active?: boolean
           name?: string
+          search_terms?: string[]
           subtheme_id?: string
+          superseded_by?: string | null
           updated_at?: string
         }
         Relationships: [
@@ -332,7 +361,28 @@ export type Database = {
             foreignKeyName: "competencies_subtheme_id_fkey"
             columns: ["subtheme_id"]
             isOneToOne: false
+            referencedRelation: "curriculum_catalog_rows"
+            referencedColumns: ["subtheme_id"]
+          },
+          {
+            foreignKeyName: "competencies_subtheme_id_fkey"
+            columns: ["subtheme_id"]
+            isOneToOne: false
             referencedRelation: "subthemes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "competencies_superseded_by_fkey"
+            columns: ["superseded_by"]
+            isOneToOne: false
+            referencedRelation: "competencies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "competencies_superseded_by_fkey"
+            columns: ["superseded_by"]
+            isOneToOne: false
+            referencedRelation: "curriculum_catalog_rows"
             referencedColumns: ["id"]
           },
         ]
@@ -364,6 +414,13 @@ export type Database = {
             referencedRelation: "competencies"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "competency_objectives_competency_id_fkey"
+            columns: ["competency_id"]
+            isOneToOne: false
+            referencedRelation: "curriculum_catalog_rows"
+            referencedColumns: ["id"]
+          },
         ]
       }
       competency_references: {
@@ -385,6 +442,13 @@ export type Database = {
             columns: ["competency_id"]
             isOneToOne: false
             referencedRelation: "competencies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "competency_references_competency_id_fkey"
+            columns: ["competency_id"]
+            isOneToOne: false
+            referencedRelation: "curriculum_catalog_rows"
             referencedColumns: ["id"]
           },
           {
@@ -421,6 +485,13 @@ export type Database = {
             columns: ["competency_id"]
             isOneToOne: false
             referencedRelation: "competencies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "competency_specialties_competency_id_fkey"
+            columns: ["competency_id"]
+            isOneToOne: false
+            referencedRelation: "curriculum_catalog_rows"
             referencedColumns: ["id"]
           },
           {
@@ -772,6 +843,76 @@ export type Database = {
           },
         ]
       }
+      curriculum_import_batches: {
+        Row: {
+          created_at: string
+          id: string
+          manifest: Json
+          source: string
+        }
+        Insert: {
+          created_at?: string
+          id: string
+          manifest: Json
+          source: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          manifest?: Json
+          source?: string
+        }
+        Relationships: []
+      }
+      curriculum_import_history: {
+        Row: {
+          action: string
+          batch_id: string
+          competency_id: string
+          created_at: string
+          next_record: Json
+          previous_record: Json | null
+        }
+        Insert: {
+          action: string
+          batch_id: string
+          competency_id: string
+          created_at?: string
+          next_record: Json
+          previous_record?: Json | null
+        }
+        Update: {
+          action?: string
+          batch_id?: string
+          competency_id?: string
+          created_at?: string
+          next_record?: Json
+          previous_record?: Json | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "curriculum_import_history_batch_id_fkey"
+            columns: ["batch_id"]
+            isOneToOne: false
+            referencedRelation: "curriculum_import_batches"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "curriculum_import_history_competency_id_fkey"
+            columns: ["competency_id"]
+            isOneToOne: false
+            referencedRelation: "competencies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "curriculum_import_history_competency_id_fkey"
+            columns: ["competency_id"]
+            isOneToOne: false
+            referencedRelation: "curriculum_catalog_rows"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       diagnostic_assessments: {
         Row: {
           algorithm: string
@@ -917,6 +1058,13 @@ export type Database = {
             columns: ["competency_id"]
             isOneToOne: false
             referencedRelation: "competencies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "diagnostic_blueprint_competencies_competency_id_fkey"
+            columns: ["competency_id"]
+            isOneToOne: false
+            referencedRelation: "curriculum_catalog_rows"
             referencedColumns: ["id"]
           },
           {
@@ -1778,6 +1926,13 @@ export type Database = {
             foreignKeyName: "exam_recurrence_statistics_area_id_fkey"
             columns: ["area_id"]
             isOneToOne: false
+            referencedRelation: "curriculum_catalog_rows"
+            referencedColumns: ["area_id"]
+          },
+          {
+            foreignKeyName: "exam_recurrence_statistics_area_id_fkey"
+            columns: ["area_id"]
+            isOneToOne: false
             referencedRelation: "medical_areas"
             referencedColumns: ["id"]
           },
@@ -1789,11 +1944,25 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "exam_recurrence_statistics_competency_id_fkey"
+            columns: ["competency_id"]
+            isOneToOne: false
+            referencedRelation: "curriculum_catalog_rows"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "exam_recurrence_statistics_profile_id_fkey"
             columns: ["profile_id"]
             isOneToOne: false
             referencedRelation: "exam_intelligence_profiles"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "exam_recurrence_statistics_subtheme_id_fkey"
+            columns: ["subtheme_id"]
+            isOneToOne: false
+            referencedRelation: "curriculum_catalog_rows"
+            referencedColumns: ["subtheme_id"]
           },
           {
             foreignKeyName: "exam_recurrence_statistics_subtheme_id_fkey"
@@ -1830,6 +1999,13 @@ export type Database = {
             columns: ["competency_id"]
             isOneToOne: false
             referencedRelation: "competencies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "guideline_competencies_competency_id_fkey"
+            columns: ["competency_id"]
+            isOneToOne: false
+            referencedRelation: "curriculum_catalog_rows"
             referencedColumns: ["id"]
           },
           {
@@ -2266,6 +2442,13 @@ export type Database = {
             foreignKeyName: "learning_contents_area_id_fkey"
             columns: ["area_id"]
             isOneToOne: false
+            referencedRelation: "curriculum_catalog_rows"
+            referencedColumns: ["area_id"]
+          },
+          {
+            foreignKeyName: "learning_contents_area_id_fkey"
+            columns: ["area_id"]
+            isOneToOne: false
             referencedRelation: "medical_areas"
             referencedColumns: ["id"]
           },
@@ -2281,6 +2464,13 @@ export type Database = {
             columns: ["competency_id"]
             isOneToOne: false
             referencedRelation: "competencies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "learning_contents_competency_id_fkey"
+            columns: ["competency_id"]
+            isOneToOne: false
+            referencedRelation: "curriculum_catalog_rows"
             referencedColumns: ["id"]
           },
           {
@@ -2317,6 +2507,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "specialties"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "learning_contents_subtheme_id_fkey"
+            columns: ["subtheme_id"]
+            isOneToOne: false
+            referencedRelation: "curriculum_catalog_rows"
+            referencedColumns: ["subtheme_id"]
           },
           {
             foreignKeyName: "learning_contents_subtheme_id_fkey"
@@ -2557,6 +2754,13 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "learning_evidence_competency_id_fkey"
+            columns: ["competency_id"]
+            isOneToOne: false
+            referencedRelation: "curriculum_catalog_rows"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "learning_evidence_source_event_id_fkey"
             columns: ["source_event_id"]
             isOneToOne: false
@@ -2618,6 +2822,13 @@ export type Database = {
             columns: ["competency_id"]
             isOneToOne: false
             referencedRelation: "competencies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "mastery_snapshots_competency_id_fkey"
+            columns: ["competency_id"]
+            isOneToOne: false
+            referencedRelation: "curriculum_catalog_rows"
             referencedColumns: ["id"]
           },
           {
@@ -3151,6 +3362,13 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "question_version_competencies_competency_id_fkey"
+            columns: ["competency_id"]
+            isOneToOne: false
+            referencedRelation: "curriculum_catalog_rows"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "question_version_competencies_question_version_id_fkey"
             columns: ["question_version_id"]
             isOneToOne: false
@@ -3400,6 +3618,13 @@ export type Database = {
             foreignKeyName: "question_version_subthemes_subtheme_id_fkey"
             columns: ["subtheme_id"]
             isOneToOne: false
+            referencedRelation: "curriculum_catalog_rows"
+            referencedColumns: ["subtheme_id"]
+          },
+          {
+            foreignKeyName: "question_version_subthemes_subtheme_id_fkey"
+            columns: ["subtheme_id"]
+            isOneToOne: false
             referencedRelation: "subthemes"
             referencedColumns: ["id"]
           },
@@ -3599,6 +3824,13 @@ export type Database = {
           specialty_id?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "specialty_areas_area_id_fkey"
+            columns: ["area_id"]
+            isOneToOne: false
+            referencedRelation: "curriculum_catalog_rows"
+            referencedColumns: ["area_id"]
+          },
           {
             foreignKeyName: "specialty_areas_area_id_fkey"
             columns: ["area_id"]
@@ -3862,6 +4094,13 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "study_plan_items_competency_id_fkey"
+            columns: ["competency_id"]
+            isOneToOne: false
+            referencedRelation: "curriculum_catalog_rows"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "study_plan_items_plan_version_id_fkey"
             columns: ["plan_version_id"]
             isOneToOne: false
@@ -4081,6 +4320,13 @@ export type Database = {
           updated_at?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "themes_area_id_fkey"
+            columns: ["area_id"]
+            isOneToOne: false
+            referencedRelation: "curriculum_catalog_rows"
+            referencedColumns: ["area_id"]
+          },
           {
             foreignKeyName: "themes_area_id_fkey"
             columns: ["area_id"]
@@ -4421,6 +4667,13 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "mastery_snapshots_competency_id_fkey"
+            columns: ["competency_id"]
+            isOneToOne: false
+            referencedRelation: "curriculum_catalog_rows"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "mastery_snapshots_source_event_id_fkey"
             columns: ["source_event_id"]
             isOneToOne: false
@@ -4436,8 +4689,52 @@ export type Database = {
           },
         ]
       }
+      curriculum_catalog_rows: {
+        Row: {
+          academic_references: number | null
+          active: boolean | null
+          area_id: string | null
+          code: string | null
+          contents: number | null
+          description: string | null
+          id: string | null
+          name: string | null
+          objectives: Json | null
+          questions: number | null
+          revision: number | null
+          source: string | null
+          specialty_ids: string[] | null
+          status: string | null
+          subarea: string | null
+          subtheme_id: string | null
+          superseded_by: string | null
+          terms: string[] | null
+          verified_references: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "competencies_superseded_by_fkey"
+            columns: ["superseded_by"]
+            isOneToOne: false
+            referencedRelation: "competencies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "competencies_superseded_by_fkey"
+            columns: ["superseded_by"]
+            isOneToOne: false
+            referencedRelation: "curriculum_catalog_rows"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Functions: {
+      admin_curriculum_catalog: { Args: { p_query?: Json }; Returns: Json }
+      admin_save_curriculum: {
+        Args: { p_id: string; p_input: Json }
+        Returns: string
+      }
       answer_diagnostic_question: {
         Args: {
           p_assessment_id: string
@@ -4572,6 +4869,7 @@ export type Database = {
       }
       has_app_role: { Args: { p_role: string }; Returns: boolean }
       import_amrigs_content: { Args: { p_payload: Json }; Returns: string }
+      import_curriculum_v51: { Args: never; Returns: undefined }
       learning_dna_indicator_json: {
         Args: {
           p_area_ids: string[]
@@ -4774,12 +5072,12 @@ export type Tables<
   DefaultSchemaTableNameOrOptions extends
     | keyof (DefaultSchema["Tables"] & DefaultSchema["Views"])
     | { schema: keyof DatabaseWithoutInternals },
-  TableName extends DefaultSchemaTableNameOrOptions extends {
+  TableName extends (DefaultSchemaTableNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
     ? keyof (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
         DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Views"])
-    : never = never,
+    : never) = never,
 > = DefaultSchemaTableNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
@@ -4803,11 +5101,11 @@ export type TablesInsert<
   DefaultSchemaTableNameOrOptions extends
     | keyof DefaultSchema["Tables"]
     | { schema: keyof DatabaseWithoutInternals },
-  TableName extends DefaultSchemaTableNameOrOptions extends {
+  TableName extends (DefaultSchemaTableNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
     ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
-    : never = never,
+    : never) = never,
 > = DefaultSchemaTableNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
@@ -4828,11 +5126,11 @@ export type TablesUpdate<
   DefaultSchemaTableNameOrOptions extends
     | keyof DefaultSchema["Tables"]
     | { schema: keyof DatabaseWithoutInternals },
-  TableName extends DefaultSchemaTableNameOrOptions extends {
+  TableName extends (DefaultSchemaTableNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
     ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
-    : never = never,
+    : never) = never,
 > = DefaultSchemaTableNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
@@ -4853,11 +5151,11 @@ export type Enums<
   DefaultSchemaEnumNameOrOptions extends
     | keyof DefaultSchema["Enums"]
     | { schema: keyof DatabaseWithoutInternals },
-  EnumName extends DefaultSchemaEnumNameOrOptions extends {
+  EnumName extends (DefaultSchemaEnumNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
     ? keyof DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"]
-    : never = never,
+    : never) = never,
 > = DefaultSchemaEnumNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
@@ -4870,11 +5168,11 @@ export type CompositeTypes<
   PublicCompositeTypeNameOrOptions extends
     | keyof DefaultSchema["CompositeTypes"]
     | { schema: keyof DatabaseWithoutInternals },
-  CompositeTypeName extends PublicCompositeTypeNameOrOptions extends {
+  CompositeTypeName extends (PublicCompositeTypeNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
     ? keyof DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"]
-    : never = never,
+    : never) = never,
 > = PublicCompositeTypeNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
