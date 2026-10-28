@@ -30,3 +30,11 @@ médica, estatística ou comercial.
 ## Histórico
 
 Nenhuma decisão foi aprovada nesta iniciativa.
+
+### 28/10/2026 — escopo operacional dos quatro mentores
+
+Solicitação explícita do proprietário na conversa: apresentar e configurar os
+quatro mentores descritos em MENTOR_GOVERNANCE.md no ambiente atual, com contas
+individuais. Esta evidência cobre essa operação e apresentação institucional;
+não constitui aprovação integral da DEC-002 nem autoriza voz, imagem, conteúdo
+clínico ou atribuição de revisão sem registro da ação correspondente.

@@ -797,6 +797,7 @@ textarea.form-control {
   padding-top: 0.25rem;
 }
 .onboarding-question-title {
+  position: relative;
   display: flex;
   align-items: center;
   gap: 0.4rem;
@@ -2873,5 +2874,68 @@ textarea.form-control {
 @media (max-width: 760px) {
   .learning-spaces-overview {
     grid-template-columns: 1fr;
+  }
+}
+
+.preference-help {
+  flex: 0 0 auto;
+}
+.preference-help-trigger {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  border: 1px solid transparent;
+  border-radius: 50%;
+  background: transparent;
+  cursor: pointer;
+}
+.preference-help-trigger:hover,
+.preference-help-trigger[aria-expanded='true'] {
+  background: #e7eee9;
+}
+.preference-help-trigger:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+}
+.preference-help-panel {
+  position: absolute;
+  z-index: 30;
+  top: 100%;
+  left: 0;
+  width: min(100%, 36rem);
+  padding: 1rem;
+  border: 1px solid var(--border);
+  border-radius: 1rem;
+  background: var(--surface, #fff);
+  box-shadow: 0 12px 32px #203c3026;
+  color: var(--foreground);
+  font-size: 0.9rem;
+  font-weight: 400;
+  line-height: 1.55;
+  max-height: min(70vh, 36rem);
+  overflow-y: auto;
+}
+.preference-help-panel p,
+.preference-help-panel ul {
+  margin: 0.75rem 0;
+}
+.preference-help-panel ul {
+  padding-left: 1.25rem;
+  list-style: disc;
+}
+.preference-help-panel .secondary-button {
+  min-height: 44px;
+  padding: 0.5rem 1rem;
+}
+@media (max-width: 600px) {
+  .preference-help-panel {
+    position: fixed;
+    top: auto;
+    bottom: 1rem;
+    left: 1rem;
+    right: 1rem;
+    width: auto;
+    max-height: min(80dvh, 44rem);
   }
 }

@@ -113,3 +113,17 @@ no [Dockerfile da CLI 2.109.1](https://github.com/supabase/cli/blob/v2.109.1/app
 e os disponibiliza no cache local do runner sob o nome esperado. Fallback e
 retries permanecem; nenhum serviço, teste ou verificação de segurança foi removido.
 Não há novo registry, projeto, segredo ou custo de infraestrutura contratado.
+
+## Ajuste de onboarding e mentores — 28/10/2026
+
+Os ícones de informação decorativos passam a abrir explicações por hover, foco,
+clique ou toque. Escape, clique externo e Fechar explicação recolhem a ajuda.
+A duração limita estimativas de atividades no motor existente; a preferência de
+feedback é persistida, mas ainda não muda automaticamente os exercícios. A ajuda
+explica essas diferenças sem prometer comportamento não implementado.
+
+A apresentação do Dr. Lucas inclui Cardiologia. Os quatro acessos solicitados
+usam o papel mentor e a taxonomia existente. Provisionar login não configura
+caixas de e-mail: aliases dependem do provedor e do destino de encaminhamento.
+A fixture editorial deixa de substituir o titular de uma área durante testes;
+usa co-owner quando já existe titular ativo. Contas reais não são fixtures.

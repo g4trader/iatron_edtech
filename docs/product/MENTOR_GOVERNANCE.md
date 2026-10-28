@@ -6,12 +6,12 @@ declara que autorizações já foram concedidas; o
 
 ## Mentores oficiais propostos
 
-| Especialidade             | Mentor             |
-| ------------------------- | ------------------ |
-| Pediatria                 | Aristóteles        |
-| Clínica Médica            | Lucas              |
-| Cirurgia Geral            | Guilherme Peterson |
-| Ginecologia e Obstetrícia | João Garcia        |
+| Especialidade                | Mentor             |
+| ---------------------------- | ------------------ |
+| Pediatria                    | Aristóteles        |
+| Clínica Médica e Cardiologia | Lucas              |
+| Cirurgia Geral               | Guilherme Peterson |
+| Ginecologia e Obstetrícia    | João Garcia        |
 
 O uso oficial de cada associação depende de autorização documental.
 
@@ -89,3 +89,15 @@ exatamente o trecho ou aspecto validado.
 Atribuição incorreta exige suspensão, preservação da evidência, correção
 versionada, avaliação de impacto e notificação dos responsáveis. Remoções
 seguem a decisão jurídica e não apagam a trilha de auditoria.
+
+## Atualização operacional — 28/10/2026
+
+O proprietário solicitou nesta conversa os quatro acessos de mentor e suas
+associações: Dr. Aristóteles (Pediatria), Dr. Lucas (Clínica Médica e Cardiologia),
+Dr. Guilherme Peterson (Cirurgia Geral) e Dr. João Garcia (Ginecologista Obstetra).
+A solicitação autoriza apresentação institucional e acesso operacional no
+ambiente atual. Cardiologia permanece no domínio existente de Clínica Médica;
+não se cria uma taxonomia paralela. Registrar a solicitação na auditoria das
+atribuições. Nenhum conteúdo é declarado revisado ou homologado por essa ação.
+Autorizações de imagem, voz, materiais, IA e demais escopos da DEC-002 permanecem
+independentes; não se presumem assinaturas ou credenciais profissionais.

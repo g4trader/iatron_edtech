@@ -87,25 +87,21 @@ async function upsert(table: string, values: unknown) {
 
 async function ensureSpecialtyOwner(mentorId: string) {
   const existing = (await service(
-    `/rest/v1/medical_specialty_owners?select=id&specialty_id=eq.${specialtyId}&owner_role=eq.primary&status=eq.active`,
-  )) as { id: string }[];
-  const values = {
-    specialty_id: specialtyId,
-    mentor_id: mentorId,
-    owner_role: 'primary',
-    status: 'active',
-    authorization_reference: 'e2e:documented-beta-authorization',
-  };
-  if (existing[0]) {
-    await service(`/rest/v1/medical_specialty_owners?id=eq.${existing[0].id}`, {
-      method: 'PATCH',
-      body: JSON.stringify(values),
-    });
-    return;
-  }
+    `/rest/v1/medical_specialty_owners?select=id,mentor_id,owner_role&specialty_id=eq.${specialtyId}&status=in.(active,temporarily_unavailable)&ends_at=is.null`,
+  )) as { id: string; mentor_id: string; owner_role: string }[];
+  // Never replace a real specialty owner while preparing a test fixture.
+  if (existing.some((owner) => owner.mentor_id === mentorId)) return;
   await service('/rest/v1/medical_specialty_owners', {
     method: 'POST',
-    body: JSON.stringify(values),
+    body: JSON.stringify({
+      specialty_id: specialtyId,
+      mentor_id: mentorId,
+      owner_role: existing.some((owner) => owner.owner_role === 'primary')
+        ? 'co_owner'
+        : 'primary',
+      status: 'active',
+      authorization_reference: 'e2e:documented-beta-authorization',
+    }),
   });
 }
 

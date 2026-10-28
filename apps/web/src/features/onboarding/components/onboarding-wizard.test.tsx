@@ -209,17 +209,17 @@ describe('rotina de estudos do onboarding', () => {
     );
     expect(
       screen.getByText(
-        'Isso define quanta orientação você verá durante os exercícios.',
+        'Registre o estilo de orientação que você prefere ao estudar.',
       ),
     ).toBeVisible();
     expect(
-      screen.getByText('Receba explicações e dicas durante o estudo.'),
+      screen.getByText('Prefiro explicações e dicas durante o estudo.'),
     ).toBeVisible();
 
     fireEvent.change(feedback, { target: { value: 'independent' } });
     expect(
       screen.getByText(
-        'Veja o resultado e consulte explicações quando desejar.',
+        'Prefiro ver o resultado e consultar explicações quando desejar.',
       ),
     ).toBeVisible();
     expect(

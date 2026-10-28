@@ -1,6 +1,7 @@
 'use client';
 import { useRef, useState, useTransition } from 'react';
 import { safeReturnTo, withReturnTo } from '@/lib/safe-return-to';
+import { PreferenceHelp } from './preference-help';
 import { saveOnboarding } from '../actions';
 import { ExamSelector, type Edition } from '@/features/exams/exam-selector';
 
@@ -58,24 +59,11 @@ const routineProfiles = [
 ] as const;
 type RoutineId = (typeof routineProfiles)[number]['id'];
 const assessmentDescriptions = {
-  guided: 'Receba explicações e dicas durante o estudo.',
-  independent: 'Veja o resultado e consulte explicações quando desejar.',
-  mixed: 'Receba orientação apenas nos momentos mais importantes.',
+  guided: 'Prefiro explicações e dicas durante o estudo.',
+  independent:
+    'Prefiro ver o resultado e consultar explicações quando desejar.',
+  mixed: 'Prefiro orientação pontual durante o estudo.',
 } as const;
-
-function InformationIcon() {
-  return (
-    <svg
-      aria-hidden="true"
-      className="question-information-icon"
-      fill="none"
-      viewBox="0 0 24 24"
-    >
-      <circle cx="12" cy="12" r="9" />
-      <path d="M12 11v6M12 7.5v.01" />
-    </svg>
-  );
-}
 
 function RoutineIcon({ id }: { id: RoutineId }) {
   const commonProps = {
@@ -466,13 +454,38 @@ export function OnboardingWizard(props: WizardProps) {
               </fieldset>
             )}
             <section className="onboarding-preference-question">
-              <label
-                className="onboarding-question-title"
-                htmlFor="session-duration"
-              >
-                Duração preferida da sessão
-                <InformationIcon />
-              </label>
+              <div className="onboarding-question-title">
+                <label htmlFor="session-duration">
+                  Duração preferida da sessão
+                </label>
+                <PreferenceHelp label="Duração preferida da sessão">
+                  <p>
+                    Escolha quanto tempo costuma ter para um bloco de estudo:
+                  </p>
+                  <ul>
+                    <li>
+                      <strong>30 minutos:</strong> para intervalos mais curtos.
+                    </li>
+                    <li>
+                      <strong>45 minutos:</strong> para um bloco intermediário.
+                    </li>
+                    <li>
+                      <strong>60 ou 90 minutos:</strong> para quando você dispõe
+                      de um período maior.
+                    </li>
+                  </ul>
+                  <p>
+                    O plano usa essa preferência como limite para a duração
+                    estimada de cada atividade e respeita os minutos disponíveis
+                    em cada dia. As atividades podem ser mais curtas; escolher
+                    90 minutos não significa receber atividades de 90 minutos.
+                  </p>
+                  <p>
+                    Isso não altera sua disponibilidade semanal nem cria um
+                    cronômetro. Você poderá ajustar a preferência depois.
+                  </p>
+                </PreferenceHelp>
+              </div>
               <p id="session-duration-context">
                 Ajuda o Iatron a montar um plano que caiba na sua rotina.
               </p>
@@ -496,15 +509,40 @@ export function OnboardingWizard(props: WizardProps) {
               </select>
             </section>
             <section className="onboarding-preference-question">
-              <label
-                className="onboarding-question-title"
-                htmlFor="assessment-preference"
-              >
-                Como você prefere receber feedback durante os exercícios?
-                <InformationIcon />
-              </label>
+              <div className="onboarding-question-title">
+                <label htmlFor="assessment-preference">
+                  Como você prefere receber feedback durante os exercícios?
+                </label>
+                <PreferenceHelp label="Feedback durante os exercícios">
+                  <p>Informe o estilo de estudo que você prefere:</p>
+                  <ul>
+                    <li>
+                      <strong>Com orientação:</strong> preferência por
+                      explicações e dicas ao estudar.
+                    </li>
+                    <li>
+                      <strong>Somente resultado:</strong> preferência por
+                      consultar explicações por iniciativa própria.
+                    </li>
+                    <li>
+                      <strong>Orientação equilibrada:</strong> preferência por
+                      ajuda pontual.
+                    </li>
+                  </ul>
+                  <p>
+                    No momento, essa preferência fica salva no seu perfil, mas
+                    ainda não muda automaticamente a apresentação dos
+                    exercícios. As explicações disponíveis continuam acessíveis
+                    em qualquer opção.
+                  </p>
+                  <p>
+                    A escolha não altera sua nota, seu domínio ou a dificuldade
+                    das questões. Você poderá mudá-la depois.
+                  </p>
+                </PreferenceHelp>
+              </div>
               <p id="assessment-preference-context">
-                Isso define quanta orientação você verá durante os exercícios.
+                Registre o estilo de orientação que você prefere ao estudar.
               </p>
               <p id="assessment-preference-help">
                 Você poderá mudar essa escolha depois.

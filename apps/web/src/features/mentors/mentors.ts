@@ -26,9 +26,10 @@ export const mentors: readonly Mentor[] = [
     id: 'internal_medicine',
     name: 'Lucas',
     displayName: 'Dr. Lucas',
-    specialty: 'Clínica Médica',
+    specialty: 'Clínica Médica e Cardiologia',
     initials: 'LU',
-    description: 'Referência da experiência de Clínica Médica no Iatron.',
+    description:
+      'Referência da experiência de Clínica Médica e Cardiologia no Iatron.',
   },
   {
     id: 'surgery',
