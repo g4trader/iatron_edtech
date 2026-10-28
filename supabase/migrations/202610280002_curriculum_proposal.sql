@@ -1,4 +1,12 @@
 -- User-provided curriculum proposal, NOT clinical approval. Never overwrites existing identities.
+-- Canonical IDs already used by staging; also support clean installations before seed.sql.
+insert into public.specialties(id,code,name) values
+ ('50000000-0000-4000-8000-000000000001','CLINICA_MEDICA','Clínica Médica'),
+ ('50000000-0000-4000-8000-000000000002','PEDIATRIA','Pediatria'),
+ ('50000000-0000-4000-8000-000000000003','CIRURGIA_GERAL','Cirurgia Geral'),
+ ('50000000-0000-4000-8000-000000000004','GINECOLOGIA_OBSTETRICIA','Ginecologia e Obstetrícia'),
+ ('50000000-0000-4000-8000-000000000005','MEDICINA_PREVENTIVA','Medicina Preventiva e Saúde Coletiva')
+on conflict(id) do nothing;
 do $import$
 declare item jsonb; sid uuid; aid uuid; tid uuid; stid uuid; cid uuid; area_code text;
 begin

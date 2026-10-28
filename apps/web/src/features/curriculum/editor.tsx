@@ -20,7 +20,7 @@ export function CurriculumEditor({ item }: { item: CurriculumItem }) {
         <label className="block space-y-1">
           <span>Nome da competência</span>
           <input
-            className="w-full"
+            className="form-control"
             name="name"
             defaultValue={item.name}
             required
@@ -31,7 +31,7 @@ export function CurriculumEditor({ item }: { item: CurriculumItem }) {
         <label className="block space-y-1">
           <span>Descrição</span>
           <textarea
-            className="w-full"
+            className="form-control"
             name="description"
             defaultValue={item.description}
             required
@@ -43,7 +43,7 @@ export function CurriculumEditor({ item }: { item: CurriculumItem }) {
         <label className="block space-y-1">
           <span>Objetivos de aprendizagem — um por linha</span>
           <textarea
-            className="w-full"
+            className="form-control"
             name="objectives"
             defaultValue={item.objectives.join('\n')}
             required
@@ -53,7 +53,7 @@ export function CurriculumEditor({ item }: { item: CurriculumItem }) {
         <label className="block space-y-1">
           <span>Termos relacionados — um por linha</span>
           <textarea
-            className="w-full"
+            className="form-control"
             name="terms"
             defaultValue={item.terms.join('\n')}
             rows={3}
@@ -61,7 +61,11 @@ export function CurriculumEditor({ item }: { item: CurriculumItem }) {
         </label>
         <label className="block space-y-1">
           <span>Estado da proposta</span>
-          <select className="w-full" name="status" defaultValue={item.status}>
+          <select
+            className="form-control"
+            name="status"
+            defaultValue={item.status}
+          >
             <option value="draft">Rascunho</option>
             <option value="pending_review">Aguardando revisão médica</option>
           </select>
@@ -69,7 +73,7 @@ export function CurriculumEditor({ item }: { item: CurriculumItem }) {
         <label className="block space-y-1">
           <span>Justificativa da alteração</span>
           <textarea
-            className="w-full"
+            className="form-control"
             name="reason"
             required
             minLength={10}
