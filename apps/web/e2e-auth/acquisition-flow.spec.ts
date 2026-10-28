@@ -486,7 +486,9 @@ test('cadastro confirma e-mail real local e mantém intenção até o diagnósti
   await page.getByLabel('Senha (mínimo de 8 caracteres)').fill(password);
   await page.getByRole('button', { name: 'Começar minha preparação' }).click();
   await expect(
-    page.getByText('Confira seu e-mail para confirmar o cadastro.'),
+    page.getByText(
+      'Já tem uma conta com este e-mail? Entre com sua senha ou selecione Recuperar senha. Se estiver criando uma conta nova, confira seu e-mail para confirmar o cadastro.',
+    ),
   ).toBeVisible();
   expect(new URL(page.url()).searchParams.get('returnTo')).toBe(entry);
   await expect

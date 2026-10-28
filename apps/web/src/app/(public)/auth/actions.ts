@@ -70,7 +70,7 @@ export async function signup(formData: FormData) {
     '/login',
     returnTo,
     'mensagem',
-    'Confira seu e-mail para confirmar o cadastro.',
+    'Já tem uma conta com este e-mail? Entre com sua senha ou selecione Recuperar senha. Se estiver criando uma conta nova, confira seu e-mail para confirmar o cadastro.',
   );
 }
 

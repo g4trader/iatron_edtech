@@ -95,12 +95,16 @@ describe('auth intent continuity', () => {
     expect(callback.origin).toBe('https://go.iatron.com.br');
     expect(callback.searchParams.get('next')).toBe(destination);
   });
-  it('keeps confirmation messaging for obfuscated existing accounts and errors', async () => {
+  it('guides existing accounts to login or recovery without revealing account existence', async () => {
     mocks.signUp.mockResolvedValueOnce({
       data: { user: { identities: [] }, session: null },
       error: null,
     });
-    await expect(signup(form())).rejects.toThrow('REDIRECT:/login?');
+    await expect(signup(form())).rejects.toThrow(
+      `REDIRECT:/login?returnTo=%2Fapp%2Fassessment%2Fentry&mensagem=${encodeURIComponent(
+        'Já tem uma conta com este e-mail? Entre com sua senha ou selecione Recuperar senha. Se estiver criando uma conta nova, confira seu e-mail para confirmar o cadastro.',
+      )}`,
+    );
     mocks.signUp.mockResolvedValueOnce({
       data: { user: null, session: null },
       error: new Error('failure'),

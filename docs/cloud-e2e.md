@@ -26,3 +26,12 @@ retomável, JWT na API, spoofing, RLS com dois usuários, logout e recuperação
 senha. Produção é recusada. Para auditoria de entrega real de e-mail, adicione
 posteriormente uma caixa exclusiva programaticamente acessível; não desative a
 confirmação em produção.
+
+## Feedback após cadastro
+
+A resposta sem sessão do Supabase pode representar tanto cadastro pendente de
+confirmação quanto uma conta existente ofuscada. A mensagem orienta quem já tem
+conta a entrar ou recuperar a senha e quem está criando conta a conferir o
+e-mail. Não afirma que uma mensagem foi enviada, não consulta usuários com
+privilégios e não altera a proteção contra enumeração de contas.
+O fluxo mantém o destino original do estudante nos links de login e recuperação.
