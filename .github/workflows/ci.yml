@@ -42,12 +42,15 @@ jobs:
       - run: pnpm lint
       - run: pnpm typecheck
       - run: pnpm test
-      - name: Warm official upstream gateway and log images
+      - name: Warm official upstream images
         # Same sources/tags declared by supabase/cli v2.109.1's Dockerfile.
         # Avoid the CLI fallback losing library/ and timberio/ namespaces.
         shell: bash
         run: |
-          for pair in 'library/kong:2.8.1 kong:2.8.1' 'timberio/vector:0.53.0-alpine vector:0.53.0-alpine'; do
+          for pair in 'library/kong:2.8.1 kong:2.8.1' 'timberio/vector:0.53.0-alpine vector:0.53.0-alpine' \
+            'axllent/mailpit:v1.30.2 mailpit:v1.30.2' \
+            'postgrest/postgrest:v14.14 postgrest:v14.14' \
+            'darthsim/imgproxy:v3.8.0 imgproxy:v3.8.0'; do
             read -r upstream mirror <<< "$pair"
             for attempt in 1 2 3; do
               if docker pull "$upstream" >"$RUNNER_TEMP/upstream-pull.log" 2>&1; then

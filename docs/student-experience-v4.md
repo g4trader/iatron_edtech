@@ -127,3 +127,12 @@ usam o papel mentor e a taxonomia existente. Provisionar login não configura
 caixas de e-mail: aliases dependem do provedor e do destino de encaminhamento.
 A fixture editorial deixa de substituir o titular de uma área durante testes;
 usa co-owner quando já existe titular ativo. Contas reais não são fixtures.
+
+### Continuidade do CI — 28/10/2026
+
+A execução 40704373314 falhou antes dos testes de banco por limites de ECR/GHCR
+para Mailpit; o fallback tentou o namespace inexistente supabase/mailpit. O
+cache antecipado passa a cobrir também axllent/mailpit:v1.30.2,
+postgrest/postgrest:v14.14 e darthsim/imgproxy:v3.8.0, os demais namespaces
+externos declarados no Dockerfile oficial da CLI 2.109.1 já referenciado acima.
+São as mesmas versões esperadas pela CLI; nenhum gate ou serviço foi removido.
