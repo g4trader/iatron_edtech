@@ -131,6 +131,7 @@ export function createAssessmentRepository(
     async targetCompetencies() {
       const parameters = new URLSearchParams({
         select: 'id',
+        is_active: 'eq.true',
         order: 'code.asc',
         limit: '1000',
       });

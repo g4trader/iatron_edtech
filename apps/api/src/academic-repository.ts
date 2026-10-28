@@ -51,6 +51,8 @@ export function createAcademicRepository(
   ) => {
     const url = new URL(`/rest/v1/${table}`, environment.SUPABASE_URL);
     url.searchParams.set('select', select);
+    if (['competencies', 'themes', 'medical_areas'].includes(table))
+      url.searchParams.set('is_active', 'eq.true');
     url.searchParams.set('order', `${order}.asc`);
     url.searchParams.set('limit', String(query.limit));
     url.searchParams.set('offset', String(query.offset));

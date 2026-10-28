@@ -1,11 +1,15 @@
-import { CompetencyIndex } from '@/features/editorial/components/competency-workspace';
+import {
+  CurriculumCatalog,
+  parseCurriculumSearch,
+} from '@/features/curriculum/catalog';
 import { editorial } from '@/features/editorial/server/editorial';
-
-export default async function AdminCompetenciesPage() {
+export default async function AdminCompetenciesPage({
+  searchParams,
+}: {
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
+}) {
+  const query = parseCurriculumSearch(await searchParams);
   return (
-    <CompetencyIndex
-      scope="admin"
-      specialties={await editorial.managedSpecialties()}
-    />
+    <CurriculumCatalog data={await editorial.curriculum(query)} query={query} />
   );
 }

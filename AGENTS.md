@@ -13,6 +13,17 @@ Não declarar conclusão com deploy ou validação online pendente. Documentar
 bloqueios externos e a ação necessária. Esta regra substitui restrições anteriores
 de autorização para deploy neste ambiente. Ver `docs/deployment-policy.md`.
 
+# EFICIÊNCIA PERMANENTE — V5
+
+Classificar o risco da mudança e executar verificações proporcionais: baixo
+(texto/estilo), médio (interação/leitura), alto (persistência/permissões/relações)
+e crítico (destruição/irreversibilidade). Agrupar inspeções, evitar releituras,
+builds e suítes repetidos sem mudança relevante, polling frequente e capturas
+redundantes. Preservar todos os gates obrigatórios de CI, publicação e validação
+online. Não alterar o pipeline global apenas para economizar execução.
+Comunicar descobertas, decisões, bloqueios e resultados, sem avisos repetitivos
+de espera. Autorização específica continua necessária quando aplicável.
+
 # GOVERNANÇA OBRIGATÓRIA
 
 Antes de qualquer implementação, leia integralmente:

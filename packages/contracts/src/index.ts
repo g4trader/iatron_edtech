@@ -1715,3 +1715,5 @@ export const resolveKnowledgeDuplicateSchema = z
 export type ResolveKnowledgeDuplicateInput = z.infer<
   typeof resolveKnowledgeDuplicateSchema
 >;
+
+export * from './curriculum.js';

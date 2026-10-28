@@ -1,5 +1,8 @@
 import {
   appRoleSchema,
+  curriculumQuerySchema,
+  curriculumPageSchema,
+  type CurriculumQuery,
   competencyWorkspaceSchema,
   knowledgeLibraryOverviewSchema,
   knowledgeLibraryPageSchema,
@@ -41,6 +44,16 @@ async function versions(path: string) {
 }
 
 export const editorial = {
+  async curriculum(input: Partial<CurriculumQuery> = {}) {
+    const query = curriculumQuerySchema.parse(input);
+    const params = new URLSearchParams(
+      Object.entries(query).map(([key, value]) => [key, String(value)]),
+    );
+    const response = await request(`/admin/curriculum?${params}`);
+    if (!response.ok)
+      throw new Error('O catálogo curricular está indisponível agora.');
+    return curriculumPageSchema.parse(await response.json());
+  },
   async roles() {
     const response = await request('/editorial/me/roles');
     if (!response.ok) return [];

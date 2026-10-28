@@ -1,3 +1,7 @@
+import {
+  createCurriculumRepository,
+  registerCurriculumRoutes,
+} from './curriculum.js';
 import cors from '@fastify/cors';
 import swagger from '@fastify/swagger';
 import swaggerUi from '@fastify/swagger-ui';
@@ -426,6 +430,9 @@ export async function buildApp(
             ((token) =>
               createExamIntelligenceRepository(options.environment, token)),
           options.examIntelligenceClock,
+        );
+        await registerCurriculumRoutes(protectedApi, (token) =>
+          createCurriculumRepository(options.environment, token),
         );
         await registerEditorialRoutes(
           protectedApi,
