@@ -106,3 +106,34 @@ end $$;
 revoke all on function public.require_active_assessment_competency() from public,anon,authenticated;
 create trigger assessment_competency_active before insert on public.assessment_competencies
 for each row execute function public.require_active_assessment_competency();
+
+-- Preserve compatibility during deployment: older APIs send all catalog IDs.
+-- Eligibility is enforced in SQL as well as in the current API.
+create or replace function public.start_diagnostic_assessment_v3(
+  p_objective text,p_exam_program_id uuid,p_specialty_id uuid,
+  p_duration_minutes smallint,p_question_count smallint,p_competency_ids uuid[],
+  p_mode text
+) returns uuid language plpgsql security definer set search_path='' as $$
+declare v_student uuid:=auth.uid(); v_id uuid; v_policy text; v_blueprint text;
+begin
+  if v_student is null then raise exception 'authentication required' using errcode='42501'; end if;
+  if p_mode not in ('quick_screening','full_diagnostic') then raise exception 'invalid diagnostic mode' using errcode='22023'; end if;
+  if coalesce(array_length(p_competency_ids,1),0)=0 then raise exception 'competencies required' using errcode='22023'; end if;
+  if not exists(select 1 from public.competencies where id=any(p_competency_ids) and is_active) then
+    raise exception 'Inactive competency cannot be assessed' using errcode='22023';
+  end if;
+  v_policy:=case when p_mode='full_diagnostic' then 'diagnostic-policy-v3-full-amrigs-synthetic' else 'diagnostic-policy-v3-quick-synthetic' end;
+  select 'exam-blueprint-v'||eb.version into v_blueprint
+  from public.exam_intelligence_profiles ep join public.exam_blueprints eb on eb.profile_id=ep.id
+  where ep.exam_program_id=p_exam_program_id and ep.is_active and eb.is_active limit 1;
+  insert into public.diagnostic_assessments(
+    student_id,objective,exam_program_id,specialty_id,duration_minutes,question_count,
+    mode,policy_version,blueprint_version,algorithm_version
+  ) values(
+    v_student,p_objective,p_exam_program_id,p_specialty_id,p_duration_minutes,p_question_count,
+    p_mode,v_policy,v_blueprint,'assessment-v3'
+  ) returning id into v_id;
+  insert into public.assessment_competencies(assessment_id,competency_id)
+  select v_id,c.id from public.competencies c where c.id=any(p_competency_ids) and c.is_active on conflict do nothing;
+  return v_id;
+end $$;
