@@ -571,8 +571,9 @@ export function OnboardingWizard(props: WizardProps) {
               </p>
             </section>
             <p className="onboarding-help">
-              Essas preferências ajudam o Iatron a criar um plano mais adequado
-              para sua rotina. Você poderá alterá-las depois.
+              A duração e a disponibilidade ajudam a organizar seu plano. A
+              preferência de feedback fica salva no seu perfil. Você poderá
+              alterar essas escolhas depois.
             </p>
           </div>
         )}
